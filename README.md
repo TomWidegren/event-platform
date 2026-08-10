@@ -1,59 +1,56 @@
 # Event Platform
 
-Event Platform is a lightweight framework for monitoring live events from different data sources and notifying subscribers when something changes.
+Event Platform is a lightweight framework for monitoring changing data from external platforms and notifying subscribers when relevant changes occur.
+
+Golf is the first use case, but the core architecture is designed to remain independent of golf-specific logic.
 
 ## Current Status
 
-**Version:** 1.0.0
+**Current production release: v1.1.0**
 
-The first production-ready connector has been verified in live operation.
-
-## Architecture
-
-```
-Event Platform
-│
-├── connectors/
-│     ├── haninge.py
-│     └── ...
-│
-├── watcher.py
-├── config.yml
-├── state.json
-└── README.md
-```
-
-## Current Features
-
-- Live event monitoring
-- Change detection
-- State persistence
-- Push notifications using ntfy
-- GitHub Actions scheduler
+The platform has been verified in real-world operation with both live event monitoring and daily monitoring.
 
 ## Current Connectors
 
-| Connector | Status |
-|-----------|--------|
-| Haninge Golf Club | ✅ Production |
-| Tournytt | Planned refactoring |
+### GolfBox Leaderboard
 
-## Roadmap
+`connectors/golfbox_leaderboard.py`
 
-### Version 1.1
+Monitors live GolfBox competition leaderboards.
 
-- Multiple connectors
-- Connector interface
-- Better logging
-- Improved notifications
+Verified with:
 
-### Version 2.0
+- Haninge Golfklubb
+- Strängnäs Golfklubb
+- Hole-by-hole live scoring
+- Position changes
+- Multi-round tournaments
+- Transition between rounds
+- Completed tournament results
 
-- Multiple sports
-- Multiple subscribers
-- Event Platform architecture
-- Connector SDK
+### SGF Ranking
 
-## License
+`connectors/sgf_ranking.py`
 
-Private project.
+Monitors Swedish Golf Federation ranking data.
+
+Verified with daily monitoring and real ranking changes following completed competitions.
+
+## Architecture
+
+High-level flow:
+
+```text
+External data source
+        ↓
+     Connector
+        ↓
+    watcher.py
+        ↓
+    state.json
+        ↓
+ Change detection
+        ↓
+       ntfy
+        ↓
+Subscriber devices
