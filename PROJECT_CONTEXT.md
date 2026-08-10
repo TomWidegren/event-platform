@@ -167,3 +167,34 @@ If an AI assistant does not have direct access to this repository, provide this 
 The assistant should then request only the additional documentation or source files needed for the agreed session goal.
 
 Do not reconstruct project state from conversational memory when current repository files can be provided.
+
+## Simple session commands
+
+The user should not need to remember the development-session procedure.
+
+### Start
+
+If the user says:
+
+"Nu fortsätter vi med Event Platform."
+
+The assistant should:
+
+1. Request `PROJECT_CONTEXT.md` if it is not already available.
+2. Restore project context before proposing work.
+3. Request only additional files needed for the session.
+4. Confirm the session goal before making changes.
+
+### End
+
+If the user says:
+
+"Vi avslutar för idag."
+
+The assistant should:
+
+1. Summarize what was completed and verified.
+2. Identify unresolved issues and recommended next goal.
+3. Determine whether Architecture, Decisions, Ways of Working or Backlog need updating.
+4. Provide any required documentation updates before ending the session.
+5. Determine whether `PROJECT_CONTEXT.md` needs updating.
