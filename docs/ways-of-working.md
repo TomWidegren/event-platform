@@ -70,6 +70,12 @@ This reduces ambiguity about:
 - old debug code,
 - obsolete imports.
 
+When providing a complete replacement file, the entire file must be provided in one continuous copyable block.
+
+Do not use nested code blocks or formatting that accidentally splits the file into multiple sections.
+
+The user should be able to replace the existing file with one copy-and-paste operation.
+
 ## 6. Do not repeat completed steps
 
 Before asking for a change, establish what has already been completed.
