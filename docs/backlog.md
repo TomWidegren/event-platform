@@ -10,6 +10,36 @@ They should be prioritized when planning a development session.
 
 ## High priority
 
+### Validate GolfBox connector with a third implementation
+
+Validate the existing `golfbox_leaderboard` connector against the NSGK competition before generalizing the connector.
+
+Competition:
+
+- NSGK
+- Competition ID: `5543525`
+
+Reason:
+
+The connector has already been verified with Haninge Golfklubb and Strängnäs Golfklubb.
+
+A third real-world implementation provides additional evidence about which parts of the connector are genuinely GolfBox-generic before configuration and connector interfaces are generalized.
+
+Validation should include, where available:
+
+- Correct leaderboard/class selection
+- Player lookup
+- Empty/pre-event leaderboard behavior
+- First result
+- Live scoring
+- Position changes
+- Completed result
+
+After this validation, use the combined learnings from Haninge, Strängnäs and NSGK when generalizing GolfBox configuration.
+
+---
+
+
 ### Generalize GolfBox configuration
 
 Move event-specific GolfBox parameters out of `golfbox_leaderboard.py` and into `config.yml`.
