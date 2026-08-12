@@ -149,6 +149,37 @@ Before ending:
 
 ## Current development direction
 
+### Active validation – NSGK
+
+The next real-world GolfBox validation is prepared for an NSGK competition.
+
+Current test configuration:
+
+- Site: NSGK
+- Competition ID: `5543525`
+- Connector: `golfbox_leaderboard`
+- Mode: `live`
+- Leaderboard URL: `https://www.nsgk.se/tavla/#/competition/5543525/leaderboard`
+
+Current status:
+
+- The leaderboard was empty during the pre-event test.
+- The existing GolfBox connector reached the page successfully.
+- No player row was found, which is expected while the leaderboard is empty.
+- No state change or notification was generated.
+- The Live cron-job remains disabled.
+
+Next verification:
+
+When the leaderboard is populated, run `Event Platform - Live` manually before enabling the recurring Live cron-job.
+
+Verify whether the existing GolfBox connector can find Lukas without further connector changes.
+
+If successful, NSGK becomes the third real-world validation of the GolfBox connector after Haninge and Strängnäs.
+
+Do not generalize the GolfBox connector until the NSGK validation has produced enough evidence.
+
+
 The next major development direction is to make adding or reusing connectors predictable and fast.
 
 Priority areas include:
