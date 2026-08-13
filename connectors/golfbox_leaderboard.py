@@ -62,6 +62,28 @@ def safe_text(page: Page, selector: str) -> str:
         return ""
 
 
+def is_pre_start(snapshot: dict) -> bool:
+    hole = snapshot.get("hole", "")
+
+    start_time = bool(
+        re.fullmatch(r"\d{1,2}:\d{2}", hole)
+    )
+
+    no_result = all(
+        not snapshot.get(field)
+        for field in (
+            "position",
+            "topar",
+            "today",
+            "r1",
+            "r2",
+            "total",
+        )
+    )
+
+    return start_time and no_result
+
+
 def fetch_player_snapshot(page: Page, player_name: str):
     page.goto(
         LEADERBOARD_URL,
@@ -140,6 +162,14 @@ def fetch_player_snapshot(page: Page, player_name: str):
             f"{player_name}: hittade GolfBox-rad {row_id}",
             flush=True,
         )
+
+        if is_pre_start(snapshot):
+            print(
+                f"{player_name}: har inte startat ännu "
+                f"(starttid {snapshot['hole']})",
+                flush=True,
+            )
+            return None
 
         return snapshot
 
