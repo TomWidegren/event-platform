@@ -13,9 +13,9 @@
     }
   },
   "golfbox_leaderboard::5543525::Lukas Widegren": {
-    "snapshot": "{\"club\": \"Haninge Golfklubb\", \"hole\": \"F\", \"name\": \"WIDEGREN, Lukas\", \"position\": \"T26\", \"r1\": \"\", \"r2\": \"\", \"today\": \"\", \"topar\": \"+15\", \"total\": \"87\"}",
+    "snapshot": "{\"club\": \"Haninge Golfklubb\", \"hole\": \"F\", \"name\": \"WIDEGREN, Lukas\", \"position\": \"T31\", \"r1\": \"\", \"r2\": \"\", \"today\": \"\", \"topar\": \"+15\", \"total\": \"87\"}",
     "fields": {
-      "position": "T26",
+      "position": "T31",
       "name": "WIDEGREN, Lukas",
       "club": "Haninge Golfklubb",
       "topar": "+15",
