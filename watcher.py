@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from pathlib import Path
 
@@ -100,6 +101,11 @@ def main():
     topic = config["ntfy"]["topic"]
     updates = []
 
+    run_mode = os.getenv("RUN_MODE")
+
+    if run_mode:
+        print(f"RUN_MODE: {run_mode}")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1600, "height": 1200})
@@ -108,6 +114,10 @@ def main():
             for watch in config["watches"]:
                 connector_name = watch.get("connector", "sgf_ranking")
                 watch_mode = watch.get("mode", "daily")
+
+                if run_mode and watch_mode != run_mode:
+                    continue
+
                 competition_id = watch.get("competition", "")
                 player_name = watch["player"]
                 key = f"{connector_name}::{competition_id}::{player_name}"
@@ -130,21 +140,39 @@ def main():
                     previous_snapshot = None
 
                 if previous is None:
-                    state[key] = {"snapshot": current_snapshot, "fields": current_fields}
+                    state[key] = {
+                        "snapshot": current_snapshot,
+                        "fields": current_fields,
+                    }
 
                     if watch_mode == "live":
                         message = format_message(current_fields, player_name)
-                        send_ntfy(topic, f"Golfuppdatering: {player_name}", message)
-                        updates.append(f"Första live-resultat notifierat för {player_name}")
+                        send_ntfy(
+                            topic,
+                            f"Golfuppdatering: {player_name}",
+                            message,
+                        )
+                        updates.append(
+                            f"Första live-resultat notifierat för {player_name}"
+                        )
                     else:
-                        updates.append(f"Baslinje sparad för {player_name}")
+                        updates.append(
+                            f"Baslinje sparad för {player_name}"
+                        )
 
                     continue
 
                 if previous_snapshot != current_snapshot:
                     message = format_message(current_fields, player_name)
-                    send_ntfy(topic, f"Golfuppdatering: {player_name}", message)
-                    state[key] = {"snapshot": current_snapshot, "fields": current_fields}
+                    send_ntfy(
+                        topic,
+                        f"Golfuppdatering: {player_name}",
+                        message,
+                    )
+                    state[key] = {
+                        "snapshot": current_snapshot,
+                        "fields": current_fields,
+                    }
                     updates.append(f"Uppdaterad: {player_name}")
 
         finally:
