@@ -34,6 +34,8 @@ jobs:
           echo "=== START ==="
           python -u watcher.py
           echo "=== END ==="
+        env:
+          RUN_MODE: daily
 
 
       - name: Commit state if changed
