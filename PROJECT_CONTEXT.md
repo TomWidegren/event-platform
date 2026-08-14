@@ -190,6 +190,17 @@ Do not generalize GolfBox configuration until the Tournytt validation has comple
 
 The objective is to compare three different connector families before introducing additional abstraction.
 
+Current state:
+
+Tournytt connector created.
+
+SSE API verified.
+
+Connector integrated.
+
+Awaiting first populated LeaderboardEntries.
+
+
 ## Context rule
 
 If an AI assistant does not have direct access to this repository, provide this file at the start of the session.
