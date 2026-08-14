@@ -127,7 +127,17 @@ def main():
                 key = f"{connector_name}::{competition_id}::{player_name}"
 
                 fetch_player_snapshot = get_fetcher(connector_name)
-                current_fields = fetch_player_snapshot(page, player_name)
+
+                if connector_name == "tournytt_api":
+                    current_fields = fetch_player_snapshot(
+                    competition_id,
+                    player_name,
+                    )
+                else:
+                    current_fields = fetch_player_snapshot(
+                    page,
+                    player_name,
+                    )
 
                 if not current_fields:
                     print(f"{player_name}: hittade ingen rad")
