@@ -48,6 +48,7 @@ Current implementations:
 
 - `golfbox_leaderboard.py`
 - `sgf_ranking.py`
+- - tournytt_api.py (validation in progress)
 
 A connector should return structured data to the platform.
 
