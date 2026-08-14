@@ -54,3 +54,43 @@ def fetch_leaderboard_json(competition_id: int):
                 data_lines.append(line[len("data:"):].lstrip())
 
     return None
+
+def extract_player_snapshot(data: dict, player_name: str):
+    parts = player_name.strip().split(maxsplit=1)
+
+    if len(parts) != 2:
+        raise ValueError(
+            "player_name must be in the format 'First Last'"
+        )
+
+    first_name, last_name = parts
+
+    for leaderboard in data.get("leaderboards", []):
+        classes = leaderboard.get("Classes", [])
+        class_name = (
+            classes[0]["Name"]
+            if classes
+            else ""
+        )
+
+        for entry in leaderboard.get("LeaderboardEntries", []):
+            player = entry.get("Player", {})
+
+            if (
+                player.get("FirstName", "").strip() == first_name
+                and player.get("LastName", "").strip() == last_name
+            ):
+                return {
+                    "class": class_name,
+                    "position": entry.get("Position", {}).get("Text", ""),
+                    "score": entry.get("ScoreSum"),
+                    "to_par": (
+                        entry.get("ScoringToPar", {})
+                        .get("ToPar", {})
+                        .get("Text", "")
+                    ),
+                    "played_holes": entry.get("PlayedHoles"),
+                    "status": entry.get("ScoringStatus"),
+                }
+
+    return None
