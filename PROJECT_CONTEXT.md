@@ -149,36 +149,46 @@ Before ending:
 
 ## Current development direction
 
-### Completed validation – NSGK
+### Completed validation – GolfBox
 
-The GolfBox connector has now been successfully validated against a third independent GolfBox implementation.
+The GolfBox connector has now been successfully validated against three independent GolfBox implementations.
 
-Validation target:
-
-- Site: NSGK
-- Competition ID: `5543525`
-
-Verified behavior:
-
-- Empty leaderboard
-- Player present before start
-- Pre-start handling (start time without score)
-- First result
-- Completed round 1
-- Transition to round 2
-- Completed tournament
-- Final state persistence
-- Notifications
-
-The connector required no NSGK-specific implementation beyond changing the target URL.
-
-The three completed real-world GolfBox validations are now:
+Validated implementations:
 
 - Haninge Golfklubb
 - Strängnäs Golfklubb
 - NSGK (Hylinge)
 
-This provides sufficient evidence to begin generalizing the GolfBox connector.
+Combined validation covered:
+
+- Empty leaderboard
+- Player present before start
+- First result
+- Live hole-by-hole scoring
+- Round-based result publication
+- Position changes
+- Round transitions
+- Completed two-round tournaments
+- State persistence
+- Notifications
+
+The connector required no site-specific implementation beyond selecting the correct competition/leaderboard.
+
+The GolfBox validation phase is considered complete.
+
+The next major validation target is Tournytt.
+
+### Active validation – Tournytt
+
+The next validation target is the Tournytt leaderboard implementation.
+
+Goal:
+
+Determine whether the existing Tournytt implementation still works within the current Event Platform architecture or whether it should be refactored to match the current connector model.
+
+Do not generalize GolfBox configuration until the Tournytt validation has completed.
+
+The objective is to compare three different connector families before introducing additional abstraction.
 
 ## Context rule
 
