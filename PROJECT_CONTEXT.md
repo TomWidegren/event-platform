@@ -149,47 +149,36 @@ Before ending:
 
 ## Current development direction
 
-### Active validation – NSGK
+### Completed validation – NSGK
 
-The next real-world GolfBox validation is prepared for an NSGK competition.
+The GolfBox connector has now been successfully validated against a third independent GolfBox implementation.
 
-Current test configuration:
+Validation target:
 
 - Site: NSGK
 - Competition ID: `5543525`
-- Connector: `golfbox_leaderboard`
-- Mode: `live`
-- Leaderboard URL: `https://www.nsgk.se/tavla/#/competition/5543525/leaderboard`
 
-Current status:
+Verified behavior:
 
-- The leaderboard was empty during the pre-event test.
-- The existing GolfBox connector reached the page successfully.
-- No player row was found, which is expected while the leaderboard is empty.
-- No state change or notification was generated.
-- The Live cron-job remains disabled.
+- Empty leaderboard
+- Player present before start
+- Pre-start handling (start time without score)
+- First result
+- Completed round 1
+- Transition to round 2
+- Completed tournament
+- Final state persistence
+- Notifications
 
-Next verification:
+The connector required no NSGK-specific implementation beyond changing the target URL.
 
-When the leaderboard is populated, run `Event Platform - Live` manually before enabling the recurring Live cron-job.
+The three completed real-world GolfBox validations are now:
 
-Verify whether the existing GolfBox connector can find Lukas without further connector changes.
+- Haninge Golfklubb
+- Strängnäs Golfklubb
+- NSGK (Hylinge)
 
-If successful, NSGK becomes the third real-world validation of the GolfBox connector after Haninge and Strängnäs.
-
-Do not generalize the GolfBox connector until the NSGK validation has produced enough evidence.
-
-
-The next major development direction is to make adding or reusing connectors predictable and fast.
-
-Priority areas include:
-
-- Generalize GolfBox configuration
-- Create a Connector Development Guide
-- Create a connector template
-- Improve ranking notifications to show previous → new values
-
-See `docs/backlog.md` for the complete backlog.
+This provides sufficient evidence to begin generalizing the GolfBox connector.
 
 ## Context rule
 
