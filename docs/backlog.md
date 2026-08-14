@@ -8,36 +8,28 @@ They should be prioritized when planning a development session.
 
 ---
 
-## High priority
+## Completed validations
 
-### Validate GolfBox connector with a third implementation
+### GolfBox connector
 
-Validate the existing `golfbox_leaderboard` connector against the NSGK competition before generalizing the connector.
+Successfully validated against three independent GolfBox implementations:
 
-Competition:
+- Haninge Golfklubb
+- Strängnäs Golfklubb
+- NSGK (Hylinge)
 
-- NSGK
-- Competition ID: `5543525`
+Verified:
 
-Reason:
-
-The connector has already been verified with Haninge Golfklubb and Strängnäs Golfklubb.
-
-A third real-world implementation provides additional evidence about which parts of the connector are genuinely GolfBox-generic before configuration and connector interfaces are generalized.
-
-Validation should include, where available:
-
-- Correct leaderboard/class selection
-- Player lookup
-- Empty/pre-event leaderboard behavior
+- Empty leaderboard
+- Player present before start
 - First result
 - Live scoring
-- Position changes
-- Completed result
+- Round transitions
+- Completed tournament
+- Final state persistence
+- Notifications
 
-After this validation, use the combined learnings from Haninge, Strängnäs and NSGK when generalizing GolfBox configuration.
-
----
+The validation provides sufficient evidence to begin generalizing the GolfBox connector in a future release.
 
 
 ### Generalize GolfBox configuration
