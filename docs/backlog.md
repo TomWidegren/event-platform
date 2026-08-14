@@ -81,6 +81,7 @@ A connector should:
 - locate the requested entity,
 - normalize the result,
 - return a structured snapshot.
+- A connector should expose one public entry point to the Event Platform core.
 
 A connector should not:
 
