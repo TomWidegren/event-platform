@@ -10,5 +10,11 @@ watches:
     competition: 5543525
     player: "Lukas Widegren"
 
+  - name: "Lukas Widegren Tournytt"
+    connector: tournytt_api
+    mode: live
+    competition: 5406076
+    player: "Lukas Widegren"
+
 ntfy:
   topic: "tom-widegren-golf-92fd71b8"
