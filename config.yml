@@ -1,16 +1,16 @@
 watches:
-  - name: "Lukas Widegren ranking"
+  - name: "Lukas Widegren - SGF Ranking"
     connector: sgf_ranking
     mode: daily
     player: "Lukas Widegren"
 
-  - name: "Lukas Widegren live"
+  - name: "Lukas Widegren - GolfBox"
     connector: golfbox_leaderboard
     mode: live
     competition: 5543525
     player: "Lukas Widegren"
 
-  - name: "Lukas Widegren Tournytt"
+  - name: "Lukas Widegren - Tournytt"
     connector: tournytt_api
     mode: live
     competition: 5406076
