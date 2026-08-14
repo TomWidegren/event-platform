@@ -57,6 +57,10 @@ def get_fetcher(connector_name: str):
         from connectors.golfbox_leaderboard import fetch_player_snapshot as fetcher
         return fetcher
 
+    if connector_name == "tournytt_api":
+        from connectors.tournytt_api import fetch_player_snapshot as fetcher
+        return fetcher
+    
     if connector_name == "sgf_ranking":
         from connectors.sgf_ranking import fetch_player_snapshot as fetcher
         return fetcher
