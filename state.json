@@ -25,5 +25,16 @@
       "r2": "81",
       "total": "168"
     }
+  },
+  "tournytt_api::5406076::Lukas Widegren": {
+    "snapshot": "{\"class\": \"Pojkar\", \"played_holes\": 0, \"position\": \"\", \"score\": 0, \"status\": 0, \"to_par\": \"\"}",
+    "fields": {
+      "class": "Pojkar",
+      "position": "",
+      "score": 0,
+      "to_par": "",
+      "played_holes": 0,
+      "status": 0
+    }
   }
 }
