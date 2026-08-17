@@ -18,6 +18,7 @@ The platform currently supports two types of monitoring:
 Current connectors:
 
 - `golfbox_leaderboard` – live GolfBox competition leaderboards
+- `tournytt_api` – Tournytt SSE leaderboard API
 - `sgf_ranking` – Swedish Golf Federation ranking data
 
 ## High-level flow
@@ -47,8 +48,8 @@ Current connectors are stored in:
 Current implementations:
 
 - `golfbox_leaderboard.py`
+- `tournytt_api.py`
 - `sgf_ranking.py`
-- - tournytt_api.py (validation in progress)
 
 A connector should return structured data to the platform.
 
@@ -220,6 +221,30 @@ The current connector has successfully handled:
 - Transition into round 2
 - Hole-by-hole scoring in round 2
 - Completed two-round tournament
+
+## Tournytt lessons learned
+
+Tournytt exposes leaderboard data through a Server-Sent Events (SSE) API rather than requiring HTML scraping.
+
+The connector communicates directly with the API and receives structured JSON.
+
+Observed behavior:
+
+- Player entries are published before play starts.
+- Baseline creation therefore differs from GolfBox.
+- Leaderboard updates are published through the API.
+- State persistence and change detection work with the current implementation.
+
+The current connector has successfully demonstrated:
+
+- API communication
+- Player lookup
+- State persistence
+- Change detection
+- Notifications
+
+Notification formatting should be improved to better present Tournytt-specific fields.
+
 
 ## Design principles
 
