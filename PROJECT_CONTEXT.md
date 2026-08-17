@@ -27,6 +27,7 @@ Current connectors:
 
 - `sgf_ranking`
 - `golfbox_leaderboard`
+- `tournytt_api`
 
 Current notification provider:
 
@@ -67,7 +68,11 @@ Verified:
 
 ### GolfBox Leaderboard
 
-Verified with both Haninge Golfklubb and Strängnäs Golfklubb.
+Verified with:
+
+- Haninge Golfklubb
+- Strängnäs Golfklubb
+- NSGK (Hylinge)
 
 Verified lifecycle:
 
@@ -81,6 +86,24 @@ Verified lifecycle:
 - Completed two-round tournament
 
 The Strängnäs test verified that a platform-level GolfBox connector can be reused across different club websites.
+
+### Tournytt API
+
+Verified:
+
+- SSE API communication
+- Player lookup
+- Baseline creation
+- Change detection
+- State persistence
+- GitHub state updates
+- Notifications
+
+Observed behavior:
+
+- Player entries are published before play starts.
+- Baseline is therefore created before the first score.
+- Notification formatting should be improved to better present Tournytt-specific fields.
 
 ## Important current limitations
 
@@ -175,8 +198,6 @@ Combined validation covered:
 The connector required no site-specific implementation beyond selecting the correct competition/leaderboard.
 
 The GolfBox validation phase is considered complete.
-
-The next major validation target is Tournytt.
 
 ### Completed validation – Tournytt
 
