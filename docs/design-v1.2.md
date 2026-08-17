@@ -8,15 +8,37 @@ Nothing in this document is considered an architectural decision until explicitl
 
 Unified Connector Interface
 
-Current question:
+## Design question
 
-Should connectors receive:
+Define the connector execution context.
 
-- `watch`
+The goal is to establish one common public interface for every connector while allowing different acquisition technologies.
 
-or
+The connector should not need to know how the platform was started.
 
-- `context`
+The platform should not need to know how the connector acquires data.
+
+## Candidate Context
+
+Current proposal:
+
+context
+
+├── watch
+│   ├── name
+│   ├── connector
+│   ├── mode
+│   ├── player
+│   ├── competition (optional)
+│   ├── leaderboard (optional)
+│   └── future connector-specific configuration
+│
+└── page (optional)
+
+`page` is supplied only for connectors that require Playwright.
+
+API-based connectors simply ignore it.
+
 
 Current observations:
 
