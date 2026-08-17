@@ -3,7 +3,9 @@ from playwright.sync_api import Page
 RANKING_URL = "https://golfdata.se/sgfranking/Rankinglista_ind"
 
 
-def fetch_player_snapshot(page: Page, player_name: str):
+def fetch_player_snapshot(watch: dict):
+    page = watch["page"]
+    player_name = watch["player"]
     page.goto(RANKING_URL, wait_until="domcontentloaded", timeout=120000)
     page.wait_for_timeout(3000)
 
