@@ -95,7 +95,7 @@ def extract_player_snapshot(data: dict, player_name: str):
 
     return None
 
-def fetch_player_snapshot(watch: dict):
+def fetch_player_snapshot(competition_id, player_name)
     competition_id = watch["competition"]
     player_name = watch["player"]
 
