@@ -95,7 +95,10 @@ def extract_player_snapshot(data: dict, player_name: str):
 
     return None
 
-def fetch_player_snapshot(competition_id: int, player_name: str):
+def fetch_player_snapshot(watch: dict):
+    competition_id = watch["competition"]
+    player_name = watch["player"]
+
     data = fetch_leaderboard_json(competition_id)
 
     if data is None:
