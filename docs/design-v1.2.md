@@ -52,6 +52,34 @@ SGF Ranking requires:
 - Playwright page
 - player
 
+## Design Questions
+
+### DQ1 – Who owns data acquisition?
+
+Should the Event Platform core create and manage shared resources (such as Playwright), or should each connector own its complete acquisition technology?
+
+### DQ2 – What is the connector contract?
+
+Should connectors receive:
+
+- watch
+
+or
+
+- context
+
+or something else?
+
+### DQ3 – What belongs in a Watch?
+
+Which fields are part of the generic watch contract?
+
+Which fields are connector-specific?
+
+### DQ4 – How should connector-specific configuration be represented?
+
+Should connector-specific parameters remain top-level fields or be grouped under a dedicated configuration section?
+
 Goal:
 
 Design a connector contract that removes connector-specific logic from `watcher.py`.
