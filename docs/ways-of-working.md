@@ -99,6 +99,10 @@ Avoid partially implementing an architectural idea while the design is still evo
 
 If implementation has started before the design is stable, restore the project to a consistent working state before continuing.
 
+This rule applies to architectural refactorings only.
+
+Ordinary bug fixes and small incremental improvements should continue to follow the normal one-step development process.
+
 If new information suggests that the agreed plan should change:
 
 1. Explain what new information was discovered.
