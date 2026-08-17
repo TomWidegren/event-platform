@@ -22,6 +22,7 @@ Verified with:
 
 - Haninge Golfklubb
 - Strängnäs Golfklubb
+- NSGK (Hylinge)
 - Hole-by-hole live scoring
 - Position changes
 - Multi-round tournaments
@@ -35,6 +36,21 @@ Verified with:
 Monitors Swedish Golf Federation ranking data.
 
 Verified with daily monitoring and real ranking changes following completed competitions.
+
+### Tournytt API
+
+`connectors/tournytt_api.py`
+
+Monitors Tournytt competitions through the Tournytt Server-Sent Events (SSE) API.
+
+Verified with:
+
+- SSE API communication
+- Player lookup
+- State persistence
+- Change detection
+- Notifications
+
 
 ## Architecture
 
