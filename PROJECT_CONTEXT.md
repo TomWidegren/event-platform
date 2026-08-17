@@ -178,27 +178,28 @@ The GolfBox validation phase is considered complete.
 
 The next major validation target is Tournytt.
 
-### Active validation – Tournytt
+### Completed validation – Tournytt
 
-The next validation target is the Tournytt leaderboard implementation.
+The Tournytt API connector has been successfully validated.
 
-Goal:
+Validated capabilities:
 
-Determine whether the existing Tournytt implementation still works within the current Event Platform architecture or whether it should be refactored to match the current connector model.
+- SSE API communication
+- Player lookup
+- State persistence
+- Change detection
+- GitHub state updates
+- Notifications
 
-Do not generalize GolfBox configuration until the Tournytt validation has completed.
+Observations:
 
-The objective is to compare three different connector families before introducing additional abstraction.
+- Tournytt publishes complete player entries before play starts.
+- The connector correctly established a baseline before the first result.
+- Tournament updates were detected correctly during play.
 
-Current state:
+Known improvement:
 
-Tournytt connector created.
-
-SSE API verified.
-
-Connector integrated.
-
-Awaiting first populated LeaderboardEntries.
+- Notification formatting should be adapted to the Tournytt snapshot model.
 
 
 ## Context rule
