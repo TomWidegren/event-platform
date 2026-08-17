@@ -86,6 +86,19 @@ If uncertain, inspect the current file before proposing a change.
 
 ## 7. Do not change direction silently
 
+## Design before implementation
+
+For architectural refactorings:
+
+1. Complete the design phase first.
+2. Record the proposed design in a design draft.
+3. Review and agree on the design.
+4. Only then begin implementation.
+
+Avoid partially implementing an architectural idea while the design is still evolving.
+
+If implementation has started before the design is stable, restore the project to a consistent working state before continuing.
+
 If new information suggests that the agreed plan should change:
 
 1. Explain what new information was discovered.
