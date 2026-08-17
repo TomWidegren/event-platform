@@ -104,3 +104,19 @@ Example:
 Placering: 1204 → 1143
 Poäng: 4,32 → 5,30
 Tävlingar: 6 → 7
+
+### Improve Tournytt notification formatting
+
+Use the Tournytt snapshot fields to provide a richer notification.
+
+Possible fields include:
+
+- Position
+- Score
+- To par
+- Played holes
+- Class
+
+The connector already captures these values.
+
+The improvement is limited to presentation formatting.
