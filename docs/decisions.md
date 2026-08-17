@@ -272,3 +272,48 @@ Chat history or AI conversational context is not considered the project's source
 Conversation context is finite.
 
 Repository documentation allows future development sessions to reconstruct the necessary project context reliably.
+
+## D016 – Unified Connector Interface
+
+**Decision**
+
+Every connector must expose exactly one public function:
+
+`fetch_player_snapshot(watch: dict)`
+
+The connector is responsible for reading the configuration values it needs from the supplied watch configuration.
+
+Examples:
+
+- GolfBox may use:
+  - `competition`
+  - `leaderboard`
+  - `player`
+
+- Tournytt may use:
+  - `competition`
+  - `player`
+
+- SGF Ranking may use:
+  - `player`
+
+Internally, a connector may use any appropriate acquisition technology, for example:
+
+- Playwright
+- HTML parsing
+- JSON APIs
+- Server-Sent Events (SSE)
+- HTTP requests
+
+The Event Platform core must not know how a connector acquires its data.
+
+A connector returns either:
+
+- a normalized snapshot, or
+- `None`
+
+**Reason**
+
+This establishes a stable contract between the Event Platform core and all connectors.
+
+The core becomes independent of connector implementation details, allowing connectors to evolve independently while keeping `watcher.py` simple and technology-agnostic.
