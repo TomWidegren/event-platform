@@ -32,12 +32,8 @@ context
 │   ├── competition (optional)
 │   ├── leaderboard (optional)
 │   └── future connector-specific configuration
-│
-└── page (optional)
 
-`page` is supplied only for connectors that require Playwright.
-
-API-based connectors simply ignore it.
+Further context elements are intentionally left undefined until the context responsibilities have been designed.
 
 
 Current observations:
