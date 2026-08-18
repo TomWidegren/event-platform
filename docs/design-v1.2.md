@@ -112,6 +112,22 @@ The preferred alternative should:
 5. Avoid unnecessary resource usage where practical.
 6. Keep the connector contract simple and predictable.
 
+### Preferred direction
+
+Current preferred direction:
+
+Option B – Connector-owned acquisition.
+
+Reasoning:
+
+The Event Platform core should remain independent of acquisition technology.
+
+Each connector is responsible for its complete acquisition lifecycle and may choose the technology that best matches the external platform.
+
+The current implementation cost of starting Playwright independently in browser-based connectors is considered acceptable in exchange for a cleaner architecture.
+
+This direction has not yet been promoted to an architectural decision.
+
 ### DQ2 – What is the connector contract?
 
 Should connectors receive:
