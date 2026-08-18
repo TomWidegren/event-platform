@@ -101,6 +101,17 @@ Cons:
 - Browser-based connectors may each create their own browser instance.
 Should the Event Platform core create and manage shared resources (such as Playwright), or should each connector own its complete acquisition technology?
 
+## Evaluation Criteria
+
+The preferred alternative should:
+
+1. Keep the Event Platform core independent of acquisition technology.
+2. Keep connector responsibilities clearly separated from platform responsibilities.
+3. Allow new connectors to be added without modifying the platform core.
+4. Support both browser-based and API-based connectors.
+5. Avoid unnecessary resource usage where practical.
+6. Keep the connector contract simple and predictable.
+
 ### DQ2 – What is the connector contract?
 
 Should connectors receive:
