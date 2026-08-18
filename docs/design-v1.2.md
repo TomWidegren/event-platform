@@ -55,7 +55,50 @@ SGF Ranking requires:
 ## Design Questions
 
 ### DQ1 – Who owns data acquisition?
+Current alternatives:
 
+### Option A – Core-owned acquisition
+
+The Event Platform core owns shared acquisition resources.
+
+Examples:
+
+- Playwright browser
+- Browser pages
+
+Connectors receive access to those shared resources.
+
+Pros:
+
+- Browser startup happens only once.
+- Shared browser session.
+
+Cons:
+
+- The core becomes aware of acquisition technology.
+- API-based connectors receive resources they do not use.
+
+---
+
+### Option B – Connector-owned acquisition
+
+Each connector owns its complete acquisition technology.
+
+Examples:
+
+- GolfBox starts Playwright.
+- SGF Ranking starts Playwright.
+- Tournytt uses HTTP requests directly.
+
+Pros:
+
+- The core becomes independent of acquisition technology.
+- Each connector controls its own lifecycle.
+- New acquisition technologies require no changes to the core.
+
+Cons:
+
+- Browser-based connectors may each create their own browser instance.
 Should the Event Platform core create and manage shared resources (such as Playwright), or should each connector own its complete acquisition technology?
 
 ### DQ2 – What is the connector contract?
