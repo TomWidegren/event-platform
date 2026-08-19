@@ -120,3 +120,19 @@ Possible fields include:
 The connector already captures these values.
 
 The improvement is limited to presentation formatting.
+
+## Operational improvements
+
+### Investigate intermittent Daily execution hang
+
+A Daily execution appeared to hang after `RUN_MODE: daily` without producing additional output.
+
+Temporary debug logging was added to `sgf_ranking.py`.
+
+A subsequent execution completed successfully.
+
+Current status:
+
+- Issue not reproducible.
+- No connector changes made.
+- Keep debug logging temporarily until additional executions confirm stable behavior.
