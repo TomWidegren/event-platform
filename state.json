@@ -1,15 +1,15 @@
 {
   "sgf_ranking::::Lukas Widegren": {
-    "snapshot": "{\"birth_year\": \"2009\", \"club\": \"Haninge Golfklubb\", \"competitions\": \"7\", \"district\": \"Stockholm\", \"name\": \"Lukas Widegren\", \"points\": \"5,30\", \"position\": \"1143\", \"status\": \"A\"}",
+    "snapshot": "{\"birth_year\": \"2009\", \"club\": \"Haninge Golfklubb\", \"competitions\": \"8\", \"district\": \"Stockholm\", \"name\": \"Lukas Widegren\", \"points\": \"5,60\", \"position\": \"1140\", \"status\": \"A\"}",
     "fields": {
-      "position": "1143",
+      "position": "1140",
       "name": "Lukas Widegren",
       "birth_year": "2009",
       "club": "Haninge Golfklubb",
       "district": "Stockholm",
       "status": "A",
-      "points": "5,30",
-      "competitions": "7"
+      "points": "5,60",
+      "competitions": "8"
     }
   },
   "golfbox_leaderboard::5543525::Lukas Widegren": {
