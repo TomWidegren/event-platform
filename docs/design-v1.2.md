@@ -155,3 +155,9 @@ Goal:
 Design a connector contract that removes connector-specific logic from `watcher.py`.
 
 No implementation has been decided yet.
+
+## Design workshop status
+
+DQ1 has a preferred direction but no architectural decision has been made.
+
+Implementation remains intentionally paused until the design phase is complete.
