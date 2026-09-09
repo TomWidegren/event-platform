@@ -7,7 +7,7 @@ watches:
   - name: "Lukas Widegren - GolfBox"
     connector: golfbox_leaderboard
     mode: live
-    competition: 5543525
+    competition: 5801055
     player: "Lukas Widegren"
 
   - name: "Lukas Widegren - Tournytt"
