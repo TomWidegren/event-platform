@@ -5,8 +5,8 @@ from typing import List
 from playwright.sync_api import Page
 
 DEFAULT_LEADERBOARD_URL = (
-    "https://www.nsgk.se/tavla/"
-    "#/competition/5543525/leaderboard"
+    "https://www.golfbox.dk/livescoring/tour/?language=1053"
+    "#/competition/5801055/leaderboard"
 )
 
 LEADERBOARD_URL = os.getenv(
