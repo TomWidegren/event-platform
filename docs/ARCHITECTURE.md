@@ -71,7 +71,14 @@ rather than:
 `haninge`
 `strangnas`
 
-The GolfBox connector has been successfully tested against leaderboards hosted by both Haninge Golfklubb and Strängnäs Golfklubb.
+The GolfBox connector has been successfully validated across four real-world GolfBox deployments:
+
+- Haninge Golfklubb
+- Strängnäs Golfklubb
+- NSGK (Hylinge)
+- GolfBox Tournament (`golfbox.dk`)
+
+The `golfbox.dk` validation confirmed that the same connector works directly against the GolfBox Tournament site, without site-specific selector or parsing changes.
 
 ### Watcher
 
@@ -210,6 +217,19 @@ or:
 The connector should handle these variations.
 
 The GolfBox leaderboard changes structure during the lifecycle of an event.
+
+A multi-round event may use the `hole` field for different purposes during its lifecycle:
+
+- Before a round starts, it may contain the scheduled start time.
+- During a round, it contains the current hole.
+- After the tournament is complete, it contains `F`.
+
+During multi-round events:
+
+- Completed round scores are populated in the corresponding round fields.
+- `today` represents the current round.
+- `topar` represents the accumulated tournament score relative to par.
+- `total` represents the accumulated stroke total.
 
 The current connector has successfully handled:
 
