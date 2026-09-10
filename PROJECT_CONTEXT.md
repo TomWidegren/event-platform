@@ -73,7 +73,8 @@ Verified with:
 - Haninge Golfklubb
 - Strängnäs Golfklubb
 - NSGK (Hylinge)
-
+- GolfBox Tournament (`golfbox.dk`)
+  
 Verified lifecycle:
 
 - Empty leaderboard
@@ -85,7 +86,7 @@ Verified lifecycle:
 - Hole-by-hole scoring in round 2
 - Completed two-round tournament
 
-The Strängnäs test verified that a platform-level GolfBox connector can be reused across different club websites.
+The completed validations demonstrate that the platform-level GolfBox connector can be reused across different club websites and directly against the GolfBox Tournament site without site-specific parsing changes.
 
 ### Tournytt API
 
@@ -174,13 +175,14 @@ Before ending:
 
 ### Completed validation – GolfBox
 
-The GolfBox connector has now been successfully validated against three independent GolfBox implementations.
+The GolfBox connector has now been successfully validated across four real-world GolfBox deployments.
 
 Validated implementations:
 
 - Haninge Golfklubb
 - Strängnäs Golfklubb
 - NSGK (Hylinge)
+- GolfBox Tournament (`golfbox.dk`)
 
 Combined validation covered:
 
