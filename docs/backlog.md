@@ -12,11 +12,12 @@ They should be prioritized when planning a development session.
 
 ### GolfBox connector
 
-Successfully validated against three independent GolfBox implementations:
+Successfully validated across four real-world GolfBox deployments:
 
 - Haninge Golfklubb
 - Strängnäs Golfklubb
 - NSGK (Hylinge)
+- GolfBox Tournament (`golfbox.dk`)
 
 Verified:
 
