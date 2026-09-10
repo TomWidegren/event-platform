@@ -104,6 +104,7 @@ Example:
 Placering: 1204 → 1143
 Poäng: 4,32 → 5,30
 Tävlingar: 6 → 7
+```
 
 ### Improve Tournytt notification formatting
 
