@@ -23,6 +23,7 @@ Verified with:
 - Haninge Golfklubb
 - Strängnäs Golfklubb
 - NSGK (Hylinge)
+- GolfBox Tournament (`golfbox.dk`)
 - Hole-by-hole live scoring
 - Position changes
 - Multi-round tournaments
@@ -111,9 +112,10 @@ The Live schedule is normally enabled during an event and disabled between event
 ## Project Structure
 
 event-platform/  
-├── connectors/  
-│   ├── golfbox_leaderboard.py  
-│   └── sgf_ranking.py  
+├── connectors/
+│   ├── golfbox_leaderboard.py
+│   ├── sgf_ranking.py
+│   └── tournytt_api.py
 │  
 ├── docs/  
 │   ├── architecture.md  
