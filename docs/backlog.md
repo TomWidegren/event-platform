@@ -35,6 +35,31 @@ The validation provides sufficient evidence to begin generalizing the GolfBox co
 
 ### Generalize GolfBox configuration
 
+### Evaluate GolfBox hole-by-hole monitoring
+
+Evaluate whether GolfBox hole-by-hole data should be used to enrich live monitoring and notifications.
+
+The GolfBox `holebyhole` view has been verified to expose:
+
+- The same player row ID as the standard leaderboard
+- Individual elements for holes 1–18
+- Strokes per completed hole
+- Semantic score classes such as `score-bogey`
+
+Potential value:
+
+A live notification could include the latest completed hole, for example:
+
+```text
+Hål 10: 6 (bogey)
+Totalt: +2
+Placering: T32
+```
+
+The existing leaderboard monitoring should remain the primary GolfBox capability unless hole-by-hole data provides sufficient additional user value.
+
+This is an enhancement opportunity, not a requirement for the existing GolfBox connector.
+
 Move event-specific GolfBox parameters out of `golfbox_leaderboard.py` and into `config.yml`.
 
 Examples:
