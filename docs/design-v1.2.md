@@ -200,15 +200,13 @@ DQ2 is considered resolved for the v1.2 design.
 
 ### DQ3 – What belongs in a Watch and how should connector-specific configuration be represented?
 
-A Watch contains both information used by the Event Platform core and information required by the selected connector.
+A Watch contains information used by the Event Platform core together with configuration required by the selected connector.
 
-Current question:
-
-Should generic and connector-specific fields remain at the same level, or should connector-specific configuration be grouped separately?
-
-Two models will be evaluated:
+Two models were considered:
 
 #### Option A – Flat Watch
+
+Generic and connector-specific fields coexist at the top level.
 
 Example:
 
@@ -221,27 +219,61 @@ competition: 5801055
 leaderboard: ...
 ```
 
-Generic and connector-specific fields coexist at the top level.
+This is simple for the current golf use cases but mixes platform-level concepts with connector-specific concepts.
+
+It also assumes that fields such as `player` are generic, while future watches may monitor different types of entities.
 
 #### Option B – Structured Watch
 
-Example:
+The generic Watch contains only fields understood by the Event Platform core.
+
+Connector-specific configuration is grouped under `source`.
+
+GolfBox example:
 
 ```yaml
 name: "Lukas Widegren - GolfBox"
 connector: golfbox_leaderboard
 mode: live
-player: "Lukas Widegren"
 
 source:
+  player: "Lukas Widegren"
   competition: 5801055
   leaderboard: ...
 ```
 
-Generic Watch fields remain at the top level while connector-specific configuration is grouped under `source`.
+Future team-based example:
 
-No preferred direction has been selected yet.
-## Design workshop status
+```yaml
+name: "TTIBK match"
+connector: <future_connector>
+mode: live
+
+source:
+  team: "TTIBK"
+  ...
+```
+
+This creates a clear responsibility boundary:
+
+- The Event Platform core understands `name`, `connector`, `mode` and `source`.
+- The selected connector owns and interprets everything inside `source`.
+- The core does not need to understand whether the monitored entity is a player, team or another future entity type.
+
+### Preferred direction
+
+Current preferred direction:
+
+**Option B – Structured Watch.**
+
+Reasoning:
+
+- It clearly separates platform configuration from connector-specific configuration.
+- It avoids making golf-specific concepts such as `player` part of the generic platform model.
+- New connector-specific parameters can be introduced without expanding the core Watch contract.
+- It supports future non-golf use cases without requiring the core to understand new entity types.
+
+This direction has not yet been marked as resolved.## Design workshop status
 
 DQ1 has a preferred direction but no architectural decision has been made.
 
