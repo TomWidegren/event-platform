@@ -133,15 +133,58 @@ DQ1 is considered resolved for the v1.2 design.
 
 ### DQ2 – What is the connector contract?
 
-Should connectors receive:
+The connector contract defines how the Event Platform core requests the current state from any connector.
 
-- watch
+Current alternatives:
 
-or
+#### Option A – Watch as connector input
 
-- context
+Every connector exposes:
 
-or something else?
+`fetch_player_snapshot(watch)`
+
+The Watch represents the monitoring request.
+
+The connector reads the fields it needs from the Watch and owns the complete process of acquiring and normalizing the external data.
+
+Examples:
+
+- SGF Ranking uses `player`.
+- Tournytt uses `player` and `competition`.
+- GolfBox uses `player` and GolfBox-specific competition/leaderboard configuration.
+
+The connector returns:
+
+- a normalized snapshot when the requested entity can be observed, or
+- `None` when no relevant observation is available.
+
+#### Option B – Explicit parameters
+
+The core supplies parameters such as player, competition and leaderboard explicitly.
+
+This makes individual function parameters visible but requires the core to understand connector-specific requirements.
+
+#### Option C – Separate connector context object
+
+The core constructs a dedicated connector input/context object.
+
+This provides another abstraction layer but no current requirement has been identified that cannot be satisfied by the Watch itself.
+
+### Preferred direction
+
+Current preferred direction:
+
+**Option A – Watch as connector input.**
+
+Reasoning:
+
+- A Watch naturally represents the monitoring request.
+- Different connectors can consume different fields without requiring connector-specific logic in the core.
+- The interface remains identical for all connectors.
+- New connector-specific configuration can be introduced without changing the core.
+- Following DQ1, acquisition resources such as Playwright no longer need to be passed through the connector interface.
+
+This direction has not yet been marked as resolved.
 
 ### DQ3 – What belongs in a Watch?
 
