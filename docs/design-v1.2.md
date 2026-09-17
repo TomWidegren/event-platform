@@ -184,7 +184,19 @@ Reasoning:
 - New connector-specific configuration can be introduced without changing the core.
 - Following DQ1, acquisition resources such as Playwright no longer need to be passed through the connector interface.
 
-This direction has not yet been marked as resolved.
+### DQ2 – Design conclusion
+
+**Resolved direction: Option A – Watch as connector input.**
+
+Every connector will expose the same public interface:
+
+`fetch_player_snapshot(watch)`
+
+The Watch represents the monitoring request.
+
+Each connector determines which Watch fields it requires, owns its complete acquisition and normalization process, and returns either a normalized snapshot or `None`.
+
+DQ2 is considered resolved for the v1.2 design.
 
 ### DQ3 – What belongs in a Watch?
 
