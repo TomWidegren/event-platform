@@ -8,49 +8,25 @@ Nothing in this document is considered an architectural decision until explicitl
 
 Unified Connector Interface
 
-## Design question
+## Design goal
 
-Define the connector execution context.
+Define a unified connector interface that keeps the Event Platform core independent of source-specific acquisition technology and configuration.
 
-The goal is to establish one common public interface for every connector while allowing different acquisition technologies.
+The emerging v1.2 design is:
 
-The connector should not need to know how the platform was started.
-
-The platform should not need to know how the connector acquires data.
-
-## Candidate Context
-
-Current proposal:
-
-context
-
-├── watch
-│   ├── name
-│   ├── connector
-│   ├── mode
-│   ├── player
-│   ├── competition (optional)
-│   ├── leaderboard (optional)
-│   └── future connector-specific configuration
-
-Further context elements are intentionally left undefined until the context responsibilities have been designed.
-
-
-Current observations:
-
-GolfBox requires:
-
-- Playwright page
-- watch configuration
-
-Tournytt requires:
-
-- watch configuration only
-
-SGF Ranking requires:
-
-- Playwright page
-- player
+```text
+Watch
+├── name
+├── connector
+├── mode
+└── source
+     └── connector-specific configuration
+          ↓
+       Connector
+          ↓
+   External source
+          ↓
+ Normalized snapshot
 
 ## Design Questions
 
