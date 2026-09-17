@@ -198,22 +198,49 @@ Each connector determines which Watch fields it requires, owns its complete acqu
 
 DQ2 is considered resolved for the v1.2 design.
 
-### DQ3 – What belongs in a Watch?
+### DQ3 – What belongs in a Watch and how should connector-specific configuration be represented?
 
-Which fields are part of the generic watch contract?
+A Watch contains both information used by the Event Platform core and information required by the selected connector.
 
-Which fields are connector-specific?
+Current question:
 
-### DQ4 – How should connector-specific configuration be represented?
+Should generic and connector-specific fields remain at the same level, or should connector-specific configuration be grouped separately?
 
-Should connector-specific parameters remain top-level fields or be grouped under a dedicated configuration section?
+Two models will be evaluated:
 
-Goal:
+#### Option A – Flat Watch
 
-Design a connector contract that removes connector-specific logic from `watcher.py`.
+Example:
 
-No implementation has been decided yet.
+```yaml
+name: "Lukas Widegren - GolfBox"
+connector: golfbox_leaderboard
+mode: live
+player: "Lukas Widegren"
+competition: 5801055
+leaderboard: ...
+```
 
+Generic and connector-specific fields coexist at the top level.
+
+#### Option B – Structured Watch
+
+Example:
+
+```yaml
+name: "Lukas Widegren - GolfBox"
+connector: golfbox_leaderboard
+mode: live
+player: "Lukas Widegren"
+
+source:
+  competition: 5801055
+  leaderboard: ...
+```
+
+Generic Watch fields remain at the top level while connector-specific configuration is grouped under `source`.
+
+No preferred direction has been selected yet.
 ## Design workshop status
 
 DQ1 has a preferred direction but no architectural decision has been made.
