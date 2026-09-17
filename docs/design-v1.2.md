@@ -27,6 +27,7 @@ Watch
    External source
           ↓
  Normalized snapshot
+```
 
 ## Design Questions
 
