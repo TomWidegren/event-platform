@@ -270,6 +270,14 @@ DQ3 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
-DQ1 has a preferred direction but no architectural decision has been made.
+DQ1, DQ2 and DQ3 are resolved within the v1.2 design draft.
 
-Implementation remains intentionally paused until the design phase is complete.
+Current resolved directions:
+
+- DQ1 – Connectors own their complete data-acquisition lifecycle.
+- DQ2 – Every connector exposes `fetch_player_snapshot(watch)`.
+- DQ3 – Watches use a structured model with generic `name`, `connector`, `mode` and `source` fields. The selected connector owns and interprets the contents of `source`.
+
+These are design conclusions, not yet architectural decisions.
+
+Implementation remains intentionally paused until the complete v1.2 design has been reviewed and approved.
