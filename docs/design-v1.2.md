@@ -112,21 +112,24 @@ The preferred alternative should:
 5. Avoid unnecessary resource usage where practical.
 6. Keep the connector contract simple and predictable.
 
-### Preferred direction
+### DQ1 – Design conclusion
 
-Current preferred direction:
+**Resolved direction: Option B – Connector-owned acquisition.**
 
-Option B – Connector-owned acquisition.
+Each connector owns its complete data-acquisition lifecycle.
 
-Reasoning:
+Examples:
 
-The Event Platform core should remain independent of acquisition technology.
+- GolfBox owns its Playwright usage.
+- SGF Ranking owns its Playwright usage.
+- Tournytt owns its HTTP/SSE communication.
+- Future connectors may use other acquisition technologies without requiring changes to the Event Platform core.
 
-Each connector is responsible for its complete acquisition lifecycle and may choose the technology that best matches the external platform.
+The Event Platform core should not know about or manage acquisition technologies such as Playwright, HTTP, SSE or future source-specific technologies.
 
-The current implementation cost of starting Playwright independently in browser-based connectors is considered acceptable in exchange for a cleaner architecture.
+The additional resource cost of browser-based connectors independently managing Playwright is considered acceptable at the current scale in exchange for clearer separation of responsibilities.
 
-This direction has not yet been promoted to an architectural decision.
+DQ1 is considered resolved for the v1.2 design.
 
 ### DQ2 – What is the connector contract?
 
