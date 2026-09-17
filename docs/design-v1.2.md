@@ -273,7 +273,25 @@ Reasoning:
 - New connector-specific parameters can be introduced without expanding the core Watch contract.
 - It supports future non-golf use cases without requiring the core to understand new entity types.
 
-This direction has not yet been marked as resolved.## Design workshop status
+### DQ3 – Design conclusion
+
+**Resolved direction: Option B – Structured Watch.**
+
+The generic Watch contains only:
+
+- `name`
+- `connector`
+- `mode`
+- `source`
+
+The Event Platform core understands the generic Watch structure but does not interpret the contents of `source`.
+
+The selected connector owns and interprets everything inside `source`, including the monitored entity and any source-specific identifiers or configuration.
+
+DQ3 is considered resolved for the v1.2 design.
+
+
+## Design workshop status
 
 DQ1 has a preferred direction but no architectural decision has been made.
 
