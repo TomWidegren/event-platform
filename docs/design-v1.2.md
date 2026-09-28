@@ -291,7 +291,19 @@ Describes the connector's responsibility without assuming what type of entity is
 
 Also generic, but describes retrieval rather than the connector's current-state acquisition responsibility.
 
-No preferred direction has been selected yet.
+### DQ4 – Design conclusion
+
+**Resolved direction: Option B – `fetch_snapshot(watch)`.**
+
+The connector interface uses generic terminology that does not assume what type of entity is being monitored.
+
+Every connector will expose:
+
+`fetch_snapshot(watch)`
+
+The connector fetches the current state from its external source, normalizes it and returns either a snapshot or `None`.
+
+DQ4 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
