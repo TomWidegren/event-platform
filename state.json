@@ -1,5 +1,5 @@
 {
-  "sgf_ranking::::Lukas Widegren": {
+  "lukas-sgf-ranking": {
     "snapshot": "{\"birth_year\": \"2009\", \"club\": \"Haninge Golfklubb\", \"competitions\": \"7\", \"district\": \"Stockholm\", \"name\": \"Lukas Widegren\", \"points\": \"5,42\", \"position\": \"1146\", \"status\": \"A\"}",
     "fields": {
       "position": "1146",
@@ -12,7 +12,7 @@
       "competitions": "7"
     }
   },
-  "golfbox_leaderboard::5543525::Lukas Widegren": {
+  "lukas-golfbox": {
     "snapshot": "{\"club\": \"Haninge Golfklubb\", \"hole\": \"F\", \"name\": \"WIDEGREN, Lukas\", \"position\": \"64\", \"r1\": \"87\", \"r2\": \"81\", \"today\": \"+9\", \"topar\": \"+24\", \"total\": \"168\"}",
     "fields": {
       "position": "64",
@@ -26,7 +26,7 @@
       "total": "168"
     }
   },
-  "tournytt_api::5406076::Lukas Widegren": {
+  "lukas-tournytt": {
     "snapshot": "{\"class\": \"Pojkar\", \"played_holes\": 18, \"position\": \"T8\", \"score\": 76, \"status\": 0, \"to_par\": \"+4\"}",
     "fields": {
       "class": "Pojkar",
