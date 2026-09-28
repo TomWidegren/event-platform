@@ -2,19 +2,25 @@ watches:
   - name: "Lukas Widegren - SGF Ranking"
     connector: sgf_ranking
     mode: daily
-    player: "Lukas Widegren"
+    source:
+      player: "Lukas Widegren"
+      ranking: "Pojkar (juniorer)"
+      year: 2026
+      club: "Haninge Golfklubb"
 
   - name: "Lukas Widegren - GolfBox"
     connector: golfbox_leaderboard
     mode: live
-    competition: 5801055
-    player: "Lukas Widegren"
+    source:
+      player: "Lukas Widegren"
+      competition: 5801055
 
   - name: "Lukas Widegren - Tournytt"
     connector: tournytt_api
     mode: live
-    competition: 5406076
-    player: "Lukas Widegren"
+    source:
+      player: "Lukas Widegren"
+      competition: 5406076
 
 ntfy:
   topic: "tom-widegren-golf-92fd71b8"
