@@ -1,4 +1,5 @@
 import json
+
 import requests
 
 
@@ -55,6 +56,7 @@ def fetch_leaderboard_json(competition_id: int):
 
     return None
 
+
 def extract_player_snapshot(data: dict, player_name: str):
     parts = player_name.strip().split(maxsplit=1)
 
@@ -95,7 +97,13 @@ def extract_player_snapshot(data: dict, player_name: str):
 
     return None
 
-def fetch_player_snapshot(competition_id: int, player_name: str):
+
+def fetch_snapshot(watch: dict):
+    source = watch["source"]
+
+    competition_id = source["competition"]
+    player_name = source["player"]
+
     data = fetch_leaderboard_json(competition_id)
 
     if data is None:
