@@ -307,13 +307,18 @@ DQ4 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
-DQ1, DQ2 and DQ3 are resolved within the v1.2 design draft.
+DQ1, DQ2, DQ3 and DQ4 are resolved within the v1.2 design draft.
 
 Current resolved directions:
 
 - DQ1 – Connectors own their complete data-acquisition lifecycle.
-- DQ2 – Every connector exposes `fetch_player_snapshot(watch)`.
+- DQ2 – Every connector receives the Watch through a common interface.
 - DQ3 – Watches use a structured model with generic `name`, `connector`, `mode` and `source` fields. The selected connector owns and interprets the contents of `source`.
+- DQ4 – Every connector exposes the generic public method `fetch_snapshot(watch)`.
+
+Together these establish the current proposed v1.2 connector contract:
+
+`Watch → Connector.fetch_snapshot(watch) → normalized snapshot or None`
 
 These are design conclusions, not yet architectural decisions.
 
