@@ -367,19 +367,20 @@ DQ5 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
-DQ1, DQ2, DQ3 and DQ4 are resolved within the v1.2 design draft.
+The v1.2 Unified Connector Interface design is complete.
 
-Current resolved directions:
+DQ1–DQ5 have been resolved and consolidated into architectural decision D016 in `decisions.md`.
 
-- DQ1 – Connectors own their complete data-acquisition lifecycle.
-- DQ2 – Every connector receives the Watch through a common interface.
-- DQ3 – Watches use a structured model with generic `name`, `connector`, `mode` and `source` fields. The selected connector owns and interprets the contents of `source`.
-- DQ4 – Every connector exposes the generic public method `fetch_snapshot(watch)`.
+The approved design establishes:
 
-Together these establish the current proposed v1.2 connector contract:
+- Connectors own their complete data-acquisition lifecycle.
+- Every connector exposes `fetch_snapshot(watch)`.
+- Watches use the generic structure `name`, `connector`, `mode` and `source`.
+- The selected connector owns and interprets everything inside `source`.
+- Snapshots are connector-defined normalized representations rather than a fixed platform-wide schema.
+- The Event Platform core remains responsible for connector selection, state persistence, change detection and notification triggering.
 
-`Watch → Connector.fetch_snapshot(watch) → normalized snapshot or None`
+The design phase is complete.
 
-These are design conclusions, not yet architectural decisions.
-
+Implementation has not yet started.
 Implementation remains intentionally paused until the complete v1.2 design has been reviewed and approved.
