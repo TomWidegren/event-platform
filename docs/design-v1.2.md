@@ -387,6 +387,7 @@ The Tournytt connector requires:
 source:
   player: "Lukas Widegren"
   competition: 5406076
+```
 
 ### SGF Ranking source
 
