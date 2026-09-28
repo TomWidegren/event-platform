@@ -365,6 +365,20 @@ A connector returns either:
 
 DQ5 is considered resolved for the v1.2 design.
 
+## Source identification
+
+A Watch identifies the Source through its selected connector.
+
+The Source determines which source-specific configuration is required.
+
+Current examples:
+
+- SGF Ranking
+- GolfBox Tournament
+- Tournytt leaderboard API
+
+A new connector should first identify the underlying Source before defining its source-specific configuration.
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
