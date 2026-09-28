@@ -693,18 +693,25 @@ DQ7 is considered resolved for the v1.2 design.
 
 The v1.2 Unified Connector Interface design is complete.
 
-DQ1–DQ5 have been resolved and consolidated into architectural decision D016 in `decisions.md`.
+DQ1–DQ7 have been resolved and consolidated into architectural decision D016 in `decisions.md`.
 
 The approved design establishes:
 
 - Connectors own their complete data-acquisition lifecycle.
 - Every connector exposes `fetch_snapshot(watch)`.
-- Watches use the generic structure `name`, `connector`, `mode` and `source`.
+- Watches use the generic structure `id`, `name`, `connector`, `mode` and `source`.
+- Watch `id` provides stable identity across executions.
 - The selected connector owns and interprets everything inside `source`.
 - Snapshots are connector-defined normalized representations rather than a fixed platform-wide schema.
-- The Event Platform core remains responsible for connector selection, state persistence, change detection and notification triggering.
+- Notification formatting is separated from both connector acquisition logic and Event Platform core logic.
+- The Event Platform core remains responsible for connector selection, state persistence, change detection and deciding when notifications should be triggered.
 
 The design phase is complete.
 
-Implementation has not yet started.
-Implementation remains intentionally paused until the complete v1.2 design has been reviewed and approved.
+Implementation is in progress according to the implementation plan.
+
+Phases 1–4 have been implemented.
+
+Daily monitoring with SGF Ranking and Live monitoring with GolfBox have been successfully verified through the migrated v1.2 architecture.
+
+Tournytt verification and final v1.2 verification remain before the implementation can be considered complete and released.
