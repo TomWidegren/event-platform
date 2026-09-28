@@ -224,6 +224,25 @@ Known improvement:
 
 - Notification formatting should be adapted to the Tournytt snapshot model.
 
+### v1.2 implementation status
+
+The Unified Connector Interface implementation is in progress.
+
+Completed and verified:
+
+- Connector-owned acquisition for SGF Ranking and GolfBox.
+- `fetch_snapshot(watch)` interface for all three current connectors.
+- Structured Watch configuration with stable Watch IDs.
+- One-time migration of active state to Watch IDs.
+- Separate notification formatting layer.
+- Daily verification with SGF Ranking.
+- Live verification with GolfBox.
+
+Remaining:
+
+- Verify Tournytt through the migrated implementation.
+- Complete final v1.2 verification.
+- Update release documentation and create the v1.2 release once verification is complete.
 
 ## Context rule
 
