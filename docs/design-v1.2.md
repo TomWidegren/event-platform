@@ -118,7 +118,7 @@ Current alternatives:
 
 Every connector exposes:
 
-`fetch_player_snapshot(watch)`
+`fetch_snapshot(watch)`
 
 The Watch represents the monitoring request.
 
@@ -167,7 +167,7 @@ Reasoning:
 
 Every connector will expose the same public interface:
 
-`fetch_player_snapshot(watch)`
+`fetch_snapshot(watch)`
 
 The Watch represents the monitoring request.
 
