@@ -379,6 +379,15 @@ Current examples:
 
 A new connector should first identify the underlying Source before defining its source-specific configuration.
 
+### Tournytt source
+
+The Tournytt connector requires:
+
+```yaml
+source:
+  player: "Lukas Widegren"
+  competition: 5406076
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
