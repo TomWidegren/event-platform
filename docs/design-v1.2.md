@@ -528,6 +528,40 @@ Example:
 
 ```yaml
 name: "Lukas Widegren - Tournytt"
+```
+
+Pros:
+
+- No additional Watch field.
+- Simple and human-readable.
+- Compatible with the current configuration model.
+
+Cons:
+
+- Renaming a Watch changes its identity unless a migration mechanism is provided.
+
+#### Option B – Introduce a dedicated `id`
+
+Each Watch receives a stable technical identifier separate from its display name.
+
+Example:
+
+```yaml
+id: "lukas-widegren-tournytt"
+name: "Lukas Widegren - Tournytt"
+```
+
+Pros:
+
+- Display name can change without changing state identity.
+- Explicit technical identity.
+
+Cons:
+
+- Adds another generic Watch field.
+- Requires users to manage an additional identifier.
+
+No preferred direction has been selected yet.
 
 ## Design workshop status
 
