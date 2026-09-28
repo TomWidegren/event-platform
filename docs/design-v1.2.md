@@ -451,60 +451,97 @@ If future real-world validation shows that direct GolfBox access cannot support 
 
 ## Implementation plan
 
-The v1.2 migration should be implemented incrementally.
+The v1.2 migration is implemented incrementally.
 
 ### Phase 1 – Connector migration
 
-Migrate each connector to the approved interface:
+**Status: Completed**
+
+All three current connectors have been migrated to the approved interface:
 
 `fetch_snapshot(watch)`
 
-Each connector should:
+Completed:
 
-- read its configuration from `watch["source"]`,
-- own its complete acquisition lifecycle,
-- return its existing normalized snapshot structure or `None`.
+- Tournytt reads its configuration from `watch["source"]`.
+- SGF Ranking reads its configuration from `watch["source"]` and owns its Playwright lifecycle.
+- GolfBox reads its configuration from `watch["source"]`, owns its Playwright lifecycle and resolves the GolfBox access URL from source configuration.
 
-Recommended order:
+The connectors retain their existing normalized snapshot structures.
 
-1. Tournytt
-2. SGF Ranking
-3. GolfBox
+### Phase 2 – Watch and state migration
 
-Each connector should be verified before proceeding where practical.
+**Status: Completed**
 
-### Phase 2 – Watch configuration migration
+`config.yml` has been migrated to the Structured Watch model:
 
-Migrate `config.yml` to the Structured Watch model:
-
+- `id`
 - `name`
 - `connector`
 - `mode`
 - `source`
 
-Move all source-specific configuration under `source`.
+All source-specific configuration has been moved under `source`.
 
-### Phase 3 – Core migration
+Stable Watch IDs have been introduced:
+
+- `lukas-sgf-ranking`
+- `lukas-golfbox`
+- `lukas-tournytt`
+
+Existing active state has been migrated from legacy state keys to the corresponding Watch IDs without changing snapshot or field content.
+
+Legacy state belonging to inactive Watches does not need to be migrated.
+
+### Phase 3 – Notification formatting separation
+
+**Status: Not started**
+
+Move connector-specific notification formatting out of the Event Platform core.
+
+Notification formatting should be handled by a separate formatting layer according to DQ7.
+
+The formatting layer should:
+
+- receive the relevant Watch and snapshot,
+- interpret connector-specific snapshot fields,
+- return user-facing notification content.
+
+The core should decide when a notification is triggered without interpreting connector-specific snapshot fields.
+
+### Phase 4 – Core migration
+
+**Status: Not started**
 
 Refactor `watcher.py` so that it:
 
+- uses `watch["id"]` as the persistent state key,
 - selects the configured connector,
 - calls `fetch_snapshot(watch)`,
 - contains no connector-specific acquisition logic,
-- no longer owns Playwright.
+- no longer owns Playwright,
+- contains no connector-specific notification formatting.
 
-Remove the temporary Tournytt-specific branching from the core.
+Remove:
 
-### Phase 4 – Verification
+- the temporary Tournytt-specific branching,
+- connector-specific parameter extraction,
+- Playwright lifecycle management,
+- connector-specific formatting logic.
+
+### Phase 5 – Verification
+
+**Status: Not started**
 
 Manually verify:
 
 - Daily monitoring with SGF Ranking
 - Live execution with GolfBox
 - Live execution with Tournytt where practical
-- State persistence
+- Watch ID based state persistence
 - Change detection
-- Notifications
+- Notification formatting
+- Notification delivery
 
 Only after successful verification should v1.2 be considered implemented.
 
