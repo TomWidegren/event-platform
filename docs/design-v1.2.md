@@ -388,6 +388,24 @@ source:
   player: "Lukas Widegren"
   competition: 5406076
 
+### SGF Ranking source
+
+The SGF Ranking connector requires:
+
+```yaml
+source:
+  player: "Lukas Widegren"
+  ranking: "Pojkar (juniorer)"
+  year: 2026
+  club: "Haninge Golfklubb"
+```
+
+These values identify what should be monitored in the SGF Ranking source.
+
+The current implementation hard-codes `ranking`, `year` and `club`. In v1.2 these values should move into the Watch configuration under `source`.
+
+Technical acquisition details such as the SGF Ranking URL, Playwright selectors and browser handling remain internal connector implementation details.
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
