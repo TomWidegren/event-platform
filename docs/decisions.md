@@ -283,10 +283,15 @@ All Event Platform connectors use the same public interface:
 
 A Watch has the generic structure:
 
+- `id`
 - `name`
 - `connector`
 - `mode`
 - `source`
+
+`id` is the stable technical identity of the Watch across executions.
+
+The Watch `id` must remain stable once the Watch has persistent state. Human-readable `name` and source-specific configuration may change without changing the Watch identity.
 
 The Event Platform core understands the generic Watch structure but does not interpret the contents of `source`.
 
@@ -302,7 +307,7 @@ Examples may include:
 - team
 - competition ID
 - leaderboard ID
-- other future source-specific parameters
+- other future source-specific parameters.
 
 Each connector owns its complete data-acquisition lifecycle.
 
@@ -329,21 +334,36 @@ Each connector defines a stable normalized snapshot appropriate to its external 
 The Event Platform core owns:
 
 - connector selection,
-- state persistence,
+- state persistence using the Watch `id`,
 - snapshot comparison,
 - change detection,
-- notification triggering.
+- deciding when a notification should be triggered.
+
+Notification formatting is handled by a separate formatting layer.
+
+Notification formatters:
+
+- interpret connector-specific snapshot fields,
+- create user-facing notification content,
+- remain separate from connector acquisition logic and Event Platform core logic.
+
+The notification provider is responsible for delivering the formatted notification.
 
 **Reason**
 
-This creates a stable boundary between the Event Platform core and source-specific connector implementations.
+This creates stable boundaries between the Event Platform core, source-specific connectors and notification presentation.
 
 The core remains independent of:
 
 - acquisition technology,
 - monitored entity type,
 - source-specific configuration,
-- connector-specific snapshot fields.
+- connector-specific snapshot fields,
+- connector-specific notification presentation.
+
+Stable Watch IDs allow source configuration and human-readable names to evolve without creating new state baselines.
+
+Separating notification formatting allows presentation to evolve without adding source-specific interpretation to either the connector or the Event Platform core.
 
 New connectors and future non-golf use cases can therefore be introduced without expanding the platform core with source-specific concepts.
 
