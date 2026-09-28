@@ -448,6 +448,65 @@ Club-specific URLs and other acquisition details are not part of the Watch confi
 
 If future real-world validation shows that direct GolfBox access cannot support a required deployment, this assumption and source model should be revisited.
 
+## Implementation plan
+
+The v1.2 migration should be implemented incrementally.
+
+### Phase 1 – Connector migration
+
+Migrate each connector to the approved interface:
+
+`fetch_snapshot(watch)`
+
+Each connector should:
+
+- read its configuration from `watch["source"]`,
+- own its complete acquisition lifecycle,
+- return its existing normalized snapshot structure or `None`.
+
+Recommended order:
+
+1. Tournytt
+2. SGF Ranking
+3. GolfBox
+
+Each connector should be verified before proceeding where practical.
+
+### Phase 2 – Watch configuration migration
+
+Migrate `config.yml` to the Structured Watch model:
+
+- `name`
+- `connector`
+- `mode`
+- `source`
+
+Move all source-specific configuration under `source`.
+
+### Phase 3 – Core migration
+
+Refactor `watcher.py` so that it:
+
+- selects the configured connector,
+- calls `fetch_snapshot(watch)`,
+- contains no connector-specific acquisition logic,
+- no longer owns Playwright.
+
+Remove the temporary Tournytt-specific branching from the core.
+
+### Phase 4 – Verification
+
+Manually verify:
+
+- Daily monitoring with SGF Ranking
+- Live execution with GolfBox
+- Live execution with Tournytt where practical
+- State persistence
+- Change detection
+- Notifications
+
+Only after successful verification should v1.2 be considered implemented.
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
