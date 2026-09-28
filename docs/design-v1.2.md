@@ -406,6 +406,24 @@ The current implementation hard-codes `ranking`, `year` and `club`. In v1.2 thes
 
 Technical acquisition details such as the SGF Ranking URL, Playwright selectors and browser handling remain internal connector implementation details.
 
+### GolfBox source assumption
+
+For v1.2, `golfbox_leaderboard` is designed around GolfBox as the underlying Source rather than individual club websites.
+
+The existing real-world validations include:
+
+- Haninge Golfklubb
+- Strängnäs Golfklubb
+- NSGK (Hylinge)
+- GolfBox Tournament (`golfbox.dk`)
+
+The first three validations were performed through club websites using GolfBox, while the fourth was performed directly against GolfBox Tournament.
+
+For the v1.2 design, we assume that future GolfBox Watches can be resolved directly through the underlying GolfBox Source.
+
+This is a design assumption, not a claim that every historical or future GolfBox deployment has been verified to support direct access in the same way.
+
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
