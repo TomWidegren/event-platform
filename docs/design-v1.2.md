@@ -508,6 +508,27 @@ Manually verify:
 
 Only after successful verification should v1.2 be considered implemented.
 
+### DQ6 – What identifies a Watch across executions?
+
+The Event Platform must use a stable identity for each Watch so that state can persist across executions.
+
+The identity must remain independent of:
+
+- connector-specific fields,
+- monitored entity type,
+- acquisition technology.
+
+Current alternatives:
+
+#### Option A – Use `name` as Watch identity
+
+The Watch `name` is unique and acts as the persistent identity.
+
+Example:
+
+```yaml
+name: "Lukas Widegren - Tournytt"
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
