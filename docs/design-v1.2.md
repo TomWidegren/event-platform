@@ -583,6 +583,28 @@ The Watch `id` must remain stable once the Watch has persistent state.
 
 DQ6 is considered resolved for the v1.2 design.
 
+### Watch ID strategy
+
+Watch IDs are stable technical identifiers.
+
+For the current Watches:
+
+- `lukas-sgf-ranking`
+- `lukas-golfbox`
+- `lukas-tournytt`
+
+The ID should describe the persistent monitoring intent rather than transient source details such as competition IDs.
+
+Changing a competition or other source-specific configuration must therefore not require changing the Watch ID.
+
+Existing active state should be migrated once from the legacy state keys to the corresponding Watch IDs.
+
+The migration should preserve the existing snapshot and fields unchanged.
+
+Legacy state belonging to Watches that are no longer active does not need to be migrated.
+
+The Event Platform core should not contain permanent backward-compatibility logic for legacy state keys.
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
