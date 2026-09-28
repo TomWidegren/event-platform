@@ -633,7 +633,24 @@ Snapshot normalization remains connector-owned while notification formatting is 
 
 This creates a clearer separation but introduces another abstraction.
 
-No preferred direction has been selected yet.
+### DQ7 – Design conclusion
+
+**Resolved direction: Option C – Separate notification formatting layer.**
+
+Notification formatting is separate from both connector acquisition logic and Event Platform core logic.
+
+Responsibilities are:
+
+- Connectors acquire and normalize source-specific data.
+- The Event Platform core persists snapshots, detects changes and decides when a notification should be triggered.
+- Notification formatters interpret connector-specific snapshot fields and create user-facing notification content.
+- The notification provider delivers the formatted message.
+
+This allows notification presentation to evolve independently of both connectors and the Event Platform core.
+
+The core must not interpret connector-specific snapshot fields for presentation purposes.
+
+DQ7 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
