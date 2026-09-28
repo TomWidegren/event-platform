@@ -267,6 +267,31 @@ The selected connector owns and interprets everything inside `source`, including
 
 DQ3 is considered resolved for the v1.2 design.
 
+### DQ4 – What should the connector method be called?
+
+The connector interface should use terminology that remains valid beyond the current golf use cases.
+
+Current interface:
+
+`fetch_player_snapshot(watch)`
+
+This name is now considered potentially too specific because future Event Platform watches may monitor entities such as teams, matches or other non-player entities.
+
+Current alternatives:
+
+#### Option A – `fetch_player_snapshot(watch)`
+
+Keeps the current name but embeds the current player-based use case in the platform interface.
+
+#### Option B – `fetch_snapshot(watch)`
+
+Describes the connector's responsibility without assuming what type of entity is being monitored.
+
+#### Option C – `get_snapshot(watch)`
+
+Also generic, but describes retrieval rather than the connector's current-state acquisition responsibility.
+
+No preferred direction has been selected yet.
 
 ## Design workshop status
 
