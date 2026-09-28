@@ -423,6 +423,30 @@ For the v1.2 design, we assume that future GolfBox Watches can be resolved direc
 
 This is a design assumption, not a claim that every historical or future GolfBox deployment has been verified to support direct access in the same way.
 
+### GolfBox source
+
+The GolfBox connector uses GolfBox as its underlying Source.
+
+The proposed source configuration is:
+
+```yaml
+source:
+  player: "Lukas Widegren"
+  competition: 5801055
+  leaderboard: <optional leaderboard identifier>
+```
+
+`player` identifies the monitored player.
+
+`competition` identifies the GolfBox competition.
+
+`leaderboard` is optional and may be required when a GolfBox competition contains multiple leaderboard classes.
+
+The connector is responsible for resolving these identifiers into the appropriate GolfBox access mechanism.
+
+Club-specific URLs and other acquisition details are not part of the Watch configuration.
+
+If future real-world validation shows that direct GolfBox access cannot support a required deployment, this assumption and source model should be revisited.
 
 ## Design workshop status
 
