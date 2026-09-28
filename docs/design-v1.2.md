@@ -561,7 +561,27 @@ Cons:
 - Adds another generic Watch field.
 - Requires users to manage an additional identifier.
 
-No preferred direction has been selected yet.
+### DQ6 – Design conclusion
+
+**Resolved direction: Option B – Dedicated Watch ID.**
+
+Every Watch has a stable technical `id` that is separate from its human-readable `name`.
+
+The generic Watch structure therefore becomes:
+
+- `id`
+- `name`
+- `connector`
+- `mode`
+- `source`
+
+The Watch `id` is used as the persistent identity across executions.
+
+The `name` may change without changing the identity of the Watch or creating a new state baseline.
+
+The Watch `id` must remain stable once the Watch has persistent state.
+
+DQ6 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
