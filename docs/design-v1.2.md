@@ -605,6 +605,36 @@ Legacy state belonging to Watches that are no longer active does not need to be 
 
 The Event Platform core should not contain permanent backward-compatibility logic for legacy state keys.
 
+### DQ7 – Who owns notification formatting?
+
+The Event Platform core currently contains source-specific notification formatting.
+
+This conflicts with the v1.2 design principle that the core should not interpret connector-specific snapshot fields.
+
+The design must therefore define where notification formatting belongs.
+
+Current alternatives:
+
+#### Option A – Core-owned formatting
+
+The core interprets snapshot fields and constructs the notification message.
+
+This keeps notification generation centralized but makes the core aware of connector-specific snapshot structures.
+
+#### Option B – Connector-owned formatting
+
+The connector provides the notification representation together with the normalized snapshot.
+
+This keeps source-specific interpretation inside the connector but couples notification presentation to the connector.
+
+#### Option C – Separate notification formatting layer
+
+Snapshot normalization remains connector-owned while notification formatting is handled by a separate component that understands the relevant snapshot type.
+
+This creates a clearer separation but introduces another abstraction.
+
+No preferred direction has been selected yet.
+
 ## Design workshop status
 
 The v1.2 Unified Connector Interface design is complete.
