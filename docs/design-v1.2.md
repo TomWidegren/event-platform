@@ -305,6 +305,43 @@ The connector fetches the current state from its external source, normalizes it 
 
 DQ4 is considered resolved for the v1.2 design.
 
+### DQ5 – What is the snapshot contract?
+
+The connector returns the current normalized state for the requested Watch.
+
+The snapshot should not use a fixed platform-wide field structure.
+
+Different external sources can expose different information, and different Watches may require different subsets of that information.
+
+Examples:
+
+- GolfBox provides leaderboard and round-specific fields.
+- Tournytt provides fields such as score, position, to-par and played holes.
+- SGF Ranking provides ranking-specific fields such as position, points and competitions.
+- Future connectors may return completely different domain-specific information.
+
+The connector is responsible for:
+
+- selecting the relevant source data,
+- normalizing it into a stable structure,
+- returning the information needed to detect meaningful changes.
+
+The Event Platform core does not interpret connector-specific snapshot fields.
+
+Current alternatives:
+
+#### Option A – Fixed platform-wide snapshot schema
+
+All connectors return the same predefined set of fields.
+
+#### Option B – Connector-defined normalized snapshot
+
+Each connector returns a normalized dictionary appropriate to the source and Watch.
+
+The only platform-level requirement is that the returned value is suitable for state comparison and change detection.
+
+No preferred direction has been selected yet.
+
 ## Design workshop status
 
 DQ1, DQ2, DQ3 and DQ4 are resolved within the v1.2 design draft.
