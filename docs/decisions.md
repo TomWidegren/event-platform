@@ -277,43 +277,74 @@ Repository documentation allows future development sessions to reconstruct the n
 
 **Decision**
 
-Every connector must expose exactly one public function:
+All Event Platform connectors use the same public interface:
 
-`fetch_player_snapshot(watch: dict)`
+`fetch_snapshot(watch)`
 
-The connector is responsible for reading the configuration values it needs from the supplied watch configuration.
+A Watch has the generic structure:
 
-Examples:
+- `name`
+- `connector`
+- `mode`
+- `source`
 
-- GolfBox may use:
-  - `competition`
-  - `leaderboard`
-  - `player`
+The Event Platform core understands the generic Watch structure but does not interpret the contents of `source`.
 
-- Tournytt may use:
-  - `competition`
-  - `player`
+The selected connector owns and interprets everything inside `source`, including:
 
-- SGF Ranking may use:
-  - `player`
+- the monitored entity,
+- source-specific identifiers,
+- source-specific configuration.
 
-Internally, a connector may use any appropriate acquisition technology, for example:
+Examples may include:
+
+- player
+- team
+- competition ID
+- leaderboard ID
+- other future source-specific parameters
+
+Each connector owns its complete data-acquisition lifecycle.
+
+Acquisition technologies such as:
 
 - Playwright
+- HTTP
 - HTML parsing
 - JSON APIs
 - Server-Sent Events (SSE)
-- HTTP requests
+- future source-specific technologies
 
-The Event Platform core must not know how a connector acquires its data.
+are connector implementation details and are not managed by the Event Platform core.
 
 A connector returns either:
 
-- a normalized snapshot, or
-- `None`
+- a connector-defined normalized snapshot, or
+- `None` when no relevant observation is available.
+
+The snapshot does not use a fixed platform-wide field schema.
+
+Each connector defines a stable normalized snapshot appropriate to its external source and Watch.
+
+The Event Platform core owns:
+
+- connector selection,
+- state persistence,
+- snapshot comparison,
+- change detection,
+- notification triggering.
 
 **Reason**
 
-This establishes a stable contract between the Event Platform core and all connectors.
+This creates a stable boundary between the Event Platform core and source-specific connector implementations.
 
-The core becomes independent of connector implementation details, allowing connectors to evolve independently while keeping `watcher.py` simple and technology-agnostic.
+The core remains independent of:
+
+- acquisition technology,
+- monitored entity type,
+- source-specific configuration,
+- connector-specific snapshot fields.
+
+New connectors and future non-golf use cases can therefore be introduced without expanding the platform core with source-specific concepts.
+
+The design was derived from real-world experience with GolfBox, SGF Ranking and Tournytt and is documented in detail in `design-v1.2.md`.
