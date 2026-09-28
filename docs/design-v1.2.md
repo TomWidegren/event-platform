@@ -340,7 +340,30 @@ Each connector returns a normalized dictionary appropriate to the source and Wat
 
 The only platform-level requirement is that the returned value is suitable for state comparison and change detection.
 
-No preferred direction has been selected yet.
+### DQ5 – Design conclusion
+
+**Resolved direction: Option B – Connector-defined normalized snapshot.**
+
+Each connector defines the normalized snapshot structure appropriate to its external source and Watch.
+
+The Event Platform core does not require or interpret a fixed set of snapshot fields.
+
+A snapshot must:
+
+- represent the relevant current state of the Watch,
+- use a stable structure suitable for comparison between executions,
+- contain the information required to detect meaningful changes.
+
+The connector owns the meaning and normalization of connector-specific snapshot fields.
+
+The Event Platform core owns persistence and comparison of the returned snapshot.
+
+A connector returns either:
+
+- a normalized snapshot, or
+- `None` when no relevant observation is available.
+
+DQ5 is considered resolved for the v1.2 design.
 
 ## Design workshop status
 
