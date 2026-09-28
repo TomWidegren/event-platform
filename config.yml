@@ -1,5 +1,6 @@
 watches:
-  - name: "Lukas Widegren - SGF Ranking"
+  - id: "lukas-sgf-ranking"
+    name: "Lukas Widegren - SGF Ranking"
     connector: sgf_ranking
     mode: daily
     source:
@@ -8,14 +9,16 @@ watches:
       year: 2026
       club: "Haninge Golfklubb"
 
-  - name: "Lukas Widegren - GolfBox"
+  - id: "lukas-golfbox"
+    name: "Lukas Widegren - GolfBox"
     connector: golfbox_leaderboard
     mode: live
     source:
       player: "Lukas Widegren"
       competition: 5801055
 
-  - name: "Lukas Widegren - Tournytt"
+  - id: "lukas-tournytt"
+    name: "Lukas Widegren - Tournytt"
     connector: tournytt_api
     mode: live
     source:
