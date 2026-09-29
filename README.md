@@ -177,17 +177,23 @@ Conversation history or AI context should not be relied upon as the project's lo
 
 ## Current Direction
 
-The next development focus is to make adding or reusing connectors predictable and fast.
+v1.2 establishes the architectural foundation for adding and reusing connectors without introducing source-specific logic into the Event Platform core.
 
-Before creating a new connector:
+For a new monitoring need:
 
-1. Identify the underlying external platform.
+1. Identify the underlying external Source.
 2. Determine whether an existing connector can be reused.
-3. Only create a new connector when necessary.
+3. Define the required `source` configuration.
+4. If necessary, implement a new connector using `fetch_snapshot(watch)`.
+5. Define the notification formatter for the connector.
+6. Create the Watch with a stable Watch ID.
+7. Establish or migrate state as required.
+8. Verify change detection and notifications.
+9. Enable the appropriate execution schedule.
 
-The long-term target is that a new event on an already-supported platform should normally require configuration rather than Python changes.
+The target is that a new event on an already-supported Source should normally require Watch configuration changes only.
 
-See [`docs/backlog.md`](docs/backlog.md) for planned improvements.
+See [`docs/backlog.md`](docs/backlog.md) for identified future improvements.
 
 ## Releases
 
