@@ -6,7 +6,7 @@ Golf is the first use case, but the core architecture is designed to remain inde
 
 ## Current Status
 
-**Current production release: v1.1.0**
+**Current production release: v1.2.0**
 
 The platform has been verified in real-world operation with both live event monitoring and daily monitoring.
 
