@@ -187,13 +187,17 @@ The workflow must account for the possibility that `main` changes while an execu
 
 ### Change detection
 
-The platform compares the current connector snapshot with the previously stored snapshot.
+The Event Platform core compares the current normalized snapshot returned by the connector with the previously stored snapshot for the Watch.
 
-If the snapshots differ, the platform can send a notification and store the new state.
+The core does not interpret connector-specific snapshot fields.
 
-For live watches, the first real result is considered an event and should generate a notification.
+If the snapshots differ, the change is considered relevant and the platform can trigger a notification and persist the new state.
 
-For daily monitoring, the first observation establishes a baseline without generating a notification.
+For Live Watches, the first real observation is considered an event and should generate a notification.
+
+For Daily Watches, the first observation establishes a baseline without generating a notification.
+
+What constitutes a valid observation is determined by the connector through the snapshot it returns or `None`.
 
 ### Notifications
 
