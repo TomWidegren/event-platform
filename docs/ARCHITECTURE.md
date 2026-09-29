@@ -8,7 +8,7 @@ Golf is the first use case, but the platform should not depend on golf-specific 
 
 ## Current version
 
-Current production release: v1.1.0
+Current production release: v1.2.0
 
 The platform currently supports two types of monitoring:
 
@@ -23,13 +23,20 @@ Current connectors:
 
 ## High-level flow
 
-External data source
+Watch configuration
 → Connector
+→ External data source
+→ Normalized snapshot
 → `watcher.py`
-→ Compare with `state.json`
+→ Compare with Watch state in `state.json`
 → Detect change
+→ Notification formatter
 → ntfy
 → Subscriber devices
+
+Each connector owns its complete data-acquisition lifecycle.
+
+`watcher.py` remains independent of connector-specific acquisition technology and snapshot fields.
 
 GitHub Actions executes the platform.
 
