@@ -168,13 +168,22 @@ Different connectors may therefore use completely different source configuration
 
 ### State
 
-`state.json` stores the latest known state for each watch.
+`state.json` stores the latest known state for each Watch.
+
+Each Watch uses its stable `id` as the persistent state key.
+
+This allows source-specific configuration and the human-readable Watch name to change without creating a new state identity.
+
+Each active state entry contains:
+
+- the serialized normalized snapshot used for comparison,
+- the normalized snapshot fields returned by the connector.
 
 State allows separate executions of the platform to determine whether something has changed.
 
-Live and daily watches use separate state keys.
-
 GitHub Actions commits updated `state.json` back to the repository when state changes.
+
+The workflow must account for the possibility that `main` changes while an execution is running.
 
 ### Change detection
 
