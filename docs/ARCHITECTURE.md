@@ -348,16 +348,18 @@ The current connector has successfully demonstrated:
 
 Notification formatting should be improved to better present Tournytt-specific fields.
 
-
 ## Design principles
 
-1. Event Platform core should not depend on golf-specific logic.
+1. Event Platform core should not depend on golf-specific or other domain-specific logic.
 2. Connectors own external data acquisition and normalization.
-3. The core owns state, change detection and notifications.
-4. Scheduling remains external to the platform.
-5. Prefer platform-level connectors over website-specific connectors where the underlying technology is shared.
-6. Different monitoring needs may use different execution modes and schedules.
-7. Configuration should contain source-specific identifiers rather than hard-coding them inside reusable connectors.
+3. Connectors own their complete acquisition lifecycle and expose the common `fetch_snapshot(watch)` interface.
+4. The core owns state persistence, snapshot comparison, change detection and deciding when notifications should be triggered.
+5. Notification formatting is separate from both connector acquisition logic and core change-detection logic.
+6. Scheduling remains external to the platform.
+7. Prefer platform-level connectors over website-specific connectors where the underlying technology is shared.
+8. Watches use stable IDs and separate generic Watch configuration from connector-specific `source` configuration.
+9. Different monitoring needs may use different execution modes and schedules.
+10. Source-specific identifiers belong in `source` configuration rather than being hard-coded inside reusable connectors.
 
 ## Future direction
 
