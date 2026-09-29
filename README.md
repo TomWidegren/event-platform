@@ -164,12 +164,15 @@ Conversation history or AI context should not be relied upon as the project's lo
 
 ## Core Design Principles
 
-- Event Platform core should not depend on golf-specific logic.
-- Connectors acquire and normalize external data.
-- The core owns state, change detection and notifications.
+- Event Platform core should not depend on golf-specific or other domain-specific logic.
+- Connectors own external data acquisition and normalization.
+- Every connector exposes the common `fetch_snapshot(watch)` interface.
+- Watches use stable IDs and separate generic Watch configuration from connector-specific `source` configuration.
+- The core owns state persistence, snapshot comparison, change detection and deciding when notifications should be triggered.
+- Notification formatting is separate from both connector acquisition logic and core change-detection logic.
 - Scheduling remains external to the platform.
 - Prefer reusable platform-level connectors over website-specific connectors.
-- Source-specific identifiers should ultimately live in configuration rather than reusable connector code.
+- Source-specific identifiers belong in `source` configuration rather than reusable connector code.
 - Verify behavior against real events where practical.
 
 ## Current Direction
