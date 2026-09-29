@@ -531,19 +531,27 @@ Remove:
 
 ### Phase 5 – Verification
 
-**Status: Not started**
+**Status: Completed**
 
-Manually verify:
+Successfully verified:
 
-- Daily monitoring with SGF Ranking
-- Live execution with GolfBox
-- Live execution with Tournytt where practical
-- Watch ID based state persistence
-- Change detection
-- Notification formatting
-- Notification delivery
+- Daily monitoring with SGF Ranking through the migrated v1.2 architecture.
+- Live execution with GolfBox through the migrated v1.2 architecture.
+- Live execution with Tournytt through the migrated v1.2 architecture.
+- Watch ID based state persistence across separate executions.
+- Change detection using migrated state.
+- Notification formatting through the separate formatting layer.
+- Notification delivery through ntfy.
+- Unchanged snapshots correctly produce no notification.
 
-Only after successful verification should v1.2 be considered implemented.
+Verification included:
+
+- A real SGF Ranking change was detected, persisted and notified.
+- A subsequent SGF execution correctly reported no change.
+- GolfBox returned the expected completed-tournament snapshot and a subsequent execution correctly reported no change.
+- Tournytt matched its existing completed-tournament state and correctly reported no change.
+
+v1.2 is considered implemented and technically verified.
 
 ### DQ6 – What identifies a Watch across executions?
 
