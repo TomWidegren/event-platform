@@ -52,24 +52,37 @@ Verified with:
 - Change detection
 - Notifications
 
-
 ## Architecture
 
 High-level flow:
 
-External data source  
+Watch configuration  
 ↓  
 Connector  
 ↓  
+External data source  
+↓  
+Normalized snapshot  
+↓  
 `watcher.py`  
 ↓  
-`state.json`  
+State comparison and change detection  
 ↓  
-Change detection  
+Notification formatter  
 ↓  
 ntfy  
 ↓  
 Subscriber devices
+
+Every connector exposes the common interface:
+
+`fetch_snapshot(watch)`
+
+Connectors own source-specific acquisition and normalization.
+
+`watcher.py` remains independent of connector-specific acquisition technology and snapshot fields.
+
+Notification formatting is handled separately from both connector acquisition and core change-detection logic.
 
 Execution is triggered externally by cron-job.org.
 
