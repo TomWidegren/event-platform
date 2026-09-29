@@ -716,10 +716,21 @@ The approved design establishes:
 
 The design phase is complete.
 
-Implementation is in progress according to the implementation plan.
+Implementation phases 1–5 are complete.
 
-Phases 1–4 have been implemented.
+The migrated v1.2 architecture has been successfully verified with:
 
+- Daily monitoring using SGF Ranking.
+- Live monitoring using GolfBox.
+- Live monitoring using Tournytt.
+- Watch ID based state persistence.
+- Change detection.
+- Separate notification formatting.
+- Notification delivery through ntfy.
+
+v1.2 is implemented and technically verified.
+
+Release documentation and creation of the v1.2 release remain.
 Daily monitoring with SGF Ranking and Live monitoring with GolfBox have been successfully verified through the migrated v1.2 architecture.
 
 Tournytt verification and final v1.2 verification remain before the implementation can be considered complete and released.
