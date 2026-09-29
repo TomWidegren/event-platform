@@ -211,6 +211,32 @@ Introduced:
 - Reusable GolfBox leaderboard monitoring
 - Separate Daily and Live workflows
 
+### v1.2.0
+
+Introduced the Unified Connector Interface architecture.
+
+Key changes:
+
+- Common connector interface: `fetch_snapshot(watch)`
+- Connector-owned data acquisition lifecycle
+- Structured Watches using `id`, `name`, `connector`, `mode` and `source`
+- Stable Watch IDs for state persistence
+- Connector-specific configuration moved under `source`
+- Connector-defined normalized snapshots
+- Separate notification formatting layer
+- Generic Event Platform core without connector-specific acquisition or presentation logic
+- SGF Ranking source configuration moved out of hard-coded connector values
+- GolfBox source configuration moved out of event-specific connector values
+
+Verified with:
+
+- Daily SGF Ranking monitoring
+- Live GolfBox monitoring
+- Live Tournytt monitoring
+- State persistence across executions
+- Change detection
+- Notification formatting and delivery through ntfy
+
 ## License
 
 Private project.
