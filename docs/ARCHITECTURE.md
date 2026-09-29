@@ -108,14 +108,25 @@ The `golfbox.dk` validation confirmed that the same connector works directly aga
 Its responsibilities are:
 
 - Load configuration
-- Select the correct connector
-- Fetch the current state
-- Compare current state with previous state
+- Filter Watches by execution mode
+- Select the configured connector
+- Call `fetch_snapshot(watch)`
+- Compare the returned snapshot with persistent state
 - Detect changes
-- Send notifications
+- Decide when a notification should be triggered
+- Invoke the notification formatting layer
+- Deliver notifications through the configured notification provider
 - Update persistent state
 
-Golf-specific data acquisition should remain inside connectors rather than the watcher.
+`watcher.py` does not:
+
+- Manage connector acquisition technologies such as Playwright, HTTP or SSE
+- Interpret source-specific configuration inside `watch["source"]`
+- Interpret connector-specific snapshot fields for presentation
+
+Source-specific acquisition and normalization remain inside connectors.
+
+Connector-specific notification presentation remains inside the notification formatting layer.
 
 ### Configuration
 
