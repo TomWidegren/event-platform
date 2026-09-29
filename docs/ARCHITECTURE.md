@@ -201,13 +201,29 @@ What constitutes a valid observation is determined by the connector through the 
 
 ### Notifications
 
+Notification triggering and notification presentation are separate responsibilities.
+
+The Event Platform core decides when a notification should be triggered based on change detection.
+
+Connector-specific notification formatting is handled by the separate notification formatting layer.
+
+A notification formatter:
+
+- receives the relevant Watch and normalized snapshot,
+- interprets connector-specific snapshot fields,
+- creates the user-facing notification title and message.
+
+The Event Platform core does not interpret connector-specific snapshot fields for presentation purposes.
+
 ntfy is currently the notification provider.
+
+The notification provider is responsible for delivering the formatted notification.
 
 The platform publishes once to an ntfy topic.
 
 Multiple devices can subscribe to the same topic and receive the same notifications.
 
-Future notification providers may be added without changing connector logic.
+Future notification providers may be added without changing connector acquisition or normalization logic.
 
 ## Execution modes
 
