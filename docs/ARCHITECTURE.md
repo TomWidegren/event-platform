@@ -130,19 +130,41 @@ Connector-specific notification presentation remains inside the notification for
 
 ### Configuration
 
-`config.yml` defines watches.
+`config.yml` defines Watches.
 
-A watch currently specifies information such as:
+Every Watch uses the generic structure:
 
+- `id`
 - `name`
 - `connector`
 - `mode`
-- `player`
-- connector-specific parameters such as competition identifiers
+- `source`
 
-Connectors may require different parameters.
+Example:
 
-The platform should not require every connector to use the same source-specific configuration.
+```yaml
+id: "lukas-tournytt"
+name: "Lukas Widegren - Tournytt"
+connector: tournytt_api
+mode: live
+source:
+  player: "Lukas Widegren"
+  competition: 5406076
+```
+
+`id` is the stable technical identity of the Watch across executions.
+
+`name` is the human-readable name and may change without changing Watch identity.
+
+`connector` selects the connector.
+
+`mode` determines the execution mode.
+
+`source` contains all connector-specific configuration.
+
+The Event Platform core does not interpret the contents of `source`. The selected connector owns and interprets those values.
+
+Different connectors may therefore use completely different source configuration without requiring changes to the platform core.
 
 ### State
 
