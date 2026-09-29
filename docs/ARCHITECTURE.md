@@ -363,16 +363,20 @@ Notification formatting should be improved to better present Tournytt-specific f
 
 ## Future direction
 
-The next architectural goal is to make adding a new connector predictable and fast.
+v1.2 establishes the architectural foundation for adding and reusing connectors without introducing source-specific logic into the Event Platform core.
 
-A future connector should ideally require:
+For a new monitoring need:
 
-1. Identify the underlying external platform.
+1. Identify the underlying external Source.
 2. Determine whether an existing connector can be reused.
-3. If necessary, implement a new connector using a standard interface.
-4. Add configuration.
-5. Establish a baseline.
-6. Verify change detection.
-7. Enable the appropriate schedule.
+3. Define the required `source` configuration.
+4. If necessary, implement a new connector using `fetch_snapshot(watch)`.
+5. Define the notification formatter for the connector.
+6. Create the Watch with a stable Watch ID.
+7. Establish or migrate state as required.
+8. Verify change detection and notifications.
+9. Enable the appropriate execution schedule.
 
-The target is for future connectors to require configuration rather than platform-core changes whenever possible.
+The target is that a new event on an already-supported Source should normally require Watch configuration changes only.
+
+Future architectural improvements should be driven by demonstrated needs rather than expanding the platform core with source-specific behavior.
