@@ -124,26 +124,29 @@ The Live schedule is normally enabled during an event and disabled between event
 
 ## Project Structure
 
-event-platform/  
+event-platform/
 ├── connectors/
 │   ├── golfbox_leaderboard.py
 │   ├── sgf_ranking.py
 │   └── tournytt_api.py
-│  
-├── docs/  
-│   ├── architecture.md  
-│   ├── decisions.md  
-│   ├── ways-of-working.md  
-│   └── backlog.md  
-│  
-├── .github/  
-│   └── workflows/  
-│       ├── daily.yml  
-│       └── live.yml  
-│  
-├── watcher.py  
-├── config.yml  
-├── state.json  
+│
+├── docs/
+│   ├── architecture.md
+│   ├── backlog.md
+│   ├── decisions.md
+│   ├── design-v1.2.md
+│   └── ways-of-working.md
+│
+├── .github/
+│   └── workflows/
+│       ├── daily.yml
+│       └── live.yml
+│
+├── PROJECT_CONTEXT.md
+├── notification_formatters.py
+├── watcher.py
+├── config.yml
+├── state.json
 └── README.md
 
 ## Project Documentation
