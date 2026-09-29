@@ -58,12 +58,26 @@ Current implementations:
 - `tournytt_api.py`
 - `sgf_ranking.py`
 
-A connector should return structured data to the platform.
+Every connector exposes the same public interface:
 
-A connector should not own:
+`fetch_snapshot(watch)`
 
-- State
+A connector is responsible for:
+
+- Reading its source-specific configuration from `watch["source"]`
+- Owning its complete data-acquisition lifecycle
+- Accessing the external source
+- Finding the requested entity or data
+- Normalizing the result
+- Returning a connector-defined normalized snapshot or `None`
+
+Acquisition technologies such as Playwright, HTTP and SSE are connector implementation details.
+
+A connector does not own:
+
+- State persistence
 - Change detection
+- Notification formatting
 - Notification delivery
 - Scheduling
 
