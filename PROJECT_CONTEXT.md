@@ -226,23 +226,27 @@ Known improvement:
 
 ### v1.2 implementation status
 
-The Unified Connector Interface implementation is in progress.
+The Unified Connector Interface implementation is complete and technically verified.
 
-Completed and verified:
+Implemented and verified:
 
 - Connector-owned acquisition for SGF Ranking and GolfBox.
 - `fetch_snapshot(watch)` interface for all three current connectors.
 - Structured Watch configuration with stable Watch IDs.
 - One-time migration of active state to Watch IDs.
 - Separate notification formatting layer.
-- Daily verification with SGF Ranking.
-- Live verification with GolfBox.
+- Generic Event Platform core without connector-specific acquisition or notification formatting logic.
+- Daily monitoring with SGF Ranking.
+- Live monitoring with GolfBox.
+- Live monitoring with Tournytt.
+- Watch ID based state persistence across executions.
+- Change detection.
+- Notification formatting and delivery through ntfy.
 
 Remaining:
 
-- Verify Tournytt through the migrated implementation.
-- Complete final v1.2 verification.
-- Update release documentation and create the v1.2 release once verification is complete.
+- Update production architecture and release documentation for v1.2.
+- Create the v1.2 release.
 
 ## Context rule
 
