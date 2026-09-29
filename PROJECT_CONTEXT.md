@@ -10,7 +10,7 @@ The repository is the source of truth.
 
 Name: Event Platform
 
-Current production release: v1.1.0
+Current production release: v1.2.0
 
 Event Platform monitors changing data from external platforms, detects relevant changes, stores state and sends notifications.
 
