@@ -224,29 +224,35 @@ Known improvement:
 
 - Notification formatting should be adapted to the Tournytt snapshot model.
 
-### v1.2 implementation status
+### Completed release – v1.2.0
 
-The Unified Connector Interface implementation is complete and technically verified.
+### Completed release – v1.2.0
 
-Implemented and verified:
+Event Platform v1.2.0 – Unified Connector Interface has been implemented, verified and published as the latest GitHub release.
 
-- Connector-owned acquisition for SGF Ranking and GolfBox.
-- `fetch_snapshot(watch)` interface for all three current connectors.
-- Structured Watch configuration with stable Watch IDs.
-- One-time migration of active state to Watch IDs.
-- Separate notification formatting layer.
-- Generic Event Platform core without connector-specific acquisition or notification formatting logic.
-- Daily monitoring with SGF Ranking.
-- Live monitoring with GolfBox.
-- Live monitoring with Tournytt.
-- Watch ID based state persistence across executions.
-- Change detection.
-- Notification formatting and delivery through ntfy.
+Key capabilities:
 
-Remaining:
+- Unified connector interface: `fetch_snapshot(watch)`
+- Connector-owned data acquisition
+- Structured Watches with stable IDs
+- Connector-specific configuration under `source`
+- Connector-defined normalized snapshots
+- Separate notification formatting layer
+- Generic Event Platform core
 
-- Update production architecture and release documentation for v1.2.
-- Create the v1.2 release.
+Verified:
+
+- SGF Ranking – Daily monitoring
+- GolfBox – Live monitoring
+- Tournytt – Live monitoring
+- State persistence and change detection
+- Notification formatting and delivery through ntfy
+
+Current production release: v1.2.0
+
+The v1.2 development and release cycle is complete.
+
+Future development should be prioritized from `docs/backlog.md`.
 
 ## Context rule
 
