@@ -132,3 +132,33 @@ Possible fields include:
 The connector already captures these values.
 
 The improvement is limited to presentation formatting.
+
+
+---
+
+## Floorball monitoring
+
+### Initial floorball connector
+
+Develop floorball monitoring using the public Swedish Floorball/iBIS API.
+
+Initial investigation completed on 12 October 2026.
+
+Requirements:
+
+- Monitor all matches for selected teams and competitions.
+- Discover relevant matches automatically.
+- Detect and notify on registered match events.
+- Highlight goals, assists and penalties involving selected players.
+- Support future notification preferences.
+
+Current status:
+
+- API investigation completed.
+- Initial design documented in `docs/design-floorball.md`.
+- Connector implementation not started.
+
+Next step:
+
+Resolve the Watch configuration and match-discovery design before implementation.
+
