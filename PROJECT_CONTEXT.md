@@ -226,8 +226,6 @@ Known improvement:
 
 ### Completed release – v1.2.0
 
-### Completed release – v1.2.0
-
 Event Platform v1.2.0 – Unified Connector Interface has been implemented, verified and published as the latest GitHub release.
 
 Key capabilities:
