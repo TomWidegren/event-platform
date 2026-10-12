@@ -252,6 +252,46 @@ The v1.2 development and release cycle is complete.
 
 Future development should be prioritized from `docs/backlog.md`.
 
+### Floorball development – Initial investigation
+
+Floorball is the next development focus following the completed v1.2.0 release.
+
+An initial investigation was completed on 12 October 2026.
+
+The underlying public Swedish Floorball/iBIS API was identified and inspected.
+
+Verified capabilities:
+
+- Public JSON endpoints for players, competitions and matches.
+- Competition match lists containing team identifiers, match dates, scores and status.
+- Individual match data containing structured events.
+- Goal events with scorer and assist player IDs.
+- Penalty events with player IDs, reasons and penalty duration.
+
+Initial monitoring requirements:
+
+- Monitor all matches for selected teams and competitions, regardless of whether Lukas participates.
+- Initially notify on all registered match events.
+- Highlight goals, assists and penalties involving Lukas Widegren (PlayerID 585280).
+- Allow future configuration of notification preferences.
+
+Design documentation:
+
+`docs/design-floorball.md`
+
+Current status:
+
+- Initial source investigation completed.
+- Design questions identified.
+- No connector implementation started.
+- Production release remains v1.2.0.
+
+Recommended next development goal:
+
+Review `docs/design-floorball.md` and define the Watch model for monitoring multiple teams, competitions and matches.
+
+Do not rely on conversation history. Read the design document before making implementation decisions.
+
 ## Context rule
 
 If an AI assistant does not have direct access to this repository, provide this file at the start of the session.
