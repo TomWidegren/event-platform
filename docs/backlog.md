@@ -32,9 +32,6 @@ Verified:
 
 The validation provides sufficient evidence to begin generalizing the GolfBox connector in a future release.
 
-
-### Generalize GolfBox configuration
-
 ### Evaluate GolfBox hole-by-hole monitoring
 
 Evaluate whether GolfBox hole-by-hole data should be used to enrich live monitoring and notifications.
@@ -59,18 +56,6 @@ Placering: T32
 The existing leaderboard monitoring should remain the primary GolfBox capability unless hole-by-hole data provides sufficient additional user value.
 
 This is an enhancement opportunity, not a requirement for the existing GolfBox connector.
-
-Move event-specific GolfBox parameters out of `golfbox_leaderboard.py` and into `config.yml`.
-
-Examples:
-
-- competition ID
-- leaderboard ID
-- player
-
-Goal:
-
-A new GolfBox competition should normally require configuration changes only, with no Python code changes.
 
 ---
 
