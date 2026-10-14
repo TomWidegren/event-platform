@@ -1,0 +1,153 @@
+
+name: Establish Floorball Baseline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: event-platform-state
+  cancel-in-progress: false
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch and validate baseline
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          from connectors.ibis_floorball import fetch_snapshot
+
+          watch_id = "floorball-match-1750693"
+          match_id = 1750693
+          state_file = Path("state.json")
+
+          state = json.loads(state_file.read_text(encoding="utf-8"))
+
+          if watch_id in state:
+              raise RuntimeError("Baseline already exists. Aborting.")
+
+          watch = {
+              "id": watch_id,
+              "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
+              "connector": "ibis_floorball",
+              "mode": "live",
+              "source": {
+                  "match_id": match_id,
+                  "team_id": 20872,
+                  "highlight_player_id": 585280,
+              },
+          }
+
+          snapshot = fetch_snapshot(watch)
+
+          if snapshot["match_id"] != match_id:
+              raise RuntimeError("Unexpected match ID")
+
+          if snapshot["match_status"] != 1:
+              raise RuntimeError("Match is not in pre-start status")
+
+          if snapshot["events"]:
+              raise RuntimeError("Match already has events")
+
+          if snapshot["has_final_result"]:
+              raise RuntimeError("Match already has a final result")
+
+          if (
+              snapshot["home_goals"] is not None
+              or snapshot["away_goals"] is not None
+          ):
+              raise RuntimeError("Match already has recorded goals")
+
+          original_keys = set(state)
+
+          state[watch_id] = {
+              "snapshot": json.dumps(
+                  snapshot,
+                  ensure_ascii=False,
+                  sort_keys=True,
+              ),
+              "fields": snapshot,
+          }
+
+          if len(state) != len(original_keys) + 1:
+              raise RuntimeError("Unexpected state entry count")
+
+          if not original_keys.issubset(state):
+              raise RuntimeError("Existing state keys were lost")
+
+          state_file.write_text(
+              json.dumps(state, ensure_ascii=False, indent=2),
+              encoding="utf-8",
+          )
+
+          print("Match:", match_id)
+          print("Pre-start status verified:", True)
+          print("Baseline created:", True)
+          print("Existing state entries preserved:", len(original_keys))
+          print("Notifications sent:", False)
+          PY
+
+      - name: Commit baseline safely
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          cp state.json /tmp/floorball-baseline-state.json
+
+          git fetch origin main
+          git reset --hard origin/main
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          state_path = Path("state.json")
+          baseline_path = Path("/tmp/floorball-baseline-state.json")
+
+          current_state = json.loads(
+              state_path.read_text(encoding="utf-8")
+          )
+          baseline_state = json.loads(
+              baseline_path.read_text(encoding="utf-8")
+          )
+
+          watch_id = "floorball-match-1750693"
+
+          if watch_id in current_state:
+              raise RuntimeError(
+                  "Baseline already exists on main. Aborting."
+              )
+
+          current_state[watch_id] = baseline_state[watch_id]
+
+          state_path.write_text(
+              json.dumps(
+                  current_state,
+                  ensure_ascii=False,
+                  indent=2,
+              ),
+              encoding="utf-8",
+          )
+          PY
+
+          git add state.json
+          git commit -m "Establish floorball match baseline"
+          git push origin HEAD:main
