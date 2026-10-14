@@ -83,9 +83,13 @@ def main():
     updates = []
 
     run_mode = os.getenv("RUN_MODE")
+    selected_watch_id = os.getenv("WATCH_ID")
 
     if run_mode:
         print(f"RUN_MODE: {run_mode}")
+
+    if selected_watch_id:
+        print(f"WATCH_ID: {selected_watch_id}")
 
     for watch in config["watches"]:
         watch_mode = watch.get("mode", "daily")
@@ -96,6 +100,9 @@ def main():
         watch_id = watch["id"]
         watch_name = watch["name"]
         connector_name = watch["connector"]
+        if selected_watch_id and watch_id != selected_watch_id:
+            continue
+        
 
         fetch_snapshot = get_fetcher(connector_name)
 
