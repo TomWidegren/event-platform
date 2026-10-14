@@ -29,7 +29,7 @@ jobs:
           from connectors.ibis_floorball import fetch_snapshot
 
           watch = {
-              "id": "floorball-match-1750693",
+              "id": "floorball-match-1703567",
               "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
               "connector": "ibis_floorball",
               "mode": "live",
@@ -43,7 +43,7 @@ jobs:
           snapshot = fetch_snapshot(watch)
 
           assert snapshot is not None, "No snapshot returned"
-          assert snapshot["match_id"] == 1750693, "Wrong match ID"
+          assert snapshot["match_id"] == 1703567, "Wrong match ID"
 
           print("Match:", snapshot["match_id"])
           print("Home:", snapshot["home_team"])
