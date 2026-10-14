@@ -252,45 +252,89 @@ The v1.2 development and release cycle is complete.
 
 Future development should be prioritized from `docs/backlog.md`.
 
-### Floorball development – Initial investigation
 
-Floorball is the next development focus following the completed v1.2.0 release.
+### Floorball development – First implementation
 
-An initial investigation was completed on 12 October 2026.
+Date: 14 October 2026
 
-The underlying public Swedish Floorball/iBIS API was identified and inspected.
+Current production release: v1.2.0.
 
-Verified capabilities:
+The first floorball monitoring implementation has been developed and technically verified in preparation for a real-world match test on 15 October 2026.
 
-- Public JSON endpoints for players, competitions and matches.
-- Competition match lists containing team identifiers, match dates, scores and status.
-- Individual match data containing structured events.
-- Goal events with scorer and assist player IDs.
-- Penalty events with player IDs, reasons and penalty duration.
+#### Initial match
 
-Initial monitoring requirements:
+- Competition: Juniorallsvenskan D HJ18
+- Match: Huddinge IBS – Tyresö Trollbäcken IBK
+- Match ID: 1750693
+- Match start: 15 October 2026, 20:15
+- Followed team ID: 20872
+- Highlighted player: Lukas Widegren (PlayerID 585280)
 
-- Monitor all matches for selected teams and competitions, regardless of whether Lukas participates.
-- Initially notify on all registered match events.
-- Highlight goals, assists and penalties involving Lukas Widegren (PlayerID 585280).
-- Allow future configuration of notification preferences.
+#### Implemented
 
-Design documentation:
+- New connector: `connectors/ibis_floorball.py`
+- Automatic temporary authentication through iBIS startkit
+- HTTP/JSON match data acquisition
+- Normalized match snapshots including match events
+- Floorball-specific notification formatting
+- Comparison of previous and current match events using MatchEventID
+- Highlighting of Lukas goals, assists and penalties
+- Generic optional WATCH_ID execution filter
+- Structured floorball Watch in `config.yml`
+- Permanent baseline in `state.json`
+- Isolated connector, formatter and baseline tests
+
+#### Verified
+
+- GitHub Actions can obtain a temporary iBIS access token.
+- Authenticated match API requests return HTTP 200.
+- The connector retrieves and normalizes the correct match.
+- All five notification formatting tests pass.
+- Multiple new events are included in one notification.
+- Previously observed events are not repeated in formatting tests.
+- Final-result formatting works in simulated tests.
+- Existing golf notification formatting passes its regression test.
+- The first floorball baseline is saved without notification.
+- Four existing state entries are preserved.
+- Manual Live execution using WATCH_ID runs only the floorball Watch.
+- Unchanged match data produces no notification.
+
+#### Current limitations
+
+- Real-time match updates have not yet been verified.
+- Match-start detection and notification wording are not finalized.
+- Real ntfy delivery for floorball has not yet been verified.
+- Event corrections and deletions are not fully handled.
+- Automatic discovery of matches across teams and competitions remains future work.
+- Notification preferences are not yet configurable.
+
+#### Live validation plan
+
+15 October 2026:
+
+- Enable Event Platform - Live in cron-job.org before travelling to the match, approximately 17:00–18:00.
+- Keep the existing five-minute polling interval.
+- Monitor match start, goals, penalties and final result.
+- Verify notifications and state persistence.
+- Disable the Live schedule after the match.
+
+The Live workflow is temporarily restricted to:
+
+`WATCH_ID: floorball-match-1750693`
+
+The Daily workflow remains enabled.
+
+#### Next development goal
+
+Evaluate the real-world match results and address any issues found.
+
+Then continue designing reusable monitoring for multiple floorball teams and competitions.
+
+Detailed design and investigation findings are documented in:
 
 `docs/design-floorball.md`
 
-Current status:
-
-- Initial source investigation completed.
-- Design questions identified.
-- No connector implementation started.
-- Production release remains v1.2.0.
-
-Recommended next development goal:
-
-Review `docs/design-floorball.md` and define the Watch model for monitoring multiple teams, competitions and matches.
-
-Do not rely on conversation history. Read the design document before making implementation decisions.
+The floorball implementation is not yet part of a published production release.
 
 ## Context rule
 
