@@ -59,3 +59,57 @@ jobs:
 
       - name: Test floorball notification formatting
         run: python -m unittest discover -s tests -p "test_floorball_formatting.py" -v
+
+
+      - name: Test floorball baseline
+        run: |
+          python - <<'PY'
+          import json
+          import tempfile
+          from pathlib import Path
+          from unittest.mock import patch
+
+          import watcher
+
+          watch = {
+              "id": "floorball-match-1750693",
+              "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
+              "connector": "ibis_floorball",
+              "mode": "live",
+              "source": {
+                  "match_id": 1750693,
+                  "team_id": 20872,
+                  "highlight_player_id": 585280,
+              },
+          }
+
+          with tempfile.TemporaryDirectory() as tmp:
+              test_state = Path(tmp) / "state.json"
+
+              config = {
+                  "watches": [watch],
+                  "ntfy": {"topic": "test-only"},
+              }
+
+              with (
+                  patch.object(watcher, "load_config", return_value=config),
+                  patch.object(watcher, "STATE_FILE", test_state),
+                  patch.object(watcher, "send_ntfy") as mock_ntfy,
+                  patch.dict("os.environ", {"RUN_MODE": "live"}),
+              ):
+                  watcher.main()
+
+              assert test_state.exists(), "Baseline was not saved"
+
+              state = json.loads(test_state.read_text(encoding="utf-8"))
+
+              assert watch["id"] in state, "Watch ID missing in state"
+              assert state[watch["id"]]["fields"]["match_id"] == 1750693
+              assert not mock_ntfy.called, "Unexpected notification"
+
+              print("Baseline saved:", True)
+              print("Notification sent:", False)
+              print("Existing repository state untouched:", True)
+              print("Floorball baseline test PASSED")
+          PY
+
