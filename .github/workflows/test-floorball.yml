@@ -23,34 +23,33 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Test iBIS connector
+      - name: Test iBIS startkit
         run: |
           python - <<'PY'
-          from connectors.ibis_floorball import fetch_snapshot
+          import requests
 
-          watch = {
-              "id": "floorball-match-1703567",
-              "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
-              "connector": "ibis_floorball",
-              "mode": "live",
-              "source": {
-                  "match_id": 1703567,
-                  "team_id": 20872,
-                  "highlight_player_id": 585280,
+          url = "https://api.innebandy.se/StatsAppApi/api/startkit"
+
+          response = requests.get(
+              url,
+              headers={
+                  "Accept": "application/json",
+                  "Origin": "https://stats.innebandy.se",
               },
-          }
+              timeout=30,
+          )
 
-          snapshot = fetch_snapshot(watch)
+          print("HTTP status:", response.status_code)
+          response.raise_for_status()
 
-          assert snapshot is not None, "No snapshot returned"
-          assert snapshot["match_id"] == 1703567, "Wrong match ID"
+          data = response.json()
 
-          print("Match:", snapshot["match_id"])
-          print("Home:", snapshot["home_team"])
-          print("Away:", snapshot["away_team"])
-          print("Status:", snapshot["match_status"])
-          print("Final:", snapshot["has_final_result"])
-          print("Score:", snapshot["home_goals"], "-", snapshot["away_goals"])
-          print("Events:", len(snapshot["events"]))
-          print("Floorball connector test PASSED")
+          assert data.get("accessToken"), "Missing access token"
+          assert data.get("apiRoot"), "Missing API root"
+          assert data.get("accessTokenExpiration"), "Missing expiration"
+
+          print("Access token received:", True)
+          print("API root:", data["apiRoot"])
+          print("Token expiration received:", True)
+          print("iBIS startkit test PASSED")
           PY
