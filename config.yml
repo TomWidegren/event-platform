@@ -25,5 +25,14 @@ watches:
       player: "Lukas Widegren"
       competition: 5406076
 
+  - id: "floorball-match-1750693"
+    name: "Huddinge IBS - Tyresö Trollbäcken IBK"
+    connector: ibis_floorball
+    mode: live
+    source:
+      match_id: 1750693
+      team_id: 20872
+      highlight_player_id: 585280
+
 ntfy:
   topic: "tom-widegren-golf-92fd71b8"
