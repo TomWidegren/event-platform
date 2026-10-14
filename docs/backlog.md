@@ -136,29 +136,109 @@ The improvement is limited to presentation formatting.
 
 ---
 
+
 ## Floorball monitoring
 
 ### Initial floorball connector
 
-Develop floorball monitoring using the public Swedish Floorball/iBIS API.
+**Status: Implemented – Real-world validation pending**
 
 Initial investigation completed on 12 October 2026.
+
+First implementation completed on 14 October 2026.
+
+Implemented:
+
+- iBIS connector using HTTP/JSON and temporary token authentication.
+- Monitoring of one configured match.
+- Normalized match snapshots including registered events.
+- Detection of new events using MatchEventID.
+- Multiple new events included in one notification.
+- Player-specific highlighting for goals, assists and penalties.
+- Permanent pre-match baseline.
+- WATCH_ID filtering for isolated execution.
+- Automated connector, formatting and baseline tests.
+
+Technical verification completed through GitHub Actions.
+
+The implementation is not yet included in a published production release.
+
+### First live match validation
+
+**Status: Planned – 15 October 2026**
+
+Match:
+
+- Huddinge IBS – Tyresö Trollbäcken IBK
+- Juniorallsvenskan D HJ18
+- Match ID: 1750693
+- Start: 20:15
+
+Validation goals:
+
+- Verify match-start detection and notification.
+- Verify live API updates.
+- Verify goal, assist and penalty notifications.
+- Verify multiple events between polling intervals.
+- Verify Lukas-specific highlighting.
+- Verify final-result notification.
+- Verify state persistence and prevention of duplicate notifications.
+
+After the match, evaluate results and document lessons learned.
+
+### Generalize floorball monitoring
+
+**Status: Not started**
+
+Extend monitoring beyond one manually configured match.
 
 Requirements:
 
 - Monitor all matches for selected teams and competitions.
-- Discover relevant matches automatically.
-- Detect and notify on registered match events.
-- Highlight goals, assists and penalties involving selected players.
-- Support future notification preferences.
+- Discover upcoming matches automatically.
+- Support multiple teams and competitions.
+- Handle postponed and cancelled matches.
+- Maintain stable Watch identities.
+- Reuse the existing Event Platform core wherever possible.
 
-Current status:
+Resolve the long-term Watch granularity and match-discovery design before implementation.
 
-- API investigation completed.
-- Initial design documented in `docs/design-floorball.md`.
-- Connector implementation not started.
+### Floorball notification improvements
 
-Next step:
+**Status: Partially implemented**
 
-Resolve the Watch configuration and match-discovery design before implementation.
+Future improvements:
 
+- Confirm match-start status mapping and improve notification wording.
+- Handle corrected or deleted match events.
+- Introduce configurable notification preferences.
+- Evaluate additional event types and presentation.
+- Improve handling of player-specific highlights.
+
+### GitHub Actions runtime maintenance
+
+**Status: Pending**
+
+GitHub Actions reported warnings in October 2026 concerning:
+
+- Deprecation of Node.js 20 in existing GitHub Actions.
+- Migration of `ubuntu-latest` to a newer Ubuntu runner image beginning 19 October 2026.
+
+Required follow-up:
+
+- Review supported versions of `actions/checkout` and `actions/setup-python`.
+- Verify compatibility with the updated GitHub Actions runtime.
+- Verify Playwright and Chromium compatibility.
+- Run regression tests for Daily and Live workflows after any required updates.
+
+This maintenance should be addressed separately from the initial floorball validation.
+
+### Documentation
+
+Detailed investigation, design and implementation status:
+
+`docs/design-floorball.md`
+
+Current project context:
+
+`PROJECT_CONTEXT.md`
