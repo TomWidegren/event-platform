@@ -54,8 +54,13 @@ FORMATTERS: dict[str, Callable[[dict, str], str]] = {
 }
 
 
-def format_notification(watch: dict, fields: dict) -> tuple[str, str]:
+def format_notification(
+    watch: dict,
+    fields: dict,
+    previous_fields: dict | None = None,
+) -> tuple[str, str]:
     connector_name = watch["connector"]
+
     player_name = watch.get("source", {}).get(
         "player",
         watch.get("name", ""),
@@ -69,6 +74,17 @@ def format_notification(watch: dict, fields: dict) -> tuple[str, str]:
         )
 
     title = f"Golfuppdatering: {player_name}"
-    message = formatter(fields, player_name)
+
+    if connector_name == "ibis_floorball":
+        message = formatter(
+            fields,
+            player_name,
+            previous_fields,
+        )
+    else:
+        message = formatter(
+            fields,
+            player_name,
+        )
 
     return title, message
