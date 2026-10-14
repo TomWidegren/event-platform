@@ -34,7 +34,7 @@ jobs:
               "connector": "ibis_floorball",
               "mode": "live",
               "source": {
-                  "match_id": 1750693,
+                  "match_id": 1703567,
                   "team_id": 20872,
                   "highlight_player_id": 585280,
               },
