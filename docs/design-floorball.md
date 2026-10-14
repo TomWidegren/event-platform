@@ -320,31 +320,109 @@ Initial proposed validation:
 
 Do not modify the existing production connectors during this investigation.
 
+
 ## 8. Current status
 
-Completed:
+### Initial investigation – Completed
 
-- Identified the underlying public API.
-- Verified player profile endpoint.
-- Verified competition match-list endpoint.
-- Verified individual match endpoint.
-- Verified structured goal and assist information.
-- Verified structured penalty information.
-- Established initial monitoring requirements.
+The initial investigation of the Swedish Floorball/iBIS public API was completed on 12 October 2026.
 
-Not completed:
+Verified:
 
-- Full team and competition configuration design.
-- Automatic match-discovery design.
-- Live API update validation.
-- Snapshot and event-state design.
-- Notification formatting design.
-- Connector implementation.
+- Player profile endpoint.
+- Competition match-list endpoint.
+- Individual match endpoint.
+- Structured goal and assist information.
+- Structured penalty information.
+- Team, match-team and player identifiers.
+
+### First implementation – Completed
+
+Date: 14 October 2026.
+
+A first floorball monitoring implementation has been developed using the existing Event Platform v1.2 architecture.
+
+Initial scope:
+
+- One specific match.
+- One configured Watch.
+- Monitoring of match status, scores and registered events.
+- Highlighting of selected player events.
+
+Implemented:
+
+- `connectors/ibis_floorball.py`
+- Automatic temporary authentication through the iBIS startkit endpoint.
+- HTTP/JSON acquisition and normalized match snapshots.
+- Floorball-specific notification formatting.
+- Identification of new match events using MatchEventID.
+- Support for multiple new events in one notification.
+- Highlighting of Lukas Widegren's goals, assists and penalties.
+- Optional WATCH_ID filtering in the Event Platform core.
+- Floorball Watch configuration in `config.yml`.
+- Permanent pre-match baseline in `state.json`.
+- Isolated connector, formatting and baseline tests.
+
+The existing golf connectors and their notification formatting remain unchanged.
+
+### Technical verification – Completed
+
+Verified through GitHub Actions:
+
+- iBIS startkit returns a temporary access token.
+- Authenticated match API requests return HTTP 200.
+- The floorball connector retrieves and normalizes the correct match.
+- Five notification formatting tests pass.
+- Multiple new events are included in one formatted notification.
+- Previously observed events are not repeated in formatting tests.
+- Final-result formatting works in simulated tests.
+- Existing golf notification formatting passes its regression test.
+- The first floorball baseline is established without notification.
+- Existing state entries are preserved.
+- Manual Live execution using WATCH_ID runs only the floorball Watch.
+- Unchanged match data produces no notification.
+
+### Real-world validation – Pending
+
+The first live match validation is planned for 15 October 2026.
+
+Match:
+
+- Huddinge IBS – Tyresö Trollbäcken IBK
+- Competition: Juniorallsvenskan D HJ18
+- Match ID: 1750693
+- Start: 20:15
+
+The Live schedule will be enabled before the match and disabled after completion.
+
+The initial polling interval remains five minutes.
+
+### Remaining design and implementation questions
+
+- Verify match-start detection and notification wording.
+- Verify real-time API updates during an active match.
+- Verify real ntfy delivery for floorball.
+- Evaluate handling of event corrections and deletions.
+- Define automatic match discovery across selected teams and competitions.
+- Resolve the long-term Watch granularity.
+- Define configurable notification preferences.
+- Review GitHub Actions runtime compatibility.
+
+The floorball implementation has not yet been included in a published production release.
 
 ## 9. Recommended next step
 
-At the next development session, review the open design questions and select a minimal first floorball monitoring scenario.
+Complete the first real-world floorball validation during the match on 15 October 2026.
 
-Use the existing Event Platform v1.2 architecture wherever possible.
+After the match:
 
-Do not implement the connector until the required configuration, snapshot model and verification approach have been agreed.
+1. Review GitHub Actions execution logs.
+2. Review notifications received through ntfy.
+3. Compare the observed notifications with the match event history.
+4. Verify state persistence and prevention of duplicate notifications.
+5. Document issues and lessons learned.
+6. Update the backlog and determine the next development priority.
+
+Continue using the existing Event Platform v1.2 architecture wherever possible.
+
+Do not generalize the floorball connector for multiple teams and competitions until the initial match validation has been evaluated.
