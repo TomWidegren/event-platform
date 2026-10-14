@@ -56,3 +56,6 @@ jobs:
           print("Events:", len(snapshot["events"]))
           print("Floorball connector test PASSED")
           PY
+
+      - name: Test floorball notification formatting
+        run: python -m unittest discover -s tests -p "test_floorball_formatting.py" -v
