@@ -23,33 +23,55 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Test iBIS startkit
+      - name: Test iBIS authenticated API
         run: |
           python - <<'PY'
           import requests
 
-          url = "https://api.innebandy.se/StatsAppApi/api/startkit"
+          session = requests.Session()
 
-          response = requests.get(
-              url,
+          startkit = session.get(
+              "https://api.innebandy.se/StatsAppApi/api/startkit",
               headers={
                   "Accept": "application/json",
                   "Origin": "https://stats.innebandy.se",
               },
               timeout=30,
           )
+          startkit.raise_for_status()
 
-          print("HTTP status:", response.status_code)
+          credentials = startkit.json()
+          token = credentials["accessToken"]
+          api_root = credentials["apiRoot"].rstrip("/")
+
+          assert token, "Missing access token"
+
+          print("Startkit authentication: OK")
+
+          match_id = 1750693
+
+          response = session.get(
+              f"{api_root}/matches/{match_id}",
+              headers={
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "Origin": "https://stats.innebandy.se",
+              },
+              timeout=30,
+          )
+
+          print("Match API HTTP status:", response.status_code)
           response.raise_for_status()
 
           data = response.json()
 
-          assert data.get("accessToken"), "Missing access token"
-          assert data.get("apiRoot"), "Missing API root"
-          assert data.get("accessTokenExpiration"), "Missing expiration"
+          assert data["MatchID"] == match_id
 
-          print("Access token received:", True)
-          print("API root:", data["apiRoot"])
-          print("Token expiration received:", True)
-          print("iBIS startkit test PASSED")
+          print("Match:", data["MatchID"])
+          print("Home:", data["HomeTeam"])
+          print("Away:", data["AwayTeam"])
+          print("Start:", data["MatchDateTime"])
+          print("Final:", data["HasFinalResult"])
+          print("Events:", len(data.get("Events") or []))
+          print("iBIS authenticated API test PASSED")
           PY
