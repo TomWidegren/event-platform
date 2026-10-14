@@ -2,35 +2,62 @@
 import requests
 
 
-API_BASE_URL = "https://api.innebandy.se/v2/api/public"
+STARTKIT_URL = "https://api.innebandy.se/StatsAppApi/api/startkit"
+EXPECTED_API_HOST = "api.innebandy.se"
 
 
 def fetch_snapshot(watch: dict):
     """
     Fetch and normalize one floorball match snapshot.
 
-    Acquisition and normalization are owned by the connector.
-    State persistence, change detection and notifications
-    remain responsibilities of Event Platform.
+    The connector owns authentication, acquisition and normalization.
+    State persistence, change detection and notifications remain
+    responsibilities of Event Platform.
     """
 
     source = watch["source"]
-    match_id = source["match_id"]
+    match_id = int(source["match_id"])
 
-    url = f"{API_BASE_URL}/matches/{match_id}"
+    with requests.Session() as session:
+        startkit_response = session.get(
+            STARTKIT_URL,
+            headers={
+                "Accept": "application/json",
+                "Origin": "https://stats.innebandy.se",
+            },
+            timeout=30,
+        )
+        startkit_response.raise_for_status()
 
-    response = requests.get(
-        url,
-        headers={
-            "Accept": "application/json",
-            "Origin": "https://stats.innebandy.se",
-            "User-Agent": "Mozilla/5.0",
-        },
-        timeout=30,
-    )
+        credentials = startkit_response.json()
+        token = credentials["accessToken"]
+        api_root = credentials["apiRoot"].rstrip("/")
 
-    response.raise_for_status()
-    data = response.json()
+        from urllib.parse import urlparse
+
+        parsed_url = urlparse(api_root)
+        if (
+            parsed_url.scheme != "https"
+            or parsed_url.hostname != EXPECTED_API_HOST
+            or parsed_url.path != "/v2/api/public"
+        ):
+            raise ValueError("Unexpected iBIS API root")
+
+        response = session.get(
+            f"{api_root}/matches/{match_id}",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {token}",
+                "Origin": "https://stats.innebandy.se",
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+
+        data = response.json()
+
+    if data.get("MatchID") != match_id:
+        raise ValueError("iBIS returned an unexpected match ID")
 
     events = []
 
