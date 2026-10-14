@@ -1,0 +1,56 @@
+
+name: Test Floorball Connector
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Test iBIS connector
+        run: |
+          python - <<'PY'
+          from connectors.ibis_floorball import fetch_snapshot
+
+          watch = {
+              "id": "floorball-match-1750693",
+              "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
+              "connector": "ibis_floorball",
+              "mode": "live",
+              "source": {
+                  "match_id": 1750693,
+                  "team_id": 20872,
+                  "highlight_player_id": 585280,
+              },
+          }
+
+          snapshot = fetch_snapshot(watch)
+
+          assert snapshot is not None, "No snapshot returned"
+          assert snapshot["match_id"] == 1750693, "Wrong match ID"
+
+          print("Match:", snapshot["match_id"])
+          print("Home:", snapshot["home_team"])
+          print("Away:", snapshot["away_team"])
+          print("Status:", snapshot["match_status"])
+          print("Final:", snapshot["has_final_result"])
+          print("Score:", snapshot["home_goals"], "-", snapshot["away_goals"])
+          print("Events:", len(snapshot["events"]))
+          print("Floorball connector test PASSED")
+          PY
