@@ -1,3 +1,4 @@
+
 import json
 import os
 from pathlib import Path
@@ -59,6 +60,10 @@ def get_fetcher(connector_name: str):
         from connectors.sgf_ranking import fetch_snapshot
         return fetch_snapshot
 
+    if connector_name == "ibis_floorball":
+        from connectors.ibis_floorball import fetch_snapshot
+        return fetch_snapshot
+
     raise ValueError(f"Unknown connector: {connector_name}")
 
 
@@ -109,8 +114,11 @@ def main():
 
             if previous_snapshot is None:
                 previous_snapshot = snapshot_for(previous)
+
+            previous_fields = previous.get("fields")
         else:
             previous_snapshot = None
+            previous_fields = None
 
         if previous is None:
             state[watch_id] = {
@@ -118,7 +126,10 @@ def main():
                 "fields": current_fields,
             }
 
-            if watch_mode == "live":
+            if (
+                watch_mode == "live"
+                and connector_name != "ibis_floorball"
+            ):
                 title, message = format_notification(
                     watch,
                     current_fields,
@@ -144,6 +155,7 @@ def main():
             title, message = format_notification(
                 watch,
                 current_fields,
+                previous_fields,
             )
 
             send_ntfy(
