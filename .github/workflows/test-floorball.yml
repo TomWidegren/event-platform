@@ -23,55 +23,36 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Test iBIS authenticated API
+      - name: Test iBIS connector
         run: |
           python - <<'PY'
-          import requests
+          from connectors.ibis_floorball import fetch_snapshot
 
-          session = requests.Session()
-
-          startkit = session.get(
-              "https://api.innebandy.se/StatsAppApi/api/startkit",
-              headers={
-                  "Accept": "application/json",
-                  "Origin": "https://stats.innebandy.se",
+          watch = {
+              "id": "floorball-match-1750693",
+              "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
+              "connector": "ibis_floorball",
+              "mode": "live",
+              "source": {
+                  "match_id": 1750693,
+                  "team_id": 20872,
+                  "highlight_player_id": 585280,
               },
-              timeout=30,
-          )
-          startkit.raise_for_status()
+          }
 
-          credentials = startkit.json()
-          token = credentials["accessToken"]
-          api_root = credentials["apiRoot"].rstrip("/")
+          snapshot = fetch_snapshot(watch)
 
-          assert token, "Missing access token"
+          assert snapshot is not None, "No snapshot returned"
+          assert snapshot["match_id"] == 1750693, "Wrong match ID"
+          assert snapshot["home_team"] == "Huddinge IBS"
+          assert snapshot["away_team"] == "Tyresö Trollbäcken IBK"
 
-          print("Startkit authentication: OK")
-
-          match_id = 1750693
-
-          response = session.get(
-              f"{api_root}/matches/{match_id}",
-              headers={
-                  "Accept": "application/json",
-                  "Authorization": f"Bearer {token}",
-                  "Origin": "https://stats.innebandy.se",
-              },
-              timeout=30,
-          )
-
-          print("Match API HTTP status:", response.status_code)
-          response.raise_for_status()
-
-          data = response.json()
-
-          assert data["MatchID"] == match_id
-
-          print("Match:", data["MatchID"])
-          print("Home:", data["HomeTeam"])
-          print("Away:", data["AwayTeam"])
-          print("Start:", data["MatchDateTime"])
-          print("Final:", data["HasFinalResult"])
-          print("Events:", len(data.get("Events") or []))
-          print("iBIS authenticated API test PASSED")
+          print("Match:", snapshot["match_id"])
+          print("Home:", snapshot["home_team"])
+          print("Away:", snapshot["away_team"])
+          print("Start:", snapshot["match_datetime"])
+          print("Status:", snapshot["match_status"])
+          print("Final:", snapshot["has_final_result"])
+          print("Events:", len(snapshot["events"]))
+          print("Floorball connector test PASSED")
           PY
