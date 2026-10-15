@@ -52,7 +52,7 @@
     }
   },
   "floorball-match-1750693": {
-    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3397361, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3397360, \"home_team\": \"Huddinge IBS\", \"home_team_id\": 21684, \"match_datetime\": \"2026-10-15T20:15:00\", \"match_id\": 1750693, \"match_status\": 1}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397361, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810704, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810705, \"home_goals\": 0, \"match_team_id\": 3397360, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 586419, \"player_name\": \"Oscar Andersen\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810706, \"home_goals\": 0, \"match_team_id\": 3397361, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3397360, \"home_team\": \"Huddinge IBS\", \"home_team_id\": 21684, \"match_datetime\": \"2026-10-15T20:15:00\", \"match_id\": 1750693, \"match_status\": 2}",
     "fields": {
       "match_id": 1750693,
       "competition": "Juniorallsvenskan D HJ18",
@@ -63,11 +63,60 @@
       "home_match_team_id": 3397360,
       "away_match_team_id": 3397361,
       "match_datetime": "2026-10-15T20:15:00",
-      "match_status": 1,
+      "match_status": 2,
       "has_final_result": false,
-      "home_goals": null,
-      "away_goals": null,
-      "events": []
+      "home_goals": 0,
+      "away_goals": 0,
+      "events": [
+        {
+          "event_id": 9810704,
+          "type": "Periodstart",
+          "type_id": 8,
+          "match_team_id": 0,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 0,
+          "player_name": "",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9810705,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3397360,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 586419,
+          "player_name": "Oscar Andersen",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9810706,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3397361,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 516396,
+          "player_name": "Hugo Strandberg Edgardh",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        }
+      ]
     }
   }
 }
