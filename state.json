@@ -52,7 +52,7 @@
     }
   },
   "floorball-match-1750693": {
-    "snapshot": "{\"away_goals\": 1, \"away_match_team_id\": 3397361, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810704, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810705, \"home_goals\": 0, \"match_team_id\": 3397360, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 586419, \"player_name\": \"Oscar Andersen\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810706, \"home_goals\": 0, \"match_team_id\": 3397361, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 566925, \"assist_name\": \"Viggo Eriksson\", \"away_goals\": 0, \"event_id\": 9810729, \"home_goals\": 1, \"match_team_id\": 3397360, \"minute\": 5, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 566940, \"player_name\": \"Viggo Lundqvist\", \"second\": 26, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 511697, \"assist_name\": \"Rasmus Björck\", \"away_goals\": 1, \"event_id\": 9810735, \"home_goals\": 1, \"match_team_id\": 3397361, \"minute\": 7, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585494, \"player_name\": \"Oskar Eriksson\", \"second\": 35, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3397360, \"home_team\": \"Huddinge IBS\", \"home_team_id\": 21684, \"match_datetime\": \"2026-10-15T20:15:00\", \"match_id\": 1750693, \"match_status\": 2}",
+    "snapshot": "{\"away_goals\": 2, \"away_match_team_id\": 3397361, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810704, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810705, \"home_goals\": 0, \"match_team_id\": 3397360, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 586419, \"player_name\": \"Oscar Andersen\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9810706, \"home_goals\": 0, \"match_team_id\": 3397361, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 566925, \"assist_name\": \"Viggo Eriksson\", \"away_goals\": 0, \"event_id\": 9810729, \"home_goals\": 1, \"match_team_id\": 3397360, \"minute\": 5, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 566940, \"player_name\": \"Viggo Lundqvist\", \"second\": 26, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 511697, \"assist_name\": \"Rasmus Björck\", \"away_goals\": 1, \"event_id\": 9810735, \"home_goals\": 1, \"match_team_id\": 3397361, \"minute\": 7, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585494, \"player_name\": \"Oskar Eriksson\", \"second\": 35, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 2, \"event_id\": 9810752, \"home_goals\": 1, \"match_team_id\": 3397361, \"minute\": 11, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 509568, \"player_name\": \"Melvin Djäken\", \"second\": 11, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3397360, \"home_team\": \"Huddinge IBS\", \"home_team_id\": 21684, \"match_datetime\": \"2026-10-15T20:15:00\", \"match_id\": 1750693, \"match_status\": 2}",
     "fields": {
       "match_id": 1750693,
       "competition": "Juniorallsvenskan D HJ18",
@@ -66,7 +66,7 @@
       "match_status": 2,
       "has_final_result": false,
       "home_goals": 1,
-      "away_goals": 1,
+      "away_goals": 2,
       "events": [
         {
           "event_id": 9810704,
@@ -146,6 +146,22 @@
           "player_name": "Oskar Eriksson",
           "assist_id": 511697,
           "assist_name": "Rasmus Björck",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9810752,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3397361,
+          "period": 1,
+          "minute": 11,
+          "second": 11,
+          "home_goals": 1,
+          "away_goals": 2,
+          "player_id": 509568,
+          "player_name": "Melvin Djäken",
+          "assist_id": 0,
+          "assist_name": "",
           "penalty_name": ""
         }
       ]
