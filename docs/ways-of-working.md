@@ -2,18 +2,22 @@
 
 This document defines how development sessions for Event Platform should be conducted.
 
-The purpose is to keep development predictable, understandable and easy to resume across sessions.
+The purpose is to keep development predictable, understandable and easy to resume across sessions and ChatGPT conversations.
+
+The repository is the source of truth. ChatGPT conversations are working environments, not the project's long-term memory.
 
 ## 1. Start every session by restoring context
 
 Before proposing changes:
 
-1. Read `docs/architecture.md`.
-2. Read `docs/decisions.md`.
-3. Read `docs/ways-of-working.md`.
-4. Read `docs/backlog.md` when it exists.
-5. Identify the current production release.
-6. Read only the source files relevant to the session's goal.
+1. Read `PROJECT_CONTEXT.md` first.
+2. Read `README.md`.
+3. Read `docs/ARCHITECTURE.md`.
+4. Read `docs/decisions.md`.
+5. Read `docs/ways-of-working.md`.
+6. Read `docs/backlog.md`.
+7. Identify the current production release and ongoing development.
+8. Read only the source files relevant to the session's goal.
 
 Do not rely on conversational memory when repository documentation is available.
 
@@ -47,14 +51,14 @@ Avoid changing multiple independent things before verification.
 
 When an external source behaves unexpectedly:
 
-- inspect the real page,
-- inspect logs,
-- inspect state,
-- use temporary debug output when necessary.
+- Inspect the real page.
+- Inspect logs.
+- Inspect state.
+- Use temporary debug output when necessary.
 
 Do not guess HTML structure, selectors, API behavior or data formats when they can be observed.
 
-The SGF Ranking and GolfBox implementations demonstrated the value of this approach.
+The SGF Ranking, GolfBox and iBIS implementations demonstrated the value of this approach.
 
 ## 5. Prefer complete files for substantial code changes
 
@@ -64,11 +68,11 @@ Small, unambiguous changes may be described as individual line changes.
 
 This reduces ambiguity about:
 
-- what should remain,
-- what should be removed,
-- indentation,
-- old debug code,
-- obsolete imports.
+- What should remain.
+- What should be removed.
+- Indentation.
+- Old debug code.
+- Obsolete imports.
 
 When providing a complete replacement file, the entire file must be provided in one continuous copyable block.
 
@@ -86,7 +90,16 @@ If uncertain, inspect the current file before proposing a change.
 
 ## 7. Do not change direction silently
 
-## Design before implementation
+If new information suggests that the agreed plan should change:
+
+1. Explain what new information was discovered.
+2. Explain why it affects the current plan.
+3. Propose the change of direction.
+4. Agree on the new direction before implementing it.
+
+Do not introduce a new architecture or development strategy in the middle of an existing step without making the change explicit.
+
+## 8. Design before implementation
 
 For architectural refactorings:
 
@@ -103,41 +116,32 @@ This rule applies to architectural refactorings only.
 
 Ordinary bug fixes and small incremental improvements should continue to follow the normal one-step development process.
 
-If new information suggests that the agreed plan should change:
-
-1. Explain what new information was discovered.
-2. Explain why it affects the current plan.
-3. Propose the change of direction.
-4. Agree on the new direction before implementing it.
-
-Do not introduce a new architecture or development strategy in the middle of an existing step without making the change explicit.
-
-## 8. Separate debugging from production design
+## 9. Separate debugging from production design
 
 Temporary debug code is allowed when investigating an unknown source.
 
 Once the behavior is understood:
 
-- remove debug code,
-- restore a clean production implementation,
-- verify the production implementation.
+- Remove debug code.
+- Restore a clean production implementation.
+- Verify the production implementation.
 
 Do not leave a debug implementation in place accidentally.
 
-## 9. Protect working live systems
+## 10. Protect working live systems
 
 During an active event:
 
-- prioritize stability,
-- avoid refactoring,
-- avoid cosmetic changes,
-- fix only issues that materially affect monitoring.
+- Prioritize stability.
+- Avoid refactoring.
+- Avoid cosmetic changes.
+- Fix only issues that materially affect monitoring.
 
 Use the live event as an acceptance test.
 
 Refactoring and generalization should normally happen after the event.
 
-## 10. Record new knowledge
+## 11. Record new knowledge
 
 At the end of a meaningful development session, ask:
 
@@ -149,14 +153,18 @@ At the end of a meaningful development session, ask:
 
 Update the appropriate document when necessary:
 
-- `architecture.md` – how the system works now
-- `decisions.md` – important decisions and why
-- `ways-of-working.md` – how development should be conducted
-- `backlog.md` – future work
+- `ARCHITECTURE.md` – how the system works now.
+- `decisions.md` – important decisions and why.
+- `ways-of-working.md` – how development should be conducted.
+- `backlog.md` – future work.
+- Relevant design documents – implementation findings and unresolved design questions.
+- `PROJECT_CONTEXT.md` – current development status and next steps.
 
-## 11. Keep documentation current rather than historical
+Documentation should reflect verified facts, not assumptions or intended behavior.
 
-`architecture.md` describes the current system.
+## 12. Keep documentation current rather than historical
+
+`ARCHITECTURE.md` describes the current system.
 
 Do not preserve obsolete architecture there merely for historical completeness.
 
@@ -164,19 +172,82 @@ Important historical reasoning belongs in `decisions.md`.
 
 Git history and releases provide detailed implementation history.
 
-## 12. End every session with a checkpoint
+## 13. Manage ChatGPT conversation lifecycle
 
-Before ending a development session, summarize:
+ChatGPT conversations have finite context and may eventually reach their maximum length.
 
-1. What was completed.
-2. What was verified.
-3. What remains unresolved.
-4. Whether documentation needs updating.
-5. The recommended next goal.
+Development must not depend on the availability of an earlier conversation.
 
-The next session should be able to restart from repository documentation without requiring the previous conversation history.
+### When to start a new conversation
 
-## 13. Release deliberately
+As a general rule:
+
+- Start a new conversation when beginning development of a new version.
+- A version may span multiple conversations when development is extensive.
+- Start a new conversation earlier when the current one becomes long or difficult to navigate.
+- Prefer switching between development phases or after a completed session checkpoint.
+- Do not interrupt an active test or unfinished implementation solely to change conversations.
+
+A new conversation does not imply a new software release.
+
+A software release is created only when the relevant capability has been implemented and verified.
+
+### Starting a new conversation
+
+The user should only need to say:
+
+"Nu fortsätter vi med Event Platform."
+
+The assistant should then:
+
+1. Request the current `PROJECT_CONTEXT.md` if it is not available.
+2. Read the referenced project documentation.
+3. Identify the current production release and development status.
+4. Confirm the intended goal for the session.
+5. Request only additional source files needed for that goal.
+6. Continue from the documented project state without recreating completed work.
+
+Do not assume that the assistant can access previous conversations or the latest GitHub repository contents.
+
+If direct repository access is unavailable, request the necessary files from the user.
+
+### Continuity between conversations
+
+`PROJECT_CONTEXT.md` is the primary handover document.
+
+It should contain sufficient information to identify:
+
+- Current production release.
+- Ongoing development.
+- Latest verified results.
+- Important unresolved issues.
+- Relevant documentation.
+- Recommended next development goal.
+
+Detailed technical information belongs in the appropriate architecture, design or backlog documents rather than being duplicated unnecessarily.
+
+## 14. End every session with a checkpoint
+
+The user can initiate session closure by saying:
+
+"Vi avslutar för idag."
+
+The assistant should:
+
+1. Summarize what was completed.
+2. Identify what was actually verified.
+3. Identify unresolved issues and risks.
+4. Determine which project documents require updates.
+5. Provide the required documentation changes, one file at a time.
+6. Ask the user to confirm that changes have been committed.
+7. Verify that `PROJECT_CONTEXT.md` reflects the current project status.
+8. Identify the recommended next development goal.
+
+A session should not be considered fully documented until the relevant repository changes have been committed or explicitly identified as pending.
+
+The next session should be able to restart from repository documentation without requiring previous conversation history.
+
+## 15. Release deliberately
 
 Create a release when a meaningful, verified capability has been completed.
 
@@ -184,9 +255,11 @@ A release should describe what is actually working, not what is merely planned.
 
 Use semantic versioning:
 
-- patch – fixes without meaningful capability changes
-- minor – new backward-compatible capability
-- major – significant incompatible architectural change
+- Patch – fixes without meaningful capability changes.
+- Minor – new backward-compatible capability.
+- Major – significant incompatible architectural change.
+
+A new ChatGPT conversation does not require a new release.
 
 ## Core working principle
 
