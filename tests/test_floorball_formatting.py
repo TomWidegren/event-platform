@@ -44,10 +44,16 @@ def event(
     assist_name=None,
     penalty_name=None,
 ):
+    event_types = {
+        1: "Mål",
+        2: "Utvisning",
+        12: "Mål i tom bur",
+    }
+
     return {
         "event_id": event_id,
         "type_id": type_id,
-        "type": "Mål" if type_id == 1 else "Utvisning",
+        "type": event_types.get(type_id, "Händelse"),
         "match_team_id": match_team_id,
         "period": 2,
         "minute": 12,
@@ -152,6 +158,59 @@ class FloorballFormattingTests(unittest.TestCase):
         )
 
         self.assertIn("SLUTRESULTAT: 1 - 2", message)
+
+    def test_empty_net_goals(self):
+        previous = snapshot(events=[])
+
+        current = snapshot(events=[
+            event(
+                30, 12, 200,
+                player_id=111,
+                player_name="Opponent Player",
+                assist_id=222,
+                assist_name="Opponent Assist",
+            ),
+            event(
+                31, 12, 300,
+                player_id=585280,
+                player_name="Lukas Widegren",
+                assist_id=333,
+                assist_name="Teammate",
+            ),
+            event(
+                32, 12, 300,
+                player_id=444,
+                player_name="Teammate",
+                assist_id=585280,
+                assist_name="Lukas Widegren",
+            ),
+        ])
+
+        _, message = format_notification(
+            WATCH, current, previous
+        )
+
+        self.assertIn(
+            "Mål motståndarlaget (tom bur) (1-2)",
+            message,
+        )
+
+        self.assertIn(
+            "Mål: Lukas Widegren, assist: Teammate "
+            "(tom bur) (1-2)",
+            message,
+        )
+
+        self.assertIn(
+            "Mål: Teammate, assist: Lukas Widegren "
+            "(tom bur) (1-2)",
+            message,
+        )
+
+        self.assertNotIn("Opponent Player", message)
+        self.assertNotIn("Opponent Assist", message)
+        self.assertEqual(message.count("⭐"), 2)
+        self.assertEqual(message.count("P2 12:34"), 3)
 
     def test_golf_formatter_unchanged(self):
         golf_watch = {
