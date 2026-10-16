@@ -29,7 +29,7 @@ jobs:
         run: python watcher.py
         env:
           RUN_MODE: live
-          WATCH_ID: floorball-match-1750693
+          WATCH_ID: floorball-match-1703572
 
       - name: Commit state if changed
         run: |
