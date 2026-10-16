@@ -454,5 +454,24 @@
         }
       ]
     }
+  },
+  "floorball-match-1703572": {
+    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3303119, \"away_team\": \"Tyresö Trollbäcken IBK (A)\", \"away_team_id\": 4194, \"competition\": \"Herrar Division 3 Södra\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3303118, \"home_team\": \"IFK Haninge (B)\", \"home_team_id\": 121742, \"match_datetime\": \"2026-10-17T13:30:00\", \"match_id\": 1703572, \"match_status\": 1}",
+    "fields": {
+      "match_id": 1703572,
+      "competition": "Herrar Division 3 Södra",
+      "home_team": "IFK Haninge (B)",
+      "away_team": "Tyresö Trollbäcken IBK (A)",
+      "home_team_id": 121742,
+      "away_team_id": 4194,
+      "home_match_team_id": 3303118,
+      "away_match_team_id": 3303119,
+      "match_datetime": "2026-10-17T13:30:00",
+      "match_status": 1,
+      "has_final_result": false,
+      "home_goals": null,
+      "away_goals": null,
+      "events": []
+    }
   }
 }
