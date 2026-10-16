@@ -137,7 +137,7 @@ def format_floorball(
             and highlight_player_id in (player_id, assist_id)
         )
 
-        if event.get("type_id") == 1:
+        if event.get("type_id") in (1, 12):
             event_score = (
                 f"{display(event.get('home_goals'))}-"
                 f"{display(event.get('away_goals'))}"
@@ -152,8 +152,11 @@ def format_floorball(
                     description += (
                         f", assist: {event['assist_name']}"
                     )
-            else:
+                        else:
                 description = "Mål motståndarlaget"
+
+            if event.get("type_id") == 12:
+                description += " (tom bur)"
 
             description += f" ({event_score})"
 
