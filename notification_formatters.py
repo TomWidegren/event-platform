@@ -152,7 +152,7 @@ def format_floorball(
                     description += (
                         f", assist: {event['assist_name']}"
                     )
-                        else:
+            else:
                 description = "Mål motståndarlaget"
 
             if event.get("type_id") == 12:
