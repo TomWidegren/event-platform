@@ -1,17 +1,22 @@
-
 # Event Platform – Floorball Design Draft
 
 ## Purpose
 
-This document captures the initial investigation and design considerations for adding Swedish floorball monitoring to Event Platform.
+This document captures the investigation, design considerations, implementation and real-world validation of Swedish floorball monitoring in Event Platform.
 
-The investigation was conducted on 12 October 2026.
+The initial investigation was conducted on 12 October 2026.
+
+The first implementation was completed on 14 October 2026.
 
 Current production release: v1.2.0.
 
-The repository remains the source of truth. This document records findings and proposals, not approved architectural decisions.
+The repository remains the source of truth.
 
-No floorball connector has been implemented yet.
+This document records technical findings, implemented capabilities, validation results and unresolved design questions.
+
+Proposed future architectural changes are not considered approved decisions until explicitly agreed and documented in `decisions.md`.
+
+The floorball connector has been implemented and is undergoing real-world validation. It has not yet been included in a published production release.
 
 ## 1. Monitoring requirements
 
@@ -27,14 +32,17 @@ Initial use case:
 
 The user should be able to specify which teams and competitions to monitor.
 
+The initial implementation monitors one explicitly configured match per Watch. Automatic discovery of matches remains future work.
+
 ### Match notifications
 
 Initial preference: notify on all relevant registered match events.
 
-Potential events include:
+Relevant events include:
 
 - Match start
 - Goals for both teams
+- Empty-net goals
 - Assists
 - Penalties
 - Period starts and ends
@@ -60,6 +68,8 @@ Highlight when the player:
 
 Team monitoring must continue regardless of whether the player participates.
 
+The highlighting functionality has been implemented and technically tested but has not yet been verified during a real match involving a relevant event by Lukas.
+
 ## 2. Identified data source
 
 Platform: Swedish Floorball / iBIS
@@ -72,13 +82,25 @@ Underlying API:
 
 https://api.innebandy.se/v2/api/public/
 
-The website was observed retrieving structured JSON through HTTP GET requests.
+The website retrieves structured JSON through HTTP GET requests.
 
 The following endpoints were identified using Chrome Developer Tools.
 
+### Authentication
+
+The connector obtains a temporary access token through:
+
+`https://api.innebandy.se/StatsAppApi/api/startkit`
+
+The response provides an access token and API root.
+
+The connector validates the API root before making authenticated requests.
+
+This authentication mechanism has been successfully verified through GitHub Actions and real-world monitoring.
+
 ### Player
 
-GET /players/585280
+GET `/players/585280`
 
 Full URL:
 
@@ -99,7 +121,7 @@ However, the inspected player response did not expose a clear list of all upcomi
 
 ### Competition matches
 
-GET /competitions/44356/matches
+GET `/competitions/44356/matches`
 
 Full URL:
 
@@ -123,9 +145,9 @@ This provides a potential mechanism for discovering relevant matches by filterin
 
 ### Individual match
 
-GET /matches/1703567
+GET `/matches/{match_id}`
 
-Full URL:
+Example:
 
 https://api.innebandy.se/v2/api/public/matches/1703567
 
@@ -141,6 +163,8 @@ Verified fields include:
 - Events
 
 The Events collection contains structured match events.
+
+The current connector retrieves individual match data through this endpoint.
 
 ## 3. Verified match events
 
@@ -165,7 +189,38 @@ Relevant fields:
 - PlayerAssistID
 - PlayerAssistName
 
-These fields should allow identification of goals, assists and the score after each goal.
+These fields allow identification of goals, assists and the score after each goal.
+
+### Empty-net goals
+
+An additional goal event type was identified during the first real-world validation on 15 October 2026.
+
+- MatchEventTypeID: 12
+- Event: Mål i tom bur
+
+The initial notification formatter recognized regular goals using MatchEventTypeID 1.
+
+Following the discovery, the formatter was updated to recognize both event types.
+
+Current implementation:
+
+`if event.get("type_id") in (1, 12):`
+
+Empty-net goals are handled as goals, including:
+
+- Scoring team
+- Goal scorer when the followed team scores
+- Assist when available
+- Score after the goal
+- Player-specific highlighting when applicable
+
+The notification includes the suffix:
+
+`(tom bur)`
+
+The updated implementation has been confirmed through inspection of `notification_formatters.py`.
+
+Separate real-world verification of the updated empty-net formatting remains to be documented.
 
 ### Penalties
 
@@ -187,11 +242,11 @@ Example from match 1703567:
 - GoalsHomeTeam: 4
 - GoalsAwayTeam: 4
 
-This confirms that penalty events expose the player identity and penalty description.
+Penalty notifications were successfully verified during the match on 15 October 2026.
 
 ### Other observed events
 
-The inspected match also contained event types such as:
+The inspected match data also contained event types such as:
 
 - Periodstart
 - Periodslut
@@ -199,51 +254,124 @@ The inspected match also contained event types such as:
 - Målvakt - Ut
 - Straffmål
 
-The full event-type model has not yet been documented.
+Period-start and period-end notifications were successfully observed during the first real-world match validation.
+
+The full iBIS event-type model has not yet been documented.
 
 ## 4. Identifiers
 
-Identifiers observed during the investigation:
+Identifiers observed during investigation and implementation:
 
 | Entity | Identifier |
 |---|---|
 | Season 2026/27 | 44 |
 | Lukas Widegren | PlayerID 585280 |
-| Tyresö Trollbäcken IBK team page | Team 4194 |
+| Tyresö Trollbäcken IBK – Herrar | TeamID 4194 |
+| Tyresö Trollbäcken IBK – JAS | TeamID 20872 |
 | Herrar Division 3 Södra | CompetitionID 44356 |
-| Completed match | MatchID 1703567 |
-| Upcoming match | MatchID 1703572 |
+| Completed match used for investigation | MatchID 1703567 |
+| JAS validation match | MatchID 1750693 |
+| Herrar validation match | MatchID 1703572 |
 
-Important:
+The two Tyresö teams have different TeamIDs because they represent different teams within the same club.
 
-Team identifiers used by the website and match API may represent different concepts.
+The match API also exposes MatchTeamID values, which identify a team's participation in an individual match.
 
-For example, the match API contains HomeTeamID / AwayTeamID and also MatchTeamID within events.
+The notification formatter uses the configured TeamID to determine the followed team's corresponding MatchTeamID.
 
-Their relationships must be verified before defining the final Watch configuration.
+This allows the formatter to distinguish between events involving the followed team and its opponent.
 
-## 5. Candidate monitoring approach
+## 5. Current implementation and future monitoring approach
 
-The following is a design hypothesis, not an approved implementation.
+### Current implementation
 
-1. Configure selected competitions and teams.
-2. Retrieve the competition match list.
-3. Identify matches involving the configured teams.
-4. Determine which matches are relevant for monitoring.
-5. Retrieve individual match details.
-6. Normalize match status, scores and events.
-7. Detect changes using Event Platform's existing core.
-8. Format notifications, highlighting selected players.
+The first implementation uses one Watch per explicitly configured match.
 
-The solution should use the existing v1.2 connector interface:
+Each Watch contains:
+
+- Stable Watch ID
+- Connector name
+- Execution mode
+- Match ID
+- Followed team ID
+- Optional highlighted player ID
+
+Example:
+
+```yaml
+- id: "floorball-match-1703572"
+  name: "IFK Haninge (B) - Tyresö Trollbäcken IBK (A)"
+  connector: ibis_floorball
+  mode: live
+  source:
+    match_id: 1703572
+    team_id: 4194
+    highlight_player_id: 585280
+```
+
+The connector uses the existing v1.2 interface:
 
 `fetch_snapshot(watch)`
 
-The connector should own HTTP acquisition and normalization.
+It owns:
 
-State persistence, change detection and notification triggering remain core responsibilities.
+- Temporary authentication
+- HTTP acquisition
+- Match data retrieval
+- Snapshot normalization
+- Event normalization and ordering
 
-Notification presentation belongs in the separate formatting layer.
+The Event Platform core owns:
+
+- Watch selection
+- State persistence
+- Change detection
+- Notification triggering
+
+The notification formatting layer owns the presentation of match events.
+
+### State and baseline
+
+Each match uses a stable Watch ID as its state key.
+
+A dedicated GitHub Actions workflow establishes the pre-match baseline.
+
+The baseline workflow:
+
+1. Retrieves the current match snapshot.
+2. Verifies that the match has not started.
+3. Verifies that no match events or recorded goals exist.
+4. Verifies that a baseline does not already exist.
+5. Adds the new Watch state.
+6. Preserves existing state entries.
+7. Commits the updated state to GitHub.
+
+No notification is sent when establishing the baseline.
+
+### Live execution
+
+The Live workflow supports an optional `WATCH_ID` environment variable.
+
+This allows execution to be restricted to one configured Watch.
+
+The current workflow uses a hard-coded Watch ID, which must be changed manually when switching matches.
+
+cron-job.org triggers GitHub Actions every five minutes while the Live schedule is enabled.
+
+### Future monitoring approach
+
+The longer-term design should support:
+
+1. Configuring selected teams and competitions.
+2. Retrieving competition match lists.
+3. Discovering relevant upcoming matches.
+4. Determining which matches require monitoring.
+5. Retrieving individual match details.
+6. Normalizing match status, scores and events.
+7. Detecting changes using the existing Event Platform core.
+8. Formatting notifications with player-specific highlighting.
+
+This remains a design direction, not an approved implementation.
 
 ## 6. Open design questions
 
@@ -255,7 +383,9 @@ Should one Watch represent:
 - One team across several competitions?
 - Several teams and competitions?
 
-The choice must support players who participate in several teams.
+The current implementation uses one Watch per match.
+
+The long-term model must support multiple teams and competitions without losing stable state identities.
 
 ### DQ2 – Match discovery
 
@@ -263,69 +393,110 @@ How frequently should competition match lists be checked?
 
 How should newly scheduled, postponed or cancelled matches be handled?
 
+Automatic match discovery has not yet been implemented.
+
 ### DQ3 – Live monitoring
 
-How frequently does the API update during an active match?
+The five-minute polling interval has been used successfully during real-world monitoring.
 
-Does it publish match events immediately or with a delay?
+Further evaluation should determine:
 
-This has not yet been verified during a live match.
+- Typical delay between a match event and its availability through the API.
+- Whether different event types have different publication delays.
+- Whether five minutes remains appropriate for future use cases.
 
 ### DQ4 – Event detection
 
-How should new events, corrections and deleted events be detected?
+New events are identified using MatchEventID.
 
-MatchEventID appears suitable for identifying individual events, but its stability and correction behavior require validation.
+This has been implemented and used during real-world monitoring.
+
+Remaining questions:
+
+- How should corrected events be detected?
+- How should deleted events be handled?
+- Can an existing MatchEventID change its associated information?
 
 ### DQ5 – Notifications
 
-How should notifications be formatted for:
+Current notification formatting supports:
 
 - Goals
-- Assists
+- Empty-net goals
+- Assists associated with goals
 - Penalties
-- Period transitions
+- Other registered events
+- Match-status changes
 - Final results
-- Other match events
+- Player-specific highlighting
 
-How should selected players be highlighted?
+Future work should evaluate:
 
-How should notification preferences be represented in future configuration?
+- More descriptive match-start notifications.
+- Configurable event preferences.
+- Additional event types.
+- Improved handling of event corrections.
+- Further presentation improvements.
 
 ### DQ6 – Multiple matches per Watch
 
 The current v1.2 interface returns one normalized snapshot per Watch.
 
-We must determine how multiple matches and individual events should be represented without breaking the existing core contract.
+The current floorball implementation monitors one match per Watch.
+
+Future design must determine how multiple matches should be discovered, configured and monitored without breaking the generic connector interface.
 
 ### DQ7 – Team and player identification
 
-Which identifiers should be configured?
+The initial implementation uses explicit TeamIDs and PlayerIDs.
 
-Can a player's current teams and competitions be discovered automatically, or must they be configured explicitly?
+Future development should determine whether teams and competitions can be discovered automatically.
+
+The design must support players participating in multiple teams.
+
+### DQ8 – Concurrent state persistence
+
+The current GitHub-based state persistence approach introduces a potential risk when multiple executions update state concurrently.
+
+The Live workflow can restore an entire saved `state.json` file after synchronizing with `main`.
+
+This could overwrite state changes made by another execution.
+
+The risk should be addressed before broader concurrent Live monitoring is introduced.
+
+### DQ9 – Multiple simultaneous Live Watches
+
+The current Live workflow is restricted to a specific Watch using `WATCH_ID`.
+
+Future development should determine how to execute multiple relevant Live Watches without manually editing workflow configuration for each event.
+
+This should be designed together with state concurrency handling.
 
 ## 7. Validation approach
 
 Prefer real-world verification, consistent with Event Platform's established ways of working.
 
-Initial proposed validation:
+The validation approach includes:
 
-1. Identify one upcoming match for a selected team.
-2. Establish a baseline before the match.
-3. Verify changes during the match.
-4. Verify goal and penalty event detection.
-5. Verify player-specific highlighting where applicable.
+1. Identify an upcoming match.
+2. Establish a permanent pre-match baseline.
+3. Verify match-start detection.
+4. Verify goal and penalty notifications.
+5. Verify player-specific highlighting when applicable.
 6. Verify period transitions and final result.
-7. Verify state persistence and prevention of duplicate notifications.
+7. Verify state persistence.
+8. Verify that unchanged data does not generate duplicate notifications.
+9. Compare observed notifications with the official match history.
 
-Do not modify the existing production connectors during this investigation.
+Avoid changing working monitoring code during an active match unless necessary.
 
+Do not modify existing production connectors as part of floorball-specific development.
 
 ## 8. Current status
 
 ### Initial investigation – Completed
 
-The initial investigation of the Swedish Floorball/iBIS public API was completed on 12 October 2026.
+Date: 12 October 2026.
 
 Verified:
 
@@ -340,89 +511,165 @@ Verified:
 
 Date: 14 October 2026.
 
-A first floorball monitoring implementation has been developed using the existing Event Platform v1.2 architecture.
-
-Initial scope:
-
-- One specific match.
-- One configured Watch.
-- Monitoring of match status, scores and registered events.
-- Highlighting of selected player events.
-
 Implemented:
 
 - `connectors/ibis_floorball.py`
-- Automatic temporary authentication through the iBIS startkit endpoint.
-- HTTP/JSON acquisition and normalized match snapshots.
+- Temporary iBIS authentication.
+- HTTP/JSON acquisition.
+- Normalized match snapshots.
 - Floorball-specific notification formatting.
-- Identification of new match events using MatchEventID.
-- Support for multiple new events in one notification.
-- Highlighting of Lukas Widegren's goals, assists and penalties.
-- Optional WATCH_ID filtering in the Event Platform core.
-- Floorball Watch configuration in `config.yml`.
-- Permanent pre-match baseline in `state.json`.
-- Isolated connector, formatting and baseline tests.
+- MatchEventID-based event detection.
+- Multiple new events in one notification.
+- Player-specific highlighting.
+- Optional `WATCH_ID` filtering.
+- Permanent pre-match baseline.
+- Automated technical tests.
 
-The existing golf connectors and their notification formatting remain unchanged.
+The existing golf connectors remain unchanged.
 
 ### Technical verification – Completed
 
 Verified through GitHub Actions:
 
-- iBIS startkit returns a temporary access token.
-- Authenticated match API requests return HTTP 200.
-- The floorball connector retrieves and normalizes the correct match.
-- Five notification formatting tests pass.
-- Multiple new events are included in one formatted notification.
-- Previously observed events are not repeated in formatting tests.
-- Final-result formatting works in simulated tests.
-- Existing golf notification formatting passes its regression test.
-- The first floorball baseline is established without notification.
-- Existing state entries are preserved.
-- Manual Live execution using WATCH_ID runs only the floorball Watch.
-- Unchanged match data produces no notification.
+- Temporary iBIS access token acquisition.
+- Authenticated match API requests.
+- Correct match retrieval and normalization.
+- Five initial notification formatting tests.
+- Multiple events in one formatted notification.
+- No repeated previously observed events in formatting tests.
+- Simulated final-result formatting.
+- Golf notification regression testing.
+- Permanent baseline establishment without notification.
+- Preservation of existing state entries.
+- Isolated Live execution.
+- No notification for unchanged match data.
 
-### Real-world validation – Pending
+### First real-world validation – Completed
 
-The first live match validation is planned for 15 October 2026.
+Date: 15 October 2026.
 
 Match:
 
-- Huddinge IBS – Tyresö Trollbäcken IBK
-- Competition: Juniorallsvenskan D HJ18
-- Match ID: 1750693
-- Start: 20:15
+Huddinge IBS – Tyresö Trollbäcken IBK
 
-The Live schedule will be enabled before the match and disabled after completion.
+Competition: Juniorallsvenskan D HJ18
 
-The initial polling interval remains five minutes.
+Match ID: 1750693
 
-### Remaining design and implementation questions
+Start: 20:15
 
-- Verify match-start detection and notification wording.
-- Verify real-time API updates during an active match.
-- Verify real ntfy delivery for floorball.
-- Evaluate handling of event corrections and deletions.
-- Define automatic match discovery across selected teams and competitions.
-- Resolve the long-term Watch granularity.
-- Define configurable notification preferences.
+Followed team ID: 20872
+
+The monitoring operated successfully during the match.
+
+The following notifications were received and verified:
+
+- Goals.
+- Penalties.
+- Period starts.
+- Period ends.
+- Final result.
+- Other registered match events.
+
+The test confirmed that the platform can monitor a real floorball match and deliver relevant notifications through ntfy.
+
+#### Findings
+
+An additional event type for empty-net goals was identified.
+
+The notification formatter was subsequently updated to recognize MatchEventTypeID 12 as a goal and label it `(tom bur)`.
+
+#### Not verified during this match
+
+Player-specific highlighting for Lukas Widegren could not be verified during real-world operation because Lukas did not score, record an assist or receive a penalty.
+
+The functionality remains technically implemented and tested.
+
+### Second real-world validation – Prepared
+
+Date: 17 October 2026.
+
+Match:
+
+IFK Haninge (B) – Tyresö Trollbäcken IBK (A)
+
+Competition: Herrar Division 3 Södra
+
+Match ID: 1703572
+
+Start: 13:30
+
+Venue: Lyckeby Sporthall
+
+Followed team ID: 4194
+
+Highlighted player: Lukas Widegren, PlayerID 585280
+
+Preparation completed on 16 October 2026.
+
+Verified:
+
+- Correct match and team identifiers.
+- New Watch added to `config.yml`.
+- Existing Watches preserved.
+- Dedicated baseline workflow updated.
+- Permanent pre-match baseline established.
+- Five existing state entries preserved.
+- No notification generated during baseline creation.
+- Live workflow updated to `floorball-match-1703572`.
+- Manual Live execution completed successfully.
+- Unchanged match data produced no notification.
+- Automatic execution through cron-job.org and GitHub Actions verified.
+- Five-minute polling interval confirmed.
+
+The Live schedule is enabled.
+
+**Status: Ready for real-world match validation on 17 October 2026.**
+
+### Remaining validation and implementation questions
+
+- Verify notifications during the second match.
+- Verify Lukas-specific highlighting if a relevant event occurs.
+- Confirm the updated empty-net goal formatting when a suitable event occurs.
+- Evaluate corrected and deleted match events.
+- Design automatic match discovery.
+- Resolve long-term Watch granularity.
+- Support multiple simultaneous Live Watches.
+- Improve concurrent state persistence.
+- Introduce configurable notification preferences.
 - Review GitHub Actions runtime compatibility.
 
-The floorball implementation has not yet been included in a published production release.
+The floorball implementation is not yet included in a published production release.
 
 ## 9. Recommended next step
 
-Complete the first real-world floorball validation during the match on 15 October 2026.
+Complete the second real-world floorball validation on 17 October 2026.
 
 After the match:
 
 1. Review GitHub Actions execution logs.
 2. Review notifications received through ntfy.
-3. Compare the observed notifications with the match event history.
-4. Verify state persistence and prevention of duplicate notifications.
-5. Document issues and lessons learned.
-6. Update the backlog and determine the next development priority.
+3. Compare the observed notifications with the official match-event history.
+4. Verify final-result handling.
+5. Verify state persistence and prevention of duplicate notifications.
+6. Document any issues or additional iBIS event types discovered.
+7. Update `docs/backlog.md` and `PROJECT_CONTEXT.md`.
+8. Determine the next development priority.
+
+The next development phase should focus on making floorball monitoring reusable across multiple matches, teams and competitions.
+
+Before implementation, resolve the design questions concerning match discovery, Watch granularity, simultaneous Live execution and safe state persistence.
 
 Continue using the existing Event Platform v1.2 architecture wherever possible.
 
-Do not generalize the floorball connector for multiple teams and competitions until the initial match validation has been evaluated.
+Do not introduce unnecessary domain-specific behavior into the Event Platform core.
+
+## 10. Release status
+
+Current published production release: **v1.2.0**
+
+Floorball monitoring is implemented and undergoing real-world validation.
+
+No new production release has been published for the floorball capability.
+
+A future release should be created deliberately after the relevant functionality has been verified and its scope agreed.
