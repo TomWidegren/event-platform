@@ -35,8 +35,8 @@ jobs:
 
           from connectors.ibis_floorball import fetch_snapshot
 
-          watch_id = "floorball-match-1750693"
-          match_id = 1750693
+          watch_id = "floorball-match-1703572"
+          match_id = 1703572
           state_file = Path("state.json")
 
           state = json.loads(state_file.read_text(encoding="utf-8"))
@@ -46,12 +46,12 @@ jobs:
 
           watch = {
               "id": watch_id,
-              "name": "Huddinge IBS - Tyresö Trollbäcken IBK",
+              "name": "IFK Haninge (B) - Tyresö Trollbäcken IBK (A)",
               "connector": "ibis_floorball",
               "mode": "live",
               "source": {
                   "match_id": match_id,
-                  "team_id": 20872,
+                  "team_id": 4194,
                   "highlight_player_id": 585280,
               },
           }
@@ -129,7 +129,7 @@ jobs:
               baseline_path.read_text(encoding="utf-8")
           )
 
-          watch_id = "floorball-match-1750693"
+          watch_id = "floorball-match-1703572"
 
           if watch_id in current_state:
               raise RuntimeError(
@@ -149,5 +149,5 @@ jobs:
           PY
 
           git add state.json
-          git commit -m "Establish floorball match baseline"
+          git commit -m "Establish floorball match 1703572 baseline"
           git push origin HEAD:main
