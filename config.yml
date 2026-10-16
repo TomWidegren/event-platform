@@ -1,3 +1,4 @@
+
 watches:
   - id: "lukas-sgf-ranking"
     name: "Lukas Widegren - SGF Ranking"
@@ -32,6 +33,15 @@ watches:
     source:
       match_id: 1750693
       team_id: 20872
+      highlight_player_id: 585280
+
+  - id: "floorball-match-1703572"
+    name: "IFK Haninge (B) - Tyresö Trollbäcken IBK (A)"
+    connector: ibis_floorball
+    mode: live
+    source:
+      match_id: 1703572
+      team_id: 4194
       highlight_player_id: 585280
 
 ntfy:
