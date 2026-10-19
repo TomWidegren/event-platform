@@ -9,6 +9,8 @@ They should be prioritized when planning a development session.
 
 The current production release is v1.2.0.
 
+Last updated: 19 October 2026.
+
 ---
 
 ## Completed validations
@@ -117,6 +119,70 @@ Together, the two match validations provide sufficient evidence to prepare a fir
 
 Detailed findings are documented in `docs/design-floorball.md`.
 
+### Release regression testing – 19 October 2026
+
+**Status: Completed – Automated tests passed**
+
+A dedicated regression workflow was introduced:
+
+`.github/workflows/test-regression.yml`
+
+The workflow tests the existing golf monitoring logic using mocked connector data, mocked notification delivery and temporary state.
+
+Verified:
+
+- Registration of SGF Ranking, GolfBox and Tournytt connectors.
+- Notification formatting for all three golf connectors.
+- Daily baseline creation without notification.
+- Live first-observation notification behavior.
+- No additional notification for unchanged data.
+- Change detection for updated snapshots.
+- State persistence in temporary test files.
+- Successful execution through GitHub Actions.
+
+The workflow was subsequently updated to:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+
+The updated regression workflow passed successfully on 19 October 2026.
+
+The Node.js 20 deprecation warning was no longer present.
+
+Limitations:
+
+- The tests use mocked snapshots.
+- External golf data acquisition was not reverified.
+- Production Daily and Live execution were not exercised by this workflow.
+
+### Floorball release testing – 19 October 2026
+
+**Status: Completed – Automated tests passed**
+
+Workflow:
+
+`.github/workflows/test-floorball.yml`
+
+Verified:
+
+- Live iBIS connector data acquisition.
+- Match identification and normalization.
+- Six notification formatting tests.
+- Floorball baseline behavior using temporary state.
+- No real ntfy notification during the mocked baseline test.
+- Successful execution through GitHub Actions.
+
+The workflow was updated to:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+
+The updated Floorball test workflow passed successfully on 19 October 2026.
+
+The Node.js 20 deprecation warning was no longer present.
+
+The remaining Ubuntu runner migration notice was informational.
+
 ---
 
 ## Floorball monitoring
@@ -146,11 +212,13 @@ Technical verification completed through GitHub Actions.
 
 Real-world match validations completed successfully on 15 and 17 October 2026.
 
+Automated Floorball tests passed again on 19 October 2026 following the GitHub Actions version updates.
+
 The implementation has not yet been included in a published production release.
 
 ### First Floorball production release
 
-**Status: Planned – Pending release preparation and approval**
+**Status: Planned – Release preparation in progress**
 
 Proposed release: v1.3.0.
 
@@ -163,13 +231,23 @@ Scope:
 - Preserve the v1.2 Unified Connector Interface architecture.
 - Preserve existing GolfBox, SGF Ranking and Tournytt functionality.
 
-Before release:
+Completed release preparation:
 
-1. Complete the relevant documentation updates.
-2. Confirm the intended release scope.
-3. Verify the release candidate and existing functionality.
-4. Document known limitations.
-5. Obtain explicit approval before publishing the release.
+- Two successful real-world Floorball validations.
+- Floorball design and validation documentation updated.
+- Backlog and project context updated with validation results.
+- Dedicated golf regression workflow introduced and verified.
+- Floorball automated tests passed.
+- Both test workflows updated to Node.js 24-compatible GitHub Actions versions and verified.
+- Daily and Live production workflows updated to the same Actions versions.
+
+Remaining before release:
+
+1. Verify the next scheduled Daily production execution on 20 October 2026 at 08:00.
+2. Verify Live workflow compatibility after the GitHub Actions upgrade using a safe execution strategy.
+3. Review GitHub Actions runner compatibility, including Playwright and Chromium.
+4. Confirm the final release scope and known limitations.
+5. Obtain explicit approval before publishing v1.3.0.
 
 Known limitations:
 
@@ -427,21 +505,32 @@ These are exploratory opportunities rather than committed features.
 
 ### GitHub Actions runtime maintenance
 
-**Status: Pending**
+**Status: Partially completed – Production verification pending**
 
 GitHub Actions reported warnings in October 2026 concerning:
 
 - Deprecation of Node.js 20 in existing GitHub Actions.
 - Migration of `ubuntu-latest` to a newer Ubuntu runner image beginning 19 October 2026.
 
-Required follow-up:
+Changes completed on 19 October 2026:
 
-- Review supported versions of `actions/checkout` and `actions/setup-python`.
-- Verify compatibility with the updated GitHub Actions runtime.
-- Verify Playwright and Chromium compatibility.
-- Run regression tests for Daily and Live workflows after required updates.
+- `.github/workflows/test-regression.yml` updated to `actions/checkout@v5` and `actions/setup-python@v6`.
+- `.github/workflows/test-floorball.yml` updated to the same versions.
+- Both updated test workflows executed successfully.
+- Node.js 20 deprecation warnings disappeared from both test workflows.
+- `.github/workflows/daily.yml` updated to the same versions.
+- `.github/workflows/live.yml` updated to the same versions.
 
-This maintenance should be addressed separately from the completed floorball validation and coordinated with release preparation.
+Remaining verification:
+
+- Daily production execution scheduled for 20 October 2026 at 08:00.
+- Live workflow has not yet been executed after the version updates.
+- Confirm Playwright and Chromium compatibility in the updated production runner environment.
+- Review the Ubuntu runner migration notice after the environment transition.
+
+The Live schedule in cron-job.org was disabled after the match on 17 October 2026 and confirmed disabled on 19 October.
+
+Do not reactivate Live monitoring solely for regression testing against a completed match.
 
 ---
 
