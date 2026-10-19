@@ -1,3 +1,4 @@
+
 # Event Platform – Floorball Design Draft
 
 ## Purpose
@@ -16,7 +17,7 @@ This document records technical findings, implemented capabilities, validation r
 
 Proposed future architectural changes are not considered approved decisions until explicitly agreed and documented in `decisions.md`.
 
-The floorball connector has been implemented and is undergoing real-world validation. It has not yet been included in a published production release.
+The floorball connector has been implemented and successfully validated during two real-world matches. It has not yet been included in a published production release.
 
 ## 1. Monitoring requirements
 
@@ -242,7 +243,7 @@ Example from match 1703567:
 - GoalsHomeTeam: 4
 - GoalsAwayTeam: 4
 
-Penalty notifications were successfully verified during the match on 15 October 2026.
+Penalty notifications were successfully verified during both real-world match validations.
 
 ### Other observed events
 
@@ -585,7 +586,7 @@ Player-specific highlighting for Lukas Widegren could not be verified during rea
 
 The functionality remains technically implemented and tested.
 
-### Second real-world validation – Prepared
+### Second real-world validation – Completed
 
 Date: 17 October 2026.
 
@@ -607,7 +608,7 @@ Highlighted player: Lukas Widegren, PlayerID 585280
 
 Preparation completed on 16 October 2026.
 
-Verified:
+Verified before the match:
 
 - Correct match and team identifiers.
 - New Watch added to `config.yml`.
@@ -622,15 +623,50 @@ Verified:
 - Automatic execution through cron-job.org and GitHub Actions verified.
 - Five-minute polling interval confirmed.
 
-The Live schedule is enabled.
+#### Real-world validation results
 
-**Status: Ready for real-world match validation on 17 October 2026.**
+The user confirmed successful monitoring and notification delivery throughout the match.
+
+Verified through user observation:
+
+- Automatic monitoring and notification delivery at five-minute intervals.
+- Notifications were received through ntfy.
+- Notification content and presentation were satisfactory.
+- A separate final-result notification was received with the correct result, 5–4.
+
+Verified through inspection of the persisted `state.json`:
+
+- Watch ID `floorball-match-1703572` was preserved.
+- Match ID 1703572 was correct.
+- Final score: IFK Haninge (B) 5 – Tyresö Trollbäcken IBK (A) 4.
+- `has_final_result` was `true`.
+- `match_status` was `4`.
+- The final snapshot contained 30 registered match events with 30 unique event IDs.
+- All five previously existing Watch state entries were preserved.
+
+#### Remaining verification limitations
+
+- Player-specific highlighting for Lukas Widegren was not observed during the match because he did not score, record an assist or receive a penalty.
+- The highlighting functionality remains technically tested.
+- The persisted state confirms the final match snapshot but does not independently establish that every individual notification matched the official match-event history.
+- A complete notification-by-notification comparison has not been performed.
+- The absence of duplicate notifications has not been independently verified through notification history.
+- Updated empty-net goal formatting remains to be verified during a suitable real event.
+
+#### Conclusion
+
+The second real-world validation was successful.
+
+The platform delivered usable live floorball notifications, produced the correct final-result notification and persisted the completed match state without losing existing Watch entries.
+
+Together with the first real-world validation on 15 October, this provides sufficient evidence to prepare a first Floorball production release.
+
+The remaining limitations should be documented rather than treated as verified functionality.
 
 ### Remaining validation and implementation questions
 
-- Verify notifications during the second match.
-- Verify Lukas-specific highlighting if a relevant event occurs.
-- Confirm the updated empty-net goal formatting when a suitable event occurs.
+- Verify Lukas-specific highlighting during a future relevant real-world event.
+- Confirm updated empty-net goal formatting during a suitable real event.
 - Evaluate corrected and deleted match events.
 - Design automatic match discovery.
 - Resolve long-term Watch granularity.
@@ -643,22 +679,26 @@ The floorball implementation is not yet included in a published production relea
 
 ## 9. Recommended next step
 
-Complete the second real-world floorball validation on 17 October 2026.
+Prepare a first Floorball production release based on the verified functionality.
 
-After the match:
+Before publishing:
 
-1. Review GitHub Actions execution logs.
-2. Review notifications received through ntfy.
-3. Compare the observed notifications with the official match-event history.
-4. Verify final-result handling.
-5. Verify state persistence and prevention of duplicate notifications.
-6. Document any issues or additional iBIS event types discovered.
-7. Update `docs/backlog.md` and `PROJECT_CONTEXT.md`.
-8. Determine the next development priority.
+1. Update `docs/backlog.md` with the results of the second match validation.
+2. Update `PROJECT_CONTEXT.md` with the latest verified development status.
+3. Review the intended release scope.
+4. Confirm that the release contains only verified functionality.
+5. Publish the release after explicit approval.
 
-The next development phase should focus on making floorball monitoring reusable across multiple matches, teams and competitions.
+After the release, begin a separate design phase for automatic discovery and monitoring of matches for selected teams and competitions.
 
-Before implementation, resolve the design questions concerning match discovery, Watch granularity, simultaneous Live execution and safe state persistence.
+The design phase should address:
+
+- Team and competition selection.
+- Automatic discovery of upcoming matches.
+- Stable Watch identities.
+- Monitoring multiple matches.
+- Safe concurrent state persistence.
+- Handling postponed and cancelled matches.
 
 Continue using the existing Event Platform v1.2 architecture wherever possible.
 
@@ -668,8 +708,8 @@ Do not introduce unnecessary domain-specific behavior into the Event Platform co
 
 Current published production release: **v1.2.0**
 
-Floorball monitoring is implemented and undergoing real-world validation.
+Floorball monitoring has been implemented and successfully validated during two real-world matches.
 
-No new production release has been published for the floorball capability.
+No new production release has yet been published for the floorball capability.
 
-A future release should be created deliberately after the relevant functionality has been verified and its scope agreed.
+A first Floorball release may be prepared based on the verified implementation, subject to explicit release approval.
