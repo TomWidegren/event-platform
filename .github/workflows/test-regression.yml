@@ -1,0 +1,192 @@
+
+name: Test Event Platform Regression
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run regression tests
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import tempfile
+          from pathlib import Path
+          from unittest.mock import patch
+
+          import watcher
+          from notification_formatters import format_notification
+
+          samples = [
+              {
+                  "id": "test-sgf",
+                  "name": "Test SGF Ranking",
+                  "connector": "sgf_ranking",
+                  "mode": "daily",
+                  "source": {"player": "Test Player"},
+              },
+              {
+                  "id": "test-golfbox",
+                  "name": "Test GolfBox",
+                  "connector": "golfbox_leaderboard",
+                  "mode": "live",
+                  "source": {"player": "Test Player"},
+              },
+              {
+                  "id": "test-tournytt",
+                  "name": "Test Tournytt",
+                  "connector": "tournytt_api",
+                  "mode": "live",
+                  "source": {"player": "Test Player"},
+              },
+          ]
+
+          snapshots = {
+              "test-sgf": {
+                  "name": "Test Player",
+                  "position": "120",
+                  "points": "5,28",
+                  "competitions": "7",
+              },
+              "test-golfbox": {
+                  "name": "Test Player",
+                  "position": "T12",
+                  "topar": "+3",
+                  "hole": "F",
+                  "total": "75",
+              },
+              "test-tournytt": {
+                  "position": "T8",
+                  "score": 76,
+                  "to_par": "+4",
+                  "played_holes": 18,
+              },
+          }
+
+          # Verify connector registration and notification formatting.
+          for watch in samples:
+              connector = watch["connector"]
+              fetcher = watcher.get_fetcher(connector)
+              assert callable(fetcher), connector
+
+              title, message = format_notification(
+                  watch,
+                  snapshots[watch["id"]],
+              )
+
+              assert title.startswith("Golfuppdatering:")
+              assert "Placering:" in message
+              print(f"Connector and formatter PASS: {connector}")
+
+          # Test each Watch in isolation.
+          for watch in samples:
+              watch_id = watch["id"]
+              fields = snapshots[watch_id]
+
+              with tempfile.TemporaryDirectory() as tmp:
+                  state_file = Path(tmp) / "state.json"
+
+                  config = {
+                      "watches": [watch],
+                      "ntfy": {"topic": "test-only"},
+                  }
+
+                  def fake_get_fetcher(connector_name):
+                      assert connector_name == watch["connector"]
+                      return lambda selected_watch: fields
+
+                  with (
+                      patch.object(
+                          watcher,
+                          "load_config",
+                          return_value=config,
+                      ),
+                      patch.object(
+                          watcher,
+                          "STATE_FILE",
+                          state_file,
+                      ),
+                      patch.object(
+                          watcher,
+                          "get_fetcher",
+                          side_effect=fake_get_fetcher,
+                      ),
+                      patch.object(
+                          watcher,
+                          "send_ntfy",
+                      ) as mock_ntfy,
+                      patch.dict(
+                          os.environ,
+                          {"RUN_MODE": watch["mode"]},
+                          clear=True,
+                      ),
+                  ):
+                      # First observation.
+                      watcher.main()
+
+                      assert state_file.exists()
+                      state = json.loads(
+                          state_file.read_text(encoding="utf-8")
+                      )
+                      assert watch_id in state
+
+                      if watch["mode"] == "daily":
+                          assert mock_ntfy.call_count == 0
+                      else:
+                          assert mock_ntfy.call_count == 1
+
+                      # Unchanged observation.
+                      watcher.main()
+
+                      expected = (
+                          0 if watch["mode"] == "daily" else 1
+                      )
+                      assert mock_ntfy.call_count == expected
+
+                      # Changed observation.
+                      changed_fields = dict(fields)
+                      changed_fields["position"] = "T1"
+
+                      def changed_fetcher(connector_name):
+                          return lambda selected_watch: changed_fields
+
+                      with patch.object(
+                          watcher,
+                          "get_fetcher",
+                          side_effect=changed_fetcher,
+                      ):
+                          watcher.main()
+
+                      assert mock_ntfy.call_count == expected + 1
+
+                      updated_state = json.loads(
+                          state_file.read_text(encoding="utf-8")
+                      )
+
+                      assert (
+                          updated_state[watch_id]["fields"]["position"]
+                          == "T1"
+                      )
+
+                  print(f"State and notification PASS: {watch_id}")
+
+          print("ALL REGRESSION TESTS PASSED")
+          PY
