@@ -19,7 +19,9 @@ Golf was the first use case, but the platform core remains independent of golf-s
 
 Floorball monitoring has subsequently been implemented and successfully validated during two real-world matches.
 
-The Floorball capability is being prepared for its first production release.
+The Floorball capability is being prepared for its first production release, proposed as v1.3.0.
+
+Last development checkpoint: 19 October 2026.
 
 ## Current production capabilities
 
@@ -59,6 +61,24 @@ Used for SGF Ranking.
 
 Normally remains enabled continuously.
 
+GitHub Actions versions updated on 19 October 2026:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+
+The next scheduled Daily execution is 20 October 2026 at 08:00.
+
+**Status: Updated – Production verification pending.**
+
+The next execution should verify:
+
+- Successful GitHub Actions execution.
+- Python environment setup.
+- Playwright and Chromium installation.
+- SGF Ranking acquisition.
+- State persistence behavior.
+- Absence of Node.js 20 deprecation warnings.
+
 ### Live
 
 Workflow: `.github/workflows/live.yml`
@@ -69,13 +89,24 @@ Polling interval: 5 minutes.
 
 The Live schedule is normally disabled between events.
 
-Last verified configuration, 17 October 2026:
+Last verified live monitoring configuration:
 
-- Live workflow restricted to `WATCH_ID: floorball-match-1703572`.
-- Automatic execution through cron-job.org and GitHub Actions verified.
-- Monitoring successfully completed for the floorball match on 17 October 2026.
+- `WATCH_ID: floorball-match-1703572`.
+- Automatic execution through cron-job.org and GitHub Actions verified during the match on 17 October 2026.
+- Monitoring completed successfully.
 
-The current operational status of the Live schedule has not been reconfirmed after the match.
+On 19 October 2026, the user confirmed that the Live schedule in cron-job.org had been disabled.
+
+GitHub Actions versions updated on 19 October 2026:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+
+**Status: Updated – Production workflow verification pending.**
+
+The Live workflow has not been executed after the Actions version updates.
+
+Do not reactivate Live monitoring solely for regression testing against a completed match.
 
 ### Floorball baseline
 
@@ -92,6 +123,66 @@ Successfully used for both floorball validation matches.
 Workflow: `.github/workflows/test-floorball.yml`
 
 Used for technical verification of the floorball implementation.
+
+Updated on 19 October 2026 to:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+
+The updated workflow was successfully executed on 19 October 2026.
+
+Verified:
+
+- iBIS connector acquisition and normalization.
+- Six floorball notification formatting tests.
+- Floorball baseline creation using temporary state.
+- No real ntfy notification from the mocked baseline test.
+- Successful execution with the updated Actions versions.
+- Node.js 20 deprecation warning no longer present.
+
+### Platform regression testing
+
+Workflow: `.github/workflows/test-regression.yml`
+
+Introduced on 19 October 2026.
+
+Purpose:
+
+Verify existing golf monitoring logic without sending real notifications or modifying production state.
+
+The workflow uses:
+
+- Mocked connector snapshots.
+- Mocked ntfy notification delivery.
+- Temporary state files.
+- GitHub Actions with read-only repository permissions.
+
+Verified for:
+
+- SGF Ranking.
+- GolfBox.
+- Tournytt.
+
+Tests cover:
+
+- Connector registration.
+- Notification formatting.
+- Daily baseline behavior.
+- Live first-observation behavior.
+- No additional notification for unchanged data.
+- Change detection.
+- State persistence.
+
+Updated on 19 October 2026 to:
+
+- `actions/checkout@v5`
+- `actions/setup-python@v6`
+
+The updated regression workflow passed successfully.
+
+The Node.js 20 deprecation warning was no longer present.
+
+These tests do not independently verify current external golf data acquisition.
 
 ## Verified real-world behavior
 
@@ -283,6 +374,10 @@ The current Live workflow can overwrite concurrent state changes because it rest
 
 This risk should be addressed before introducing broader concurrent monitoring.
 
+The core also sends notifications before saving updated state. A notification or execution failure can therefore result in a change being detected again during a later execution.
+
+No corresponding production incident has been confirmed.
+
 ### Floorball
 
 - Automatic discovery of upcoming matches is not implemented.
@@ -294,7 +389,7 @@ This risk should be addressed before introducing broader concurrent monitoring.
 - The complete iBIS event-type model has not been documented.
 - Player-specific highlighting remains unverified during a relevant real-world player event.
 - Updated empty-net goal formatting remains to be verified in real-world operation.
-- GitHub Actions runtime compatibility requires review following announced platform updates.
+- GitHub Actions production runtime compatibility requires verification following the October 2026 updates.
 
 ## Documentation
 
@@ -394,25 +489,38 @@ The verified functionality is considered sufficient to prepare the first Floorba
 
 ### Planned release – v1.3.0
 
-**Status: Preparation agreed – Not yet published**
+**Status: Preparation in progress – Not yet published**
 
 Proposed scope:
 
 - Include the implemented `ibis_floorball` connector.
 - Include floorball-specific notification formatting.
 - Include the permanent pre-match baseline workflow.
-- Include automated floorball tests.
+- Include automated Floorball tests.
+- Include the new platform regression test workflow.
 - Preserve the existing v1.2 architecture and production connectors.
 
-Before publishing:
+Release preparation completed on 19 October 2026:
 
-1. Complete the relevant documentation updates.
-2. Confirm the release scope.
-3. Verify the release candidate and existing functionality.
-4. Document remaining limitations.
-5. Obtain explicit release approval.
+- Two real-world Floorball validations documented.
+- Floorball automated tests passed.
+- Golf regression tests passed using mocked data.
+- Both test workflows updated to `checkout@v5` and `setup-python@v6`.
+- Both test workflows passed after the updates.
+- Node.js 20 warnings removed from the test workflows.
+- Daily and Live production workflows updated to the same Actions versions.
+- Live schedule disabled in cron-job.org after the completed match.
 
-Do not describe planned or technically tested functionality as verified in real-world operation.
+Remaining release verification:
+
+1. Verify the scheduled Daily execution on 20 October 2026 at 08:00.
+2. Verify Live workflow compatibility after the GitHub Actions version update.
+3. Confirm Playwright and Chromium compatibility in production workflows.
+4. Review remaining warnings and known limitations.
+5. Confirm final release scope.
+6. Publish v1.3.0 only after explicit approval.
+
+No new release has been created.
 
 ### Next development phase – Automatic floorball match discovery
 
@@ -452,23 +560,17 @@ Architectural changes must be designed, reviewed and agreed before implementatio
 
 ### Recommended next goal
 
-Complete the preparation and publication of the first Floorball production release.
+Complete the remaining release verification for v1.3.0.
 
-Suggested sequence:
+Next session:
 
-1. Complete documentation updates.
-2. Review release scope and remaining limitations.
-3. Verify the release candidate.
-4. Publish v1.3.0 after explicit approval.
-5. Begin the design phase for automatic floorball match discovery.
+1. Review the scheduled Daily execution from 20 October 2026 at 08:00.
+2. Confirm that the workflow completed successfully with the updated Actions versions.
+3. Verify Playwright and Chromium installation and operation.
+4. Determine a safe Live workflow verification approach.
+5. Review release readiness and obtain explicit approval before publication.
 
-Potential future development includes:
-
-- Multiple simultaneous Live Watches.
-- Automatic floorball match discovery.
-- More flexible team and competition monitoring.
-- Safer concurrent state persistence.
-- Improved notification presentation.
+After v1.3.0, begin the design phase for automatic floorball match discovery.
 
 No new release should be created until the relevant capability has been verified and deliberately approved for release.
 
