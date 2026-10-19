@@ -1,3 +1,4 @@
+
 # Event Platform – Backlog
 
 This document contains identified future work for Event Platform.
@@ -65,13 +66,64 @@ The implementation has been technically tested.
 
 Detailed findings are documented in `docs/design-floorball.md`.
 
+### Floorball – Second live match
+
+**Status: Completed – 17 October 2026**
+
+Match: IFK Haninge (B) – Tyresö Trollbäcken IBK (A)
+
+Competition: Herrar Division 3 Södra
+
+Match ID: 1703572
+
+Followed team ID: 4194
+
+Highlighted player: Lukas Widegren, PlayerID 585280
+
+Preparation verified on 16 October:
+
+- Separate Watch configured.
+- Existing Watches preserved.
+- Permanent baseline established.
+- Five existing state entries preserved.
+- No notification generated during baseline creation.
+- Live workflow updated to the correct Watch ID.
+- Manual Live execution successful.
+- Automatic execution through cron-job.org verified.
+- Five-minute polling interval confirmed.
+
+Verified during and after the match:
+
+- Automatic live monitoring and ntfy notification delivery at five-minute intervals, confirmed by the user.
+- Notification content and presentation were satisfactory.
+- A separate final-result notification was received with the correct result, 5–4.
+- The final match state was persisted in `state.json`.
+- `has_final_result` was `true`.
+- `match_status` was `4`.
+- The final snapshot contained 30 registered match events with 30 unique event IDs.
+- All five previously existing Watch state entries were preserved.
+
+Remaining verification limitations:
+
+- Lukas-specific highlighting was not observed during the match because he did not score, record an assist or receive a penalty.
+- Player-specific highlighting remains technically tested.
+- A complete comparison between individual notifications and the official match-event history was not performed.
+- The absence of duplicate notifications was not independently verified through notification history.
+- Updated empty-net goal formatting remains to be verified during a suitable real event.
+
+The second real-world validation was successful.
+
+Together, the two match validations provide sufficient evidence to prepare a first Floorball production release, subject to explicit release approval.
+
+Detailed findings are documented in `docs/design-floorball.md`.
+
 ---
 
 ## Floorball monitoring
 
 ### Initial floorball connector
 
-**Status: Implemented – Real-world validation ongoing**
+**Status: Implemented – Two real-world validations completed**
 
 Initial investigation completed on 12 October 2026.
 
@@ -92,66 +144,81 @@ Implemented:
 
 Technical verification completed through GitHub Actions.
 
-First real-world match validation completed successfully on 15 October 2026.
+Real-world match validations completed successfully on 15 and 17 October 2026.
 
 The implementation has not yet been included in a published production release.
 
-### Second live match validation
+### First Floorball production release
 
-**Status: Prepared – 17 October 2026**
+**Status: Planned – Pending release preparation and approval**
 
-Match: IFK Haninge (B) – Tyresö Trollbäcken IBK (A)
+Proposed release: v1.3.0.
 
-Competition: Herrar Division 3 Södra
+Scope:
 
-Match ID: 1703572
+- Include the existing verified `ibis_floorball` connector.
+- Include floorball-specific notification formatting.
+- Include the permanent pre-match baseline workflow.
+- Include the existing automated floorball tests.
+- Preserve the v1.2 Unified Connector Interface architecture.
+- Preserve existing GolfBox, SGF Ranking and Tournytt functionality.
 
-Start: 13:30
+Before release:
 
-Followed team ID: 4194
+1. Complete the relevant documentation updates.
+2. Confirm the intended release scope.
+3. Verify the release candidate and existing functionality.
+4. Document known limitations.
+5. Obtain explicit approval before publishing the release.
 
-Highlighted player: Lukas Widegren, PlayerID 585280
+Known limitations:
 
-Preparation verified on 16 October:
+- One manually configured match per Watch.
+- Current Live workflow targets one selected Watch.
+- Automatic match discovery is not implemented.
+- Player-specific highlighting has been technically tested but not observed during a relevant real-world player event.
+- Updated empty-net goal formatting requires further real-world verification.
+- Corrected or deleted match events require further evaluation.
+- Concurrent state persistence requires improvement before broader simultaneous monitoring.
 
-- Separate Watch configured.
-- Existing Watches preserved.
-- Permanent baseline established.
-- Five existing state entries preserved.
-- No notification generated during baseline creation.
-- Live workflow updated to the correct Watch ID.
-- Manual Live execution successful.
-- Automatic execution through cron-job.org verified.
-- Five-minute polling interval confirmed.
-
-Validation goals:
-
-- Verify live match notifications.
-- Verify goal and penalty notifications.
-- Verify period transitions.
-- Verify final-result notification.
-- Verify Lukas-specific highlighting if relevant events occur.
-- Verify updated empty-net goal formatting if applicable.
-- Confirm state persistence and absence of duplicate notifications.
-
-After the match, evaluate the results and document lessons learned.
+No new release has yet been published.
 
 ### Generalize floorball monitoring
 
-**Status: Not started**
+**Status: Next planned development area – Design not started**
 
-Extend monitoring beyond manually configured individual matches.
+**Priority: Next development phase after the first Floorball release**
+
+Goal:
+
+Automatically identify and monitor upcoming matches for selected teams and competitions, initially focusing on the teams in which Lukas Widegren participates.
+
+The platform should monitor the selected teams regardless of whether Lukas participates in a particular match.
 
 Requirements:
 
-- Monitor all matches for selected teams and competitions.
+- Configure selected teams and competitions.
 - Discover upcoming matches automatically.
+- Identify relevant matches using TeamIDs and CompetitionIDs.
 - Support multiple teams and competitions.
 - Handle postponed and cancelled matches.
 - Maintain stable Watch identities.
+- Avoid manually editing `config.yml` for every new match.
+- Avoid manually changing `WATCH_ID` for every new match.
 - Reuse the existing Event Platform core wherever possible.
 
-Resolve the long-term Watch granularity and match-discovery design before implementation.
+The competition match-list endpoint has already been identified as a potential discovery mechanism.
+
+Before implementation, resolve:
+
+- Long-term Watch granularity.
+- Match discovery frequency.
+- Match activation and completion handling.
+- Multiple simultaneous Live Watches.
+- Safe concurrent state persistence.
+- Preservation of existing Watch state.
+
+The architectural design must be reviewed and agreed before implementation.
 
 ### Multiple simultaneous Live Watches
 
@@ -231,11 +298,9 @@ The GolfBox `holebyhole` view has been verified to expose:
 
 Potential notification:
 
-```text
-Hål 10: 6 (bogey)
-Totalt: +2
-Placering: T32
-```
+    Hål 10: 6 (bogey)
+    Totalt: +2
+    Placering: T32
 
 The existing leaderboard monitoring should remain the primary capability unless hole-by-hole data provides sufficient additional value.
 
@@ -247,11 +312,9 @@ SGF Ranking notifications should show previous and new values.
 
 Example:
 
-```text
-Placering: 1204 → 1143
-Poäng: 4,32 → 5,30
-Tävlingar: 6 → 7
-```
+    Placering: 1204 → 1143
+    Poäng: 4,32 → 5,30
+    Tävlingar: 6 → 7
 
 ### Improve Tournytt notification formatting
 
@@ -378,7 +441,7 @@ Required follow-up:
 - Verify Playwright and Chromium compatibility.
 - Run regression tests for Daily and Live workflows after required updates.
 
-This maintenance should be addressed separately from the ongoing floorball validation.
+This maintenance should be addressed separately from the completed floorball validation and coordinated with release preparation.
 
 ---
 
