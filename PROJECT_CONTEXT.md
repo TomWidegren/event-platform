@@ -1,3 +1,4 @@
+
 # Event Platform – Project Context
 
 This file is the starting point for every new Event Platform development session.
@@ -16,7 +17,9 @@ Event Platform monitors changing data from external platforms, detects relevant 
 
 Golf was the first use case, but the platform core remains independent of golf-specific logic.
 
-Floorball monitoring has subsequently been implemented and is undergoing real-world validation.
+Floorball monitoring has subsequently been implemented and successfully validated during two real-world matches.
+
+The Floorball capability is being prepared for its first production release.
 
 ## Current production capabilities
 
@@ -25,13 +28,13 @@ Event Platform supports two monitoring modes:
 - Daily
 - Live
 
-Connectors included in the current production release:
+Connectors included in the current published production release:
 
 - `sgf_ranking`
 - `golfbox_leaderboard`
 - `tournytt_api`
 
-Additional connector under development:
+Additional implemented connector, pending release:
 
 - `ibis_floorball`
 
@@ -66,11 +69,13 @@ Polling interval: 5 minutes.
 
 The Live schedule is normally disabled between events.
 
-Current configuration, 16 October 2026:
+Last verified configuration, 17 October 2026:
 
-- Live schedule enabled in cron-job.org.
-- Workflow restricted to `WATCH_ID: floorball-match-1703572`.
-- Monitoring prepared for the floorball match on 17 October 2026.
+- Live workflow restricted to `WATCH_ID: floorball-match-1703572`.
+- Automatic execution through cron-job.org and GitHub Actions verified.
+- Monitoring successfully completed for the floorball match on 17 October 2026.
+
+The current operational status of the Live schedule has not been reconfirmed after the match.
 
 ### Floorball baseline
 
@@ -79,6 +84,8 @@ Workflow: `.github/workflows/floorball-baseline.yml`
 Used to establish a permanent pre-match baseline without generating notifications.
 
 The workflow verifies that the match has not started and preserves existing state entries.
+
+Successfully used for both floorball validation matches.
 
 ### Floorball testing
 
@@ -157,6 +164,8 @@ Implemented:
 
 #### First real-world validation – 15 October 2026
 
+**Status: Completed successfully**
+
 Match:
 
 Huddinge IBS – Tyresö Trollbäcken IBK
@@ -171,6 +180,15 @@ Highlighted player: Lukas Widegren, PlayerID 585280.
 
 The live monitoring operated successfully during the match.
 
+Verified notifications:
+
+- Goals.
+- Penalties.
+- Period starts.
+- Period ends.
+- Final result.
+- Other registered match events.
+
 An additional iBIS event type was identified:
 
 - MatchEventTypeID 1 – Regular goal.
@@ -180,11 +198,13 @@ The notification formatter was updated to handle both event types as goals.
 
 Empty-net goals are explicitly identified with the suffix `(tom bur)`.
 
-The current implementation has been verified through inspection of `notification_formatters.py`.
+The updated implementation was verified through inspection of `notification_formatters.py`.
 
-Detailed results for individual match-event categories have not yet been documented.
+Player-specific highlighting was not verified during the match because Lukas did not score, record an assist or receive a penalty.
 
 #### Second real-world validation – 17 October 2026
+
+**Status: Completed successfully**
 
 Match:
 
@@ -216,9 +236,35 @@ Preparation completed on 16 October:
 - Automatic execution through cron-job.org and GitHub Actions verified.
 - Five-minute polling interval confirmed.
 
-**Current status: Ready for real-world match validation.**
+Real-world results confirmed by the user:
 
-Match-event notifications and final-result handling remain to be evaluated during and after the match.
+- Automatic live monitoring and ntfy notifications operated at five-minute intervals.
+- Notification content and presentation were satisfactory.
+- A separate final-result notification was received.
+- The final-result notification correctly reported 5–4.
+
+Verified through inspection of the persisted `state.json`:
+
+- Correct Watch ID: `floorball-match-1703572`.
+- Correct Match ID: 1703572.
+- Final result: IFK Haninge (B) 5 – Tyresö Trollbäcken IBK (A) 4.
+- `has_final_result` was `true`.
+- `match_status` was `4`.
+- The final snapshot contained 30 registered match events.
+- All 30 event IDs were unique.
+- All five previously existing Watch state entries were preserved.
+
+The second real-world validation was successful.
+
+#### Remaining verification limitations
+
+- Player-specific highlighting has been technically tested but has not been observed during a real match involving Lukas.
+- Updated empty-net goal formatting has not yet been verified during a suitable real event.
+- A complete comparison of individual notifications with the official match-event history has not been performed.
+- The absence of duplicate notifications has not been independently verified through notification history.
+- Handling of corrected or deleted match events requires further evaluation.
+
+These limitations do not prevent preparation of the initial Floorball release but must not be described as verified capabilities.
 
 ## Important current limitations
 
@@ -246,6 +292,8 @@ This risk should be addressed before introducing broader concurrent monitoring.
 - Handling of corrected or deleted match events requires further evaluation.
 - Notification preferences are not configurable.
 - The complete iBIS event-type model has not been documented.
+- Player-specific highlighting remains unverified during a relevant real-world player event.
+- Updated empty-net goal formatting remains to be verified in real-world operation.
 - GitHub Actions runtime compatibility requires review following announced platform updates.
 
 ## Documentation
@@ -331,30 +379,88 @@ Key capabilities:
 
 The v1.2.0 release cycle is complete.
 
-### Floorball development – Real-world validation
+### Floorball development – Implementation and validation completed
 
 The first floorball connector has been implemented and technically verified.
 
-The first real-world match validation took place on 15 October 2026.
+Two real-world match validations were successfully completed:
 
-A second match is configured for 17 October 2026.
+- 15 October 2026 – Huddinge IBS vs Tyresö Trollbäcken IBK.
+- 17 October 2026 – IFK Haninge (B) vs Tyresö Trollbäcken IBK (A).
 
-The floorball implementation has not yet been included in a published production release.
+The implementation has not yet been included in a published production release.
 
-The next development phase should be determined after evaluating the real-world match results.
+The verified functionality is considered sufficient to prepare the first Floorball release.
+
+### Planned release – v1.3.0
+
+**Status: Preparation agreed – Not yet published**
+
+Proposed scope:
+
+- Include the implemented `ibis_floorball` connector.
+- Include floorball-specific notification formatting.
+- Include the permanent pre-match baseline workflow.
+- Include automated floorball tests.
+- Preserve the existing v1.2 architecture and production connectors.
+
+Before publishing:
+
+1. Complete the relevant documentation updates.
+2. Confirm the release scope.
+3. Verify the release candidate and existing functionality.
+4. Document remaining limitations.
+5. Obtain explicit release approval.
+
+Do not describe planned or technically tested functionality as verified in real-world operation.
+
+### Next development phase – Automatic floorball match discovery
+
+**Status: Agreed direction – Design not started**
+
+After the first Floorball release, begin a separate design phase for automatic identification and monitoring of matches.
+
+Initial goal:
+
+Automatically identify upcoming matches for the teams and competitions in which Lukas Widegren participates.
+
+Monitoring should continue for the selected teams regardless of whether Lukas participates in an individual match.
+
+Desired capabilities:
+
+- Configure selected teams and competitions.
+- Discover upcoming matches automatically.
+- Support multiple teams and competitions.
+- Avoid manual MatchID configuration for every match.
+- Avoid manually changing `WATCH_ID` between matches.
+- Handle postponed and cancelled matches.
+- Preserve stable Watch identities and existing state.
+- Reuse the Event Platform core wherever possible.
+
+Before implementation, resolve the design questions concerning:
+
+- Match discovery.
+- Watch granularity.
+- Multiple simultaneous Live Watches.
+- Safe concurrent state persistence.
+- Match activation and completion.
+- Team and competition identification.
+
+The iBIS competition match-list endpoint has already been identified as a potential discovery mechanism.
+
+Architectural changes must be designed, reviewed and agreed before implementation.
 
 ### Recommended next goal
 
-After the match on 17 October:
+Complete the preparation and publication of the first Floorball production release.
 
-1. Review GitHub Actions execution logs.
-2. Review ntfy notifications.
-3. Compare notifications with the official match-event history.
-4. Verify final-result handling.
-5. Confirm state persistence and absence of duplicate notifications.
-6. Document findings in `docs/design-floorball.md`.
-7. Update `docs/backlog.md`.
-8. Determine the next development priority.
+Suggested sequence:
+
+1. Complete documentation updates.
+2. Review release scope and remaining limitations.
+3. Verify the release candidate.
+4. Publish v1.3.0 after explicit approval.
+5. Begin the design phase for automatic floorball match discovery.
 
 Potential future development includes:
 
