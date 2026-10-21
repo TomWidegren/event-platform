@@ -18,7 +18,9 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import floorball_git_persistence
 from floorball_git_persistence import persist_registry_changes
 
 
@@ -223,8 +225,6 @@ class TestFloorballGitPersistence(unittest.TestCase):
         )
 
     def test_stale_clone_preserves_both_changes(self):
-        # Both clones initially have the same registry.
-        # Discovery commits first.
         persist_registry_changes(
             repo_path=self.discovery_repo,
             changes={
@@ -235,8 +235,6 @@ class TestFloorballGitPersistence(unittest.TestCase):
             owner="discovery",
         )
 
-        # Live starts with an outdated local clone.
-        # Persistence must refresh before merging.
         persist_registry_changes(
             repo_path=self.live_repo,
             changes={
@@ -393,6 +391,108 @@ class TestFloorballGitPersistence(unittest.TestCase):
         self.assertEqual(
             remote_commit,
             original_commit,
+        )
+
+    def test_real_push_conflict_retries_and_preserves_changes(self):
+        """
+        Force a real non-fast-forward push rejection.
+
+        Discovery updates the schedule after Live has fetched
+        the old remote version. Live must retry against the
+        latest registry and preserve both changes.
+        """
+        original_git = floorball_git_persistence._git
+        conflict_injected = False
+        push_rejected = False
+
+        def git_with_conflict(repo_path, *args, **kwargs):
+            nonlocal conflict_injected, push_rejected
+
+            if (
+                not conflict_injected
+                and Path(repo_path) == self.live_repo
+                and args
+                and args[0] == "push"
+            ):
+                conflict_injected = True
+
+                discovery_result = persist_registry_changes(
+                    repo_path=self.discovery_repo,
+                    changes={
+                        "1750707": {
+                            "scheduled_start": "2026-10-23T20:15:00",
+                        }
+                    },
+                    owner="discovery",
+                )
+
+                self.assertTrue(discovery_result)
+
+            result = original_git(
+                repo_path,
+                *args,
+                **kwargs,
+            )
+
+            if (
+                conflict_injected
+                and not push_rejected
+                and Path(repo_path) == self.live_repo
+                and args
+                and args[0] == "push"
+            ):
+                self.assertNotEqual(
+                    result.returncode,
+                    0,
+                    "Expected a real non-fast-forward rejection",
+                )
+                push_rejected = True
+
+            return result
+
+        with patch.object(
+            floorball_git_persistence,
+            "_git",
+            side_effect=git_with_conflict,
+        ):
+            result = persist_registry_changes(
+                repo_path=self.live_repo,
+                changes={
+                    "1750707": {
+                        "monitoring_status": "completed",
+                    }
+                },
+                owner="live",
+            )
+
+        self.assertTrue(result)
+        self.assertTrue(conflict_injected)
+        self.assertTrue(push_rejected)
+
+        self.git(
+            self.discovery_repo,
+            "fetch",
+            "origin",
+            "main",
+        )
+
+        registry = json.loads(
+            self.git(
+                self.discovery_repo,
+                "show",
+                "origin/main:match_registry.json",
+            )
+        )
+
+        match = registry["matches"]["1750707"]
+
+        self.assertEqual(
+            match["scheduled_start"],
+            "2026-10-23T20:15:00",
+        )
+        self.assertEqual(
+            match["monitoring_status"],
+            "completed",
         )
 
 
