@@ -46,3 +46,15 @@ watches:
 
 ntfy:
   topic: "tom-widegren-golf-92fd71b8"
+
+floorball_discovery:
+  teams:
+    - name: "Tyresö Trollbäcken IBK - JAS"
+      team_id: 20872
+      competition_id: 45004
+      highlight_player_id: 585280
+
+    - name: "Tyresö Trollbäcken IBK - Herrar"
+      team_id: 4194
+      competition_id: 44356
+      highlight_player_id: 585280
