@@ -1,0 +1,225 @@
+
+name: Test Floorball Discovery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Test read-only floorball discovery
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python - <<'PY'
+          import sys
+          from datetime import datetime
+          from urllib.parse import urlparse
+
+          import requests
+
+          STARTKIT_URL = (
+              "https://api.innebandy.se/"
+              "StatsAppApi/api/startkit"
+          )
+
+          EXPECTED_HOST = "api.innebandy.se"
+
+          TEAMS = [
+              {
+                  "name": "Tyresö Trollbäcken IBK - JAS",
+                  "team_id": 20872,
+                  "competition_id": 45004,
+                  "expected_match_id": 1750707,
+              },
+              {
+                  "name": "Tyresö Trollbäcken IBK - Herrar",
+                  "team_id": 4194,
+                  "competition_id": 44356,
+                  "expected_match_id": 1703577,
+              },
+          ]
+
+          def parse_match_date(value):
+              if not value:
+                  return None
+
+              return datetime.fromisoformat(
+                  value.replace("Z", "+00:00")
+              )
+
+          with requests.Session() as session:
+              print("Authenticating with iBIS...")
+
+              response = session.get(
+                  STARTKIT_URL,
+                  headers={
+                      "Accept": "application/json",
+                      "Origin": "https://stats.innebandy.se",
+                  },
+                  timeout=30,
+              )
+              response.raise_for_status()
+
+              credentials = response.json()
+              token = credentials["accessToken"]
+              api_root = credentials["apiRoot"].rstrip("/")
+
+              parsed = urlparse(api_root)
+
+              assert parsed.scheme == "https"
+              assert parsed.hostname == EXPECTED_HOST
+              assert parsed.path == "/v2/api/public"
+
+              headers = {
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "Origin": "https://stats.innebandy.se",
+              }
+
+              print("Authentication PASSED")
+
+              for team in TEAMS:
+                  print()
+                  print("=" * 60)
+                  print("Team:", team["name"])
+                  print("TeamID:", team["team_id"])
+                  print("CompetitionID:", team["competition_id"])
+
+                  url = (
+                      f"{api_root}/competitions/"
+                      f"{team['competition_id']}/matches"
+                  )
+
+                  response = session.get(
+                      url,
+                      headers=headers,
+                      timeout=30,
+                  )
+                  response.raise_for_status()
+
+                  matches = response.json()
+
+                  assert isinstance(matches, list), (
+                      "Expected a list of competition matches"
+                  )
+
+                  print("Competition matches:", len(matches))
+
+                  team_matches = [
+                      match
+                      for match in matches
+                      if (
+                          match.get("HomeTeamID")
+                          == team["team_id"]
+                          or match.get("AwayTeamID")
+                          == team["team_id"]
+                      )
+                  ]
+
+                  print("Matches for selected team:", len(team_matches))
+
+                  assert team_matches, (
+                      f"No matches found for {team['name']}"
+                  )
+
+                  expected_matches = [
+                      match
+                      for match in team_matches
+                      if match.get("MatchID")
+                      == team["expected_match_id"]
+                  ]
+
+                  assert len(expected_matches) == 1, (
+                      f"Expected match {team['expected_match_id']} "
+                      "not found exactly once"
+                  )
+
+                  expected = expected_matches[0]
+
+                  assert (
+                      expected.get("CompetitionID")
+                      == team["competition_id"]
+                  )
+
+                  print()
+                  print("EXPECTED MATCH VERIFIED")
+                  print("MatchID:", expected["MatchID"])
+                  print("Home:", expected.get("HomeTeam"))
+                  print("Away:", expected.get("AwayTeam"))
+                  print("Start:", expected.get("MatchDateTime"))
+                  print("Status:", expected.get("MatchStatus"))
+
+                  # Show upcoming matches using the runner's
+                  # current date, without changing any data.
+                  today = datetime.now().date()
+
+                  upcoming = []
+
+                  for match in team_matches:
+                      start = parse_match_date(
+                          match.get("MatchDateTime")
+                      )
+
+                      if start is None:
+                          continue
+
+                      if start.date() < today:
+                          continue
+
+                      if match.get("HasFinalResult") is True:
+                          continue
+
+                      if match.get("Cancelled") is True:
+                          continue
+
+                      if match.get("Abandoned") is True:
+                          continue
+
+                      upcoming.append(match)
+
+                  upcoming.sort(
+                      key=lambda match: (
+                          match.get("MatchDateTime") or "",
+                          match.get("MatchID") or 0,
+                      )
+                  )
+
+                  print()
+                  print("UPCOMING MATCHES")
+                  print("Count:", len(upcoming))
+
+                  for match in upcoming[:10]:
+                      print(
+                          match.get("MatchDateTime"),
+                          "|",
+                          match.get("MatchID"),
+                          "|",
+                          match.get("HomeTeam"),
+                          "-",
+                          match.get("AwayTeam"),
+                      )
+
+                  print()
+                  print("Discovery PASSED:", team["name"])
+
+          print()
+          print("=" * 60)
+          print("ALL FLOORBALL DISCOVERY TESTS PASSED")
+          PY
