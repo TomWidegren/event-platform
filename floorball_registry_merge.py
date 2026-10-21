@@ -5,6 +5,9 @@ Safe in-memory merge logic for Event Platform floorball registry.
 Discovery owns source-derived scheduling and match information.
 Live owns monitoring lifecycle information.
 
+Discovery may create new match entries.
+Live may only update existing match entries.
+
 This module does not:
 - Access external APIs.
 - Read or write files.
@@ -43,6 +46,13 @@ VALID_MONITORING_STATUSES = frozenset({
     "completed",
 })
 
+REQUIRED_NEW_MATCH_FIELDS = frozenset({
+    "match_id",
+    "competition_id",
+    "team_id",
+    "scheduled_start",
+})
+
 
 def merge_registry_changes(
     registry: dict,
@@ -57,7 +67,7 @@ def merge_registry_changes(
             The latest available registry.
 
         changes:
-            Dictionary keyed by MatchID containing only fields
+            Dictionary keyed by MatchID containing fields
             the requesting process intends to change.
 
         owner:
@@ -67,8 +77,10 @@ def merge_registry_changes(
         A new registry with the requested changes applied.
 
     Rules:
-        - Discovery may update source-derived fields only.
+        - Discovery may create new matches.
+        - Discovery may update source-derived fields.
         - Live may update monitoring_status only.
+        - Live cannot create new matches.
         - Completed matches cannot be reactivated.
         - Unrelated matches and fields are preserved.
         - Original inputs are never mutated.
@@ -100,26 +112,19 @@ def merge_registry_changes(
         else LIVE_FIELDS
     )
 
-    # Work on a copy so that failed updates cannot partially
-    # modify the original registry.
+    # All changes are applied to a copy.
+    # A failed update cannot partially mutate the input.
     updated = deepcopy(registry)
 
     for match_id, field_changes in changes.items():
         match_key = str(match_id)
-
-        if match_key not in updated["matches"]:
-            raise KeyError(
-                f"Unknown match in registry: {match_key}"
-            )
 
         if not isinstance(field_changes, dict):
             raise TypeError(
                 f"Changes for {match_key} must be a dictionary"
             )
 
-        invalid_fields = (
-            set(field_changes) - allowed_fields
-        )
+        invalid_fields = set(field_changes) - allowed_fields
 
         if invalid_fields:
             raise ValueError(
@@ -127,13 +132,69 @@ def merge_registry_changes(
                 f"{sorted(invalid_fields)}"
             )
 
-        match = updated["matches"][match_key]
+        existing = updated["matches"].get(match_key)
 
-        if not isinstance(match, dict):
+        # New matches may only be created by Discovery.
+        if existing is None:
+            if owner != "discovery":
+                raise KeyError(
+                    f"Live cannot create match: {match_key}"
+                )
+
+            missing_fields = (
+                REQUIRED_NEW_MATCH_FIELDS - set(field_changes)
+            )
+
+            if missing_fields:
+                raise ValueError(
+                    f"Missing fields for new match {match_key}: "
+                    f"{sorted(missing_fields)}"
+                )
+
+            new_match = deepcopy(field_changes)
+
+            # Ensure that the registry key and stored MatchID
+            # refer to the same match.
+            if str(new_match["match_id"]) != match_key:
+                raise ValueError(
+                    f"MatchID mismatch for {match_key}"
+                )
+
+            if not isinstance(new_match["match_id"], int):
+                raise ValueError("MatchID must be an integer")
+
+            if new_match["match_id"] <= 0:
+                raise ValueError("MatchID must be positive")
+
+            if not isinstance(
+                new_match["competition_id"], int
+            ):
+                raise ValueError(
+                    "CompetitionID must be an integer"
+                )
+
+            if not isinstance(new_match["team_id"], int):
+                raise ValueError("TeamID must be an integer")
+
+            if not new_match["scheduled_start"]:
+                raise ValueError(
+                    "Scheduled start cannot be empty"
+                )
+
+            # Discovery never owns monitoring lifecycle.
+            # Newly discovered matches always start scheduled.
+            new_match["monitoring_status"] = "scheduled"
+
+            updated["matches"][match_key] = new_match
+            continue
+
+        if not isinstance(existing, dict):
             raise ValueError(
                 f"Invalid registry entry: {match_key}"
             )
 
+        # Existing match: preserve all fields not explicitly
+        # owned and updated by the requesting process.
         if owner == "live":
             if "monitoring_status" in field_changes:
                 new_status = field_changes[
@@ -145,7 +206,7 @@ def merge_registry_changes(
                         f"Invalid monitoring status: {new_status}"
                     )
 
-                current_status = match.get(
+                current_status = existing.get(
                     "monitoring_status",
                     "scheduled",
                 )
@@ -158,9 +219,18 @@ def merge_registry_changes(
                         "Completed matches cannot be reactivated"
                     )
 
-        # Apply only fields explicitly included in this update.
-        # All unrelated information is preserved.
+        # Prevent changes to the stable identity of an
+        # already registered match.
+        if (
+            "match_id" in field_changes
+            and field_changes["match_id"]
+            != existing.get("match_id")
+        ):
+            raise ValueError(
+                f"Cannot change MatchID for {match_key}"
+            )
+
         for field, value in field_changes.items():
-            match[field] = deepcopy(value)
+            existing[field] = deepcopy(value)
 
     return updated
