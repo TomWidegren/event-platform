@@ -361,5 +361,82 @@ class TestFloorballRegistryMerge(unittest.TestCase):
             )
 
 
+    def test_discovery_can_create_new_match(self):
+        """
+        Discovery may register a newly discovered match.
+        """
+        changes = {
+            "1750712": {
+                "match_id": 1750712,
+                "competition_id": 45004,
+                "team_id": 20872,
+                "highlight_player_id": 585280,
+                "home_team": "Onyx IBS",
+                "away_team": "Tyresö Trollbäcken IBK",
+                "scheduled_start": "2026-10-30T19:30:00",
+                "source_status": 1,
+                "cancelled": False,
+                "postponed": False,
+            }
+        }
+
+        result = merge_registry_changes(
+            self.original,
+            changes,
+            owner="discovery",
+        )
+
+        self.assertIn("1750712", result["matches"])
+        self.assertEqual(
+            result["matches"]["1750712"]["monitoring_status"],
+            "scheduled",
+        )
+
+    def test_live_cannot_create_new_match(self):
+        """
+        Live must never register unknown matches.
+        """
+        changes = {
+            "1750712": {
+                "monitoring_status": "completed",
+            }
+        }
+
+        with self.assertRaises((KeyError, ValueError)):
+            merge_registry_changes(
+                self.original,
+                changes,
+                owner="live",
+            )
+
+    def test_new_match_does_not_change_existing_matches(self):
+        """
+        Adding a match must preserve all existing entries.
+        """
+        original_copy = copy.deepcopy(self.original)
+
+        changes = {
+            "1750712": {
+                "match_id": 1750712,
+                "competition_id": 45004,
+                "team_id": 20872,
+                "scheduled_start": "2026-10-30T19:30:00",
+            }
+        }
+
+        result = merge_registry_changes(
+            self.original,
+            changes,
+            owner="discovery",
+        )
+
+        self.assertEqual(self.original, original_copy)
+
+        for match_id, original_match in self.original["matches"].items():
+            self.assertEqual(
+                result["matches"][match_id],
+                original_match,
+            )
+
 if __name__ == "__main__":
     unittest.main()
