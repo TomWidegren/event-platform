@@ -1,0 +1,168 @@
+
+name: Test Floorball Daily Discovery
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Daily Discovery dry-run
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python - <<'PY'
+          import copy
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          import yaml
+
+          from floorball_discovery import discover_matches
+          from floorball_discovery_changes import (
+              calculate_discovery_changes,
+          )
+          from floorball_registry_merge import (
+              merge_registry_changes,
+          )
+
+          STOCKHOLM = ZoneInfo("Europe/Stockholm")
+
+          print("=== FLOORBALL DAILY DISCOVERY DRY-RUN ===")
+
+          with Path("config.yml").open(
+              "r", encoding="utf-8"
+          ) as file:
+              config = yaml.safe_load(file)
+
+          teams = config["floorball_discovery"]["teams"]
+
+          print("Configured teams:", len(teams))
+
+          for team in teams:
+              print(
+                  "Team:",
+                  team["name"],
+                  "| TeamID:",
+                  team["team_id"],
+                  "| CompetitionID:",
+                  team["competition_id"],
+              )
+
+          registry_path = Path("match_registry.json")
+
+          if registry_path.exists():
+              with registry_path.open(
+                  "r", encoding="utf-8"
+              ) as file:
+                  registry = json.load(file)
+              print("Existing registry loaded")
+          else:
+              registry = {
+                  "schema_version": 1,
+                  "matches": {},
+              }
+              print("No existing registry - using empty baseline")
+
+          original = copy.deepcopy(registry)
+
+          now = datetime.now(STOCKHOLM)
+
+          print("Discovery time:", now.isoformat())
+
+          updated = discover_matches(
+              config,
+              registry,
+              now=now,
+          )
+
+          changes = calculate_discovery_changes(
+              registry,
+              updated,
+          )
+
+          print()
+          print("Discovery results:")
+          print("Registered matches:", len(updated["matches"]))
+          print("Matches requiring changes:", len(changes))
+
+          new_matches = [
+              match_id
+              for match_id in changes
+              if match_id not in registry["matches"]
+          ]
+
+          updated_matches = [
+              match_id
+              for match_id in changes
+              if match_id in registry["matches"]
+          ]
+
+          print("New matches:", len(new_matches))
+          print("Updated matches:", len(updated_matches))
+
+          for match_id in sorted(changes):
+              entry = updated["matches"][match_id]
+
+              print()
+              print("MatchID:", match_id)
+              print(
+                  "Match:",
+                  entry.get("home_team"),
+                  "-",
+                  entry.get("away_team"),
+              )
+              print("Start:", entry.get("scheduled_start"))
+              print(
+                  "Change type:",
+                  "NEW" if match_id in new_matches else "UPDATED",
+              )
+              print(
+                  "Changed fields:",
+                  sorted(changes[match_id]),
+              )
+
+          # Apply changes to a separate in-memory copy
+          # using the same merge function as Git persistence.
+          merged = merge_registry_changes(
+              registry,
+              changes,
+              owner="discovery",
+          )
+
+          assert merged == updated, (
+              "Discovery changes did not reproduce "
+              "the expected registry"
+          )
+
+          assert registry == original, (
+              "Original registry was unexpectedly modified"
+          )
+
+          print()
+          print("Registry merge verification PASSED")
+          print("Original registry unchanged: True")
+          print("No persistent files modified")
+          print("No notifications sent")
+          print("No Git commits created")
+          print()
+          print("ALL DAILY DISCOVERY DRY-RUN CHECKS PASSED")
+          PY
