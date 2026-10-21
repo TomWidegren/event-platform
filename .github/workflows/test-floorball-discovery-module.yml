@@ -1,0 +1,31 @@
+
+name: Test Floorball Discovery Module
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Floorball Discovery tests
+        run: |
+          python -m unittest discover \
+            -s tests \
+            -p "test_floorball_discovery.py" \
+            -v
