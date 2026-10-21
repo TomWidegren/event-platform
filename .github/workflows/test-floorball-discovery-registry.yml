@@ -1,0 +1,210 @@
+
+name: Test Floorball Discovery Registry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Test discovery and registry integration
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python - <<'PY'
+          from datetime import datetime
+          from urllib.parse import urlparse
+
+          import requests
+
+          from floorball_registry import update_registry
+
+          STARTKIT_URL = (
+              "https://api.innebandy.se/"
+              "StatsAppApi/api/startkit"
+          )
+
+          TEAMS = [
+              {
+                  "name": "Tyresö Trollbäcken IBK - JAS",
+                  "team_id": 20872,
+                  "competition_id": 45004,
+                  "highlight_player_id": 585280,
+                  "expected_match_id": 1750707,
+              },
+              {
+                  "name": "Tyresö Trollbäcken IBK - Herrar",
+                  "team_id": 4194,
+                  "competition_id": 44356,
+                  "highlight_player_id": 585280,
+                  "expected_match_id": 1703577,
+              },
+          ]
+
+          registry = {
+              "schema_version": 1,
+              "matches": {},
+          }
+
+          today = datetime.now().date()
+
+          with requests.Session() as session:
+              response = session.get(
+                  STARTKIT_URL,
+                  headers={
+                      "Accept": "application/json",
+                      "Origin": "https://stats.innebandy.se",
+                  },
+                  timeout=30,
+              )
+              response.raise_for_status()
+
+              credentials = response.json()
+              token = credentials["accessToken"]
+              api_root = credentials["apiRoot"].rstrip("/")
+
+              parsed = urlparse(api_root)
+
+              assert parsed.scheme == "https"
+              assert parsed.hostname == "api.innebandy.se"
+              assert parsed.path == "/v2/api/public"
+
+              headers = {
+                  "Accept": "application/json",
+                  "Authorization": f"Bearer {token}",
+                  "Origin": "https://stats.innebandy.se",
+              }
+
+              print("iBIS authentication PASSED")
+
+              discovered = []
+
+              for team in TEAMS:
+                  url = (
+                      f"{api_root}/competitions/"
+                      f"{team['competition_id']}/matches"
+                  )
+
+                  response = session.get(
+                      url,
+                      headers=headers,
+                      timeout=30,
+                  )
+                  response.raise_for_status()
+
+                  matches = response.json()
+
+                  assert isinstance(matches, list)
+
+                  relevant = []
+
+                  for match in matches:
+                      if match.get("CompetitionID") != team["competition_id"]:
+                          continue
+
+                      if team["team_id"] not in (
+                          match.get("HomeTeamID"),
+                          match.get("AwayTeamID"),
+                      ):
+                          continue
+
+                      start_value = match.get("MatchDateTime")
+
+                      if not start_value:
+                          continue
+
+                      start = datetime.fromisoformat(
+                          start_value.replace("Z", "+00:00")
+                      )
+
+                      if start.date() < today:
+                          continue
+
+                      if match.get("HasFinalResult") is True:
+                          continue
+
+                      if match.get("Cancelled") is True:
+                          continue
+
+                      if match.get("Abandoned") is True:
+                          continue
+
+                      relevant.append(match)
+
+                  print()
+                  print("Team:", team["name"])
+                  print("Competition matches:", len(matches))
+                  print("Relevant upcoming matches:", len(relevant))
+
+                  assert any(
+                      match["MatchID"] == team["expected_match_id"]
+                      for match in relevant
+                  ), (
+                      f"Expected match missing for {team['name']}"
+                  )
+
+                  discovered.extend(relevant)
+
+              print()
+              print("Updating in-memory match registry...")
+
+              registry = update_registry(
+                  registry,
+                  discovered,
+                  TEAMS,
+              )
+
+              assert registry["schema_version"] == 1
+
+              for team in TEAMS:
+                  key = str(team["expected_match_id"])
+
+                  assert key in registry["matches"], (
+                      f"Match {key} missing from registry"
+                  )
+
+                  entry = registry["matches"][key]
+
+                  assert entry["team_id"] == team["team_id"]
+                  assert (
+                      entry["competition_id"]
+                      == team["competition_id"]
+                  )
+                  assert (
+                      entry["highlight_player_id"]
+                      == team["highlight_player_id"]
+                  )
+                  assert entry["monitoring_status"] == "scheduled"
+
+                  print()
+                  print("REGISTRY MATCH VERIFIED")
+                  print("MatchID:", entry["match_id"])
+                  print("Home:", entry["home_team"])
+                  print("Away:", entry["away_team"])
+                  print("Start:", entry["scheduled_start"])
+                  print("Watch ID:", f"floorball-match-{key}")
+
+              print()
+              print("Total registered matches:", len(registry["matches"]))
+
+              print()
+              print("ALL DISCOVERY REGISTRY TESTS PASSED")
+              print("No persistent files modified.")
+              print("No notifications sent.")
+          PY
