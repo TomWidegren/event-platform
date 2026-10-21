@@ -99,7 +99,49 @@ The test confirmed that both upcoming matches can be identified without supplyin
 
 The workflow did not modify production configuration or state and did not send notifications.
 
-Automatic registry persistence and Live activation have not yet been implemented.
+### Registry verification – 21 October 2026
+
+The pure registry function was implemented in:
+
+`floorball_registry.py`
+
+Automated tests:
+
+`tests/test_floorball_registry.py`
+
+Workflow:
+
+`.github/workflows/test-floorball-registry.yml`
+
+All eight registry tests passed.
+
+Verified behavior:
+
+- New relevant matches are added.
+- Existing matches are preserved.
+- Changed match start times are updated.
+- Completed matches are not reactivated.
+- Temporarily missing matches are preserved.
+- Unrelated teams are excluded.
+- Invalid input does not mutate the original registry.
+- Registry updates do not mutate their input objects.
+
+An additional integration workflow was introduced:
+
+`.github/workflows/test-floorball-discovery-registry.yml`
+
+It successfully retrieved real iBIS match lists and passed the discovered matches through `update_registry()`.
+
+Verified:
+
+- JAS: 17 upcoming matches.
+- Herrar: 14 upcoming matches.
+- Total: 31 registered matches.
+- Both expected acceptance-test matches were present.
+- No persistent files were modified.
+- No notifications were sent.
+
+These tests verify in-memory registry behavior, not persistent GitHub storage or automatic Live monitoring.
 
 ## 4. Architecture
 
@@ -227,7 +269,7 @@ Example:
       }
     }
 
-This schema is a design proposal and has not yet been implemented.
+This schema is a design proposal and has not yet been persisted in production.
 
 The exact meaning of iBIS status values and cancellation fields must be verified before those fields control monitoring.
 
@@ -443,45 +485,164 @@ The exact mechanism for supplying runtime Watches to the execution engine remain
 
 ## 11. State persistence and concurrency
 
-The existing `state.json` remains the authoritative monitoring state.
+### Agreed design direction
 
-The current Live workflow can overwrite concurrent changes because it restores an entire saved state file after synchronizing with `main`.
+Event Platform will continue using GitHub-based JSON persistence for the initial automated Floorball implementation.
 
-This must be corrected before broader automatic monitoring is enabled.
+The design uses:
 
-### Proposed safe persistence approach
+- `match_registry.json` for match discovery, scheduling and monitoring lifecycle.
+- `state.json` for normalized monitoring snapshots.
+- A shared GitHub Actions concurrency group for the workflows that update these files.
+- Safe merging of changed entries before committing.
+- Conflict detection and controlled retries.
 
-1. Track which Watch entries changed during execution.
-2. Retrieve the latest repository state before committing.
-3. Merge only changed Watch entries.
-4. Preserve unrelated Watch entries.
-5. Retry safely if the repository changes during the commit process.
+The goal is to preserve independent changes made by Daily Discovery, Live Monitoring and existing Daily monitoring.
 
-The merge must not overwrite a newer update for the same Watch with an older snapshot.
+These mechanisms have not yet been implemented or verified.
 
-### Overlapping Live executions
+### 11.1 Data ownership
 
-GitHub Actions concurrency controls should prevent overlapping Live executions.
+Each process owns a defined subset of persistent information.
 
-Concurrency handling must also account for interactions between:
+| Process | Owned information |
+|---|---|
+| Daily Discovery | Match identity, scheduling, teams, competitions and source status |
+| Live Monitoring | Monitoring lifecycle and completion status |
+| Event Platform core | Normalized snapshots and change detection state |
 
-- Daily ranking monitoring.
-- Daily Match Discovery.
-- Live Match Monitoring.
+Daily Discovery may update source-derived fields in `match_registry.json`.
 
-Concurrency controls alone do not eliminate all possible conflicts between different workflows.
+Live Monitoring may update monitoring lifecycle fields in `match_registry.json` and the relevant Watch entries in `state.json`.
 
-Both `state.json` and `match_registry.json` require safe persistence strategies.
+Existing Daily monitoring continues updating its own Watch entries in `state.json`.
 
-### Persistence failure
+A process must not overwrite fields owned by another process using stale information.
 
-If state cannot be persisted:
+In particular, Discovery must never reset a completed match to `scheduled`.
 
-- Do not mark the match safely completed.
-- Preserve sufficient information for retry.
-- Avoid silently losing unrelated updates.
+### 11.2 Shared concurrency group
 
-The risk of repeated notifications after a persistence failure must be explicitly evaluated.
+Daily Discovery and Live Monitoring will use the same GitHub Actions concurrency group.
+
+Proposed configuration:
+
+    concurrency:
+      group: event-platform-state
+      cancel-in-progress: false
+
+The concurrency group should be applied consistently to workflows that may modify the shared persistent files.
+
+The existing SGF Ranking Daily workflow must also be considered because it modifies `state.json`.
+
+A shared concurrency group prevents overlapping execution of workflows using that group within the same repository.
+
+However, GitHub Actions concurrency does not guarantee that every queued execution will run. Pending runs may be replaced by newer pending runs.
+
+Therefore, concurrency is a protection against simultaneous writes, not a guarantee of processing every scheduled run.
+
+The design must tolerate skipped or delayed polling executions.
+
+### 11.3 Safe registry updates
+
+The registry update mechanism must not replace the latest repository file with an entire stale copy.
+
+Proposed sequence:
+
+1. Determine the changes produced by the current execution.
+2. Retrieve the latest committed registry.
+3. Reapply only the changes owned by the current process.
+4. Preserve unrelated match entries.
+5. Preserve fields owned by other processes.
+6. Validate the resulting registry.
+7. Commit and push the merged result.
+8. If the push fails because the repository changed, retrieve the latest version and repeat the merge.
+
+A retry must reapply the intended changes to the newest registry rather than restoring an old complete file.
+
+### 11.4 Same-match conflicts
+
+Merging changes by MatchID is not sufficient when two processes update different fields of the same match.
+
+Example:
+
+- Discovery changes `scheduled_start`.
+- Live changes `monitoring_status` to `completed`.
+
+Both updates must survive.
+
+The merge mechanism must therefore respect field ownership, not merely replace entire match entries.
+
+The `completed` monitoring status must be preserved when applying Discovery updates.
+
+A stale Live update must not silently overwrite a newer schedule change.
+
+### 11.5 State persistence
+
+The same preservation principle applies to `state.json`.
+
+Only the Watch entries modified by the current execution should be merged into the latest committed state.
+
+Unrelated Watch entries must be preserved.
+
+This protects interactions between:
+
+- SGF Ranking Daily monitoring.
+- GolfBox or Tournytt Live monitoring.
+- Floorball Live monitoring.
+
+A merge must not overwrite a newer snapshot for the same Watch with an older snapshot.
+
+If the system cannot safely determine which snapshot is newer, it should report a conflict rather than silently overwrite data.
+
+### 11.6 Match completion and snapshot persistence
+
+A match must not be marked `completed` unless its final monitoring snapshot has been successfully persisted.
+
+The proposed persistence operation should coordinate changes to:
+
+- The relevant Watch entry in `state.json`.
+- The relevant match entry in `match_registry.json`.
+
+Where possible, both file updates should be included in the same Git commit.
+
+This reduces the risk of storing a completed registry status without the corresponding final snapshot.
+
+Notification delivery cannot be made atomic with a Git commit.
+
+The implementation must therefore explicitly define retry behavior when notification delivery succeeds but persistence subsequently fails.
+
+Exactly-once notification delivery is not guaranteed by the current architecture.
+
+### 11.7 Failure handling
+
+If a registry commit fails:
+
+- Preserve the intended changes.
+- Retrieve the latest repository version.
+- Reapply the changes safely.
+- Retry within a defined limit.
+- Report failure if the changes cannot be persisted.
+
+If the final match snapshot cannot be persisted:
+
+- Do not mark the match completed.
+- Preserve the ability to retry.
+- Do not silently discard monitoring changes.
+
+If a notification has already been delivered but persistence fails, duplicate notification risk must be handled explicitly.
+
+### 11.8 Existing production workflow compatibility
+
+The current Live workflow restores an entire saved `state.json` after synchronizing with `main`.
+
+This behavior must be replaced before unattended multi-match monitoring is enabled.
+
+The existing Daily workflow also commits state directly and must be included in the concurrency and conflict-handling design.
+
+Changes to production workflows should be introduced incrementally and regression-tested.
+
+The verified v1.3.0 monitoring behavior must remain available until the replacement persistence mechanism is proven safe.
 
 ## 12. Scheduling
 
@@ -584,21 +745,21 @@ Verified:
 
 ### Phase B – Registry logic
 
-**Status: Not started**
+**Status: Completed for in-memory behavior – 21 October 2026**
 
-Use mocked match-list responses and temporary registry files.
-
-Verify:
+Verified:
 
 - New matches are added.
 - Existing matches are preserved.
 - Changed start times are updated.
 - Completed matches are not reactivated.
-- Temporary API omissions do not delete existing entries.
-- Discovery failures preserve the registry.
-- Only relevant upcoming and monitored matches are retained.
+- Temporarily missing matches are preserved.
+- Discovery failures do not mutate the existing registry.
+- Only relevant team matches are included in the tested input.
 
-No production registry writes during this phase.
+The registry has also been verified with real iBIS discovery results.
+
+Persistent storage and concurrency remain unverified.
 
 ### Phase C – Monitoring selection
 
@@ -617,15 +778,26 @@ Use simulated times and mocked data where practical.
 
 ### Phase D – State persistence
 
-**Status: Not started**
+**Status: Design agreed – Implementation and verification pending**
 
 Verify:
 
-- Existing Watch state is preserved.
-- Multiple matches have independent state entries.
-- Concurrent changes are merged safely.
-- Overlapping Live executions are controlled.
-- Failures do not silently lose updates.
+1. Discovery can add new matches without removing existing entries.
+2. Discovery can update a scheduled start without changing monitoring status.
+3. Live can mark a match completed without overwriting its scheduling information.
+4. A schedule update and completion update for the same match are both preserved.
+5. Changes to different matches are merged without loss.
+6. Changes to unrelated `state.json` Watch entries are preserved.
+7. A stale snapshot cannot silently overwrite a newer snapshot for the same Watch.
+8. Git push conflicts trigger a controlled refresh and retry.
+9. A failed persistence operation does not mark a match completed.
+10. Shared concurrency controls prevent overlapping execution.
+11. Delayed or skipped queued executions do not permanently lose matches.
+12. Final snapshot and completed registry status are persisted consistently.
+
+The initial tests should use temporary files and simulated concurrent updates.
+
+No production GitHub writes should occur during the isolated tests.
 
 ### Phase E – Real-world acceptance
 
@@ -668,7 +840,7 @@ Otherwise, use the verified manual monitoring approach.
 The following details still require resolution:
 
 1. Final registry schema and source-status mapping.
-2. Safe registry persistence and concurrent update behavior.
+2. Safe registry persistence implementation and retry limits.
 3. Runtime Watch injection into the generic execution engine.
 4. First observation after match start.
 5. Handling postponed and cancelled matches.
@@ -677,23 +849,27 @@ The following details still require resolution:
 8. Schedule changes occurring after daily discovery.
 9. Timezone interpretation of iBIS match start values.
 10. GitHub Actions execution cost and startup time under continuous five-minute scheduling.
+11. Handling replaced or skipped pending runs under GitHub Actions concurrency.
+12. Safe detection of conflicting updates to the same Watch.
 
 These questions must be resolved before unattended automatic Live monitoring is enabled.
 
 ## 18. Recommended next step
 
-Implement and verify isolated registry update logic using mocked discovery data and temporary files.
+Implement and verify isolated safe registry merge logic.
 
-The first test should confirm:
+Begin with simulated updates:
 
-1. New matches are added.
-2. Existing entries are preserved.
-3. Schedule changes are updated.
-4. Completed matches remain completed.
-5. Failed discovery does not destroy existing registry data.
+1. Discovery changes a match's scheduled start.
+2. Live marks the same or another match completed.
+3. Both updates are applied to the latest registry.
+4. Neither change is lost.
+5. Completed matches are not reactivated.
 
-After successful verification, evaluate how the registry can be safely persisted through GitHub Actions.
+Then extend testing to independent Watch entries in `state.json` and conflict handling.
 
-Do not modify production `state.json`, `config.yml` or Live monitoring during this initial registry test.
+Only after successful isolated verification should persistent GitHub commits be introduced.
+
+Do not modify production `state.json`, `config.yml` or Live monitoring during this initial persistence test.
 
 The objective remains safe, incremental automation without compromising the verified v1.3.0 release.
