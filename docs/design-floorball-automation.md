@@ -1,59 +1,58 @@
 
 # Event Platform – Floorball Automation Design
 
-Status: Draft – Architecture direction agreed, implementation details under review
+**Status:** Implemented and deployed – real-world automatic match acceptance pending
 
-Created: 21 October 2026
+**Created:** 21 October 2026  
+**Last updated:** 22 October 2026
 
-Last updated: 21 October 2026
-
-Current production release: v1.3.0
+**Last documented published release:** v1.2.0  
+**Automatic Floorball implementation:** Deployed, not yet included in a confirmed new release.
 
 ## 1. Purpose
 
-Automatically discover and monitor floorball matches for selected teams and competitions without manually configuring individual matches or activating Live monitoring for each event.
+Automatically discover and monitor floorball matches for selected teams and competitions without manually configuring individual matches or activating monitoring for each event.
 
-The initial use case is monitoring the two Tyresö Trollbäcken IBK teams in which Lukas Widegren participates.
+The initial use case covers two Tyresö Trollbäcken IBK teams associated with Lukas Widegren.
 
-The solution must reuse the existing Event Platform architecture and the verified iBIS connector wherever possible.
+The platform monitors relevant team matches regardless of whether Lukas participates.
 
-The design separates daily match discovery from five-minute Live monitoring.
+The solution extends Event Platform's generic connector architecture while preserving existing golf monitoring.
 
-The overall design direction has been agreed. Remaining technical questions must be resolved and verified before unattended automatic monitoring is enabled.
+## 2. Scope and implementation status
 
-## 2. Scope
+| Capability | Status |
+|---|---|
+| Automatic match discovery | Implemented and verified |
+| Persistent match registry | Implemented and verified |
+| Daily Discovery execution | Manually verified in production workflow |
+| Automatic Live match selection | Implemented and tested |
+| Multiple Live Watches | Implemented and tested |
+| Pre-match activation | Simulated-time verified |
+| Match notifications | Previously verified in manual live monitoring |
+| Coordinated Git persistence | Automated tests passed |
+| Automatic match completion | Implemented, real-world verification pending |
+| External five-minute scheduling | Operational |
+| Automatic real-match acceptance | Pending |
 
-### Included
+Excluded from the initial implementation:
 
-- Automatic discovery of matches for configured teams and competitions.
-- Daily identification of new matches and schedule changes.
-- Persistent storage of discovered matches.
-- Automatic selection of matches requiring Live monitoring.
-- Automatic monitoring starting 15 minutes before scheduled match time.
-- Automatic completion after the final result is saved.
-- Multiple matches and teams.
-- Existing floorball notifications and player-specific highlighting.
-- Safe state persistence.
-- Protection against overlapping Live executions.
-
-### Excluded from initial implementation
-
-- Automatic discovery of which teams a player belongs to.
-- Monitoring competitions that have not been configured.
-- User interfaces for managing teams.
+- Automatic discovery of a player's team memberships.
+- Unconfigured competitions.
+- User interfaces for team management.
 - Configurable notification preferences.
-- Replacing ntfy.
-- Replacing GitHub-based persistence.
-- Changes to existing GolfBox, SGF Ranking or Tournytt connectors.
+- Replacement of ntfy.
+- Replacement of GitHub persistence.
+- Changes to existing golf connectors.
 
-## 3. Initial configuration
+## 3. Configuration
 
 Season: 2026/27
 
 Highlighted player:
 
 - Lukas Widegren
-- PlayerID: 585280
+- PlayerID: `585280`
 
 Configured teams:
 
@@ -62,814 +61,682 @@ Configured teams:
 | Tyresö Trollbäcken IBK – JAS | 20872 | 45004 |
 | Tyresö Trollbäcken IBK – Herrar | 4194 | 44356 |
 
-The configuration identifies teams and competitions, not individual matches.
+The configuration identifies teams and competitions rather than individual matches.
 
-The platform monitors all relevant matches for these teams regardless of whether Lukas participates.
+### Initial acceptance matches
 
-### Initial acceptance-test matches
-
-| Date | Team | MatchID | Start |
+| Date | MatchID | Scheduled start | Activation |
 |---|---|---|---|
-| 23 October 2026 | JAS | 1750707 | 19:45 |
-| 25 October 2026 | Herrar | 1703577 | 15:45 |
+| 23 October 2026 | 1750707 | 19:45 | 19:30 |
+| 25 October 2026 | 1703577 | 15:45 | 15:30 |
 
-These matches were identified and verified through the iBIS website and API responses on 21 October 2026.
+All times use Europe/Stockholm.
 
-### Discovery verification – 21 October 2026
-
-A read-only GitHub Actions workflow was created:
-
-`.github/workflows/test-floorball-discovery.yml`
-
-The workflow successfully authenticated with iBIS and retrieved competition match lists.
-
-Verified results:
-
-| | JAS | Herrar |
-|---|---|---|
-| CompetitionID | 45004 | 44356 |
-| TeamID | 20872 | 4194 |
-| Competition matches | 110 | 90 |
-| Team matches | 20 | 18 |
-| Upcoming matches | 17 | 14 |
-| Expected MatchID | 1750707 | 1703577 |
-| Result | PASS | PASS |
-
-The test confirmed that both upcoming matches can be identified without supplying their MatchIDs to the API request.
-
-The workflow did not modify production configuration or state and did not send notifications.
-
-### Registry verification – 21 October 2026
-
-The pure registry function was implemented in:
-
-`floorball_registry.py`
-
-Automated tests:
-
-`tests/test_floorball_registry.py`
-
-Workflow:
-
-`.github/workflows/test-floorball-registry.yml`
-
-All eight registry tests passed.
-
-Verified behavior:
-
-- New relevant matches are added.
-- Existing matches are preserved.
-- Changed match start times are updated.
-- Completed matches are not reactivated.
-- Temporarily missing matches are preserved.
-- Unrelated teams are excluded.
-- Invalid input does not mutate the original registry.
-- Registry updates do not mutate their input objects.
-
-An additional integration workflow was introduced:
-
-`.github/workflows/test-floorball-discovery-registry.yml`
-
-It successfully retrieved real iBIS match lists and passed the discovered matches through `update_registry()`.
-
-Verified:
-
-- JAS: 17 upcoming matches.
-- Herrar: 14 upcoming matches.
-- Total: 31 registered matches.
-- Both expected acceptance-test matches were present.
-- No persistent files were modified.
-- No notifications were sent.
-
-These tests verify in-memory registry behavior, not persistent GitHub storage or automatic Live monitoring.
+The matches were identified through iBIS Discovery and verified in the persistent registry.
 
 ## 4. Architecture
 
-The solution introduces two separate processes:
+The solution separates two processes:
 
 1. Daily Match Discovery.
-2. Live Match Monitoring.
+2. Automatic Live Monitoring.
 
-Both reuse the existing Event Platform execution environment.
+Both use the existing GitHub Actions environment and external scheduling through cron-job.org.
 
-### Daily Match Discovery
+### 4.1 Daily Discovery
 
-Runs once per day.
+Execution:
 
-Responsibilities:
+`cron-job.org → daily.yml → watcher.py → Floorball Discovery`
 
-1. Load configured teams and competitions.
-2. Authenticate with iBIS.
-3. Retrieve competition match lists.
-4. Filter matches using HomeTeamID and AwayTeamID.
-5. Identify new matches.
-6. Detect schedule changes.
-7. Update the persistent match registry.
-8. Preserve existing match identities and monitoring state.
+The existing SGF Ranking monitoring runs first.
 
-Verified iBIS endpoint:
+Floorball Discovery then:
 
-GET /competitions/{competition_id}/matches
+1. Loads configured teams and competitions.
+2. Authenticates with iBIS.
+3. Retrieves competition match lists.
+4. Identifies relevant matches using TeamIDs.
+5. Detects new matches and schedule changes.
+6. Calculates registry changes.
+7. Merges changes according to field ownership.
+8. Persists changes in GitHub.
 
-The endpoint returns the competition's match list.
+The verified iBIS endpoint is:
 
-The initial investigation confirmed that relevant matches can be identified using TeamID and MatchID.
+`GET /competitions/{competition_id}/matches`
 
-Daily Discovery must not directly modify monitoring snapshots in `state.json`.
+Discovery does not modify monitoring snapshots in `state.json`.
 
-### Live Match Monitoring
+### 4.2 Automatic Live Monitoring
 
-Triggered by cron-job.org every five minutes.
+Execution:
 
-Responsibilities:
+`cron-job.org → live.yml → event_platform_live.py`
 
-1. Load the persistent match registry.
-2. Identify matches within the active monitoring window.
-3. Exclude completed matches.
-4. Create runtime Watch objects for relevant matches.
-5. Invoke the existing `ibis_floorball` connector.
-6. Compare normalized snapshots with persisted state.
-7. Generate notifications for relevant changes.
-8. Persist updated match state.
-9. Stop monitoring matches after the final result has been saved.
+The Live runner:
 
-The Live process does not retrieve full competition schedules during normal execution.
+1. Loads `config.yml`.
+2. Loads `match_registry.json`.
+3. Selects eligible matches.
+4. Generates runtime Watches.
+5. Combines them with configured non-floorball Live Watches.
+6. Retrieves normalized connector observations.
+7. Compares observations with persistent state.
+8. Sends notifications when applicable.
+9. Persists changed Watch entries.
+10. Updates completed matches.
 
-When no match is eligible, the execution should finish quickly without sending notifications.
+The Live runner does not retrieve full competition schedules during normal execution.
 
-## 5. Persistent match registry
+The implementation supports multiple eligible matches in one run.
 
-### Design decision
+## 5. Implemented components
 
-A separate persistent match registry will be introduced.
+### Discovery and registry
 
-Proposed file:
+- `floorball_discovery.py`
+- `floorball_discovery_changes.py`
+- `floorball_registry.py`
+- `floorball_registry_merge.py`
+- `floorball_git_persistence.py`
+
+### Live selection and execution
+
+- `floorball_match_selection.py`
+- `floorball_watch_merge.py`
+- `floorball_live.py`
+- `event_platform_live.py`
+
+### Persistence
+
+- `floorball_atomic_persistence.py`
+- `floorball_git_persistence.py`
+- `floorball_registry_merge.py`
+
+### Existing shared components
+
+- `watcher.py`
+- `notification_formatters.py`
+- `connectors/ibis_floorball.py`
+- Existing golf connectors
+
+The generic connector interface remains:
+
+`fetch_snapshot(watch)`
+
+The automatic Live runner uses existing connector and notification functionality rather than introducing a new connector interface.
+
+## 6. Persistent match registry
+
+File:
 
 `match_registry.json`
-
-The registry will contain:
-
-- Upcoming matches.
-- Matches currently eligible for monitoring.
-- Matches that Event Platform has actually monitored and completed.
-
-It will not retain the entire historical competition schedule.
-
-This keeps the registry focused on operationally relevant matches while preserving the monitoring history required to prevent accidental reactivation.
-
-### Responsibility separation
-
-| Component | Responsibility |
-|---|---|
-| `config.yml` | Selected teams, competitions and highlighted players |
-| `match_registry.json` | Discovered matches and scheduling information |
-| `state.json` | Latest normalized snapshots used for change detection |
-
-Discovery owns match discovery and scheduling information.
-
-Live Monitoring owns match observation and notification processing.
-
-The two processes must not overwrite each other's updates.
-
-### Proposed schema
 
 Schema version: 1
 
 Example:
 
-    {
-      "schema_version": 1,
-      "matches": {
-        "1750707": {
-          "match_id": 1750707,
-          "competition_id": 45004,
-          "team_id": 20872,
-          "highlight_player_id": 585280,
-          "home_team": "Tyresö Trollbäcken IBK",
-          "away_team": "FBI Tullinge",
-          "scheduled_start": "2026-10-23T19:45:00",
-          "source_status": 1,
-          "cancelled": false,
-          "postponed": false,
-          "monitoring_status": "scheduled"
-        },
-        "1703577": {
-          "match_id": 1703577,
-          "competition_id": 44356,
-          "team_id": 4194,
-          "highlight_player_id": 585280,
-          "home_team": "Tyresö Trollbäcken IBK (A)",
-          "away_team": "Älta IF A",
-          "scheduled_start": "2026-10-25T15:45:00",
-          "source_status": 1,
-          "cancelled": false,
-          "postponed": false,
-          "monitoring_status": "scheduled"
-        }
-      }
+```json
+{
+  "schema_version": 1,
+  "matches": {
+    "1750707": {
+      "match_id": 1750707,
+      "competition_id": 45004,
+      "team_id": 20872,
+      "highlight_player_id": 585280,
+      "home_team": "Tyresö Trollbäcken IBK",
+      "away_team": "FBI Tullinge",
+      "scheduled_start": "2026-10-23T19:45:00",
+      "source_status": 1,
+      "cancelled": false,
+      "postponed": false,
+      "monitoring_status": "scheduled"
     }
+  }
+}
+```
 
-This schema is a design proposal and has not yet been persisted in production.
+The registry stores discovered matches and monitoring lifecycle information.
 
-The exact meaning of iBIS status values and cancellation fields must be verified before those fields control monitoring.
+It is separate from `state.json`, which stores normalized monitoring snapshots.
 
 ### Stable identity
 
-Each match uses its MatchID as the registry key.
+Each match uses its iBIS MatchID as the registry key.
 
 Runtime Watch IDs use:
 
 `floorball-match-{match_id}`
 
-Examples:
+This identity remains stable across independent executions.
 
-- `floorball-match-1750707`
-- `floorball-match-1703577`
+### Field ownership
 
-The Watch ID must remain stable across executions.
+| Component | Owned information |
+|---|---|
+| Discovery | Match identity, scheduling, teams, competitions and source status |
+| Live | Monitoring lifecycle and completion |
+| Monitoring layer | Normalized snapshots in `state.json` |
 
-Existing Watch IDs and monitoring state must not be changed.
+Discovery cannot reset completed matches to scheduled.
 
-If a match is relevant to multiple configured teams, the design must avoid duplicate monitoring and notifications.
+Live cannot modify Discovery-owned scheduling information.
 
-## 6. Registry update rules
+Field-level merging preserves independent changes.
 
-Daily Discovery compares newly retrieved match data with the existing registry.
+## 7. Discovery verification
 
-### New match
+### 21 October 2026 – Initial API verification
 
-When a new relevant upcoming match is discovered:
+A read-only GitHub Actions workflow authenticated with iBIS and retrieved competition match lists.
 
-- Create a registry entry.
-- Preserve its MatchID.
-- Store the selected team and competition identifiers.
-- Store its scheduled start and available match information.
-- Set the initial monitoring status to `scheduled`.
+| Result | JAS | Herrar |
+|---|---:|---:|
+| Competition matches | 110 | 90 |
+| Relevant team matches | 20 | 18 |
+| Upcoming matches | 17 | 14 |
+| Expected MatchID found | Yes | Yes |
 
-### Existing match
+Both acceptance matches were identified without supplying individual MatchIDs to the API request.
 
-When a match already exists:
+### 21 October – Registry tests
 
-- Update source-derived scheduling information when it changes.
-- Preserve the stable MatchID.
-- Preserve monitoring history.
-- Do not reset completed monitoring state.
+Eight initial registry tests passed.
 
-### Rescheduled match
+Verified behavior included:
 
-When the source reports a new start time:
+- New matches added.
+- Existing matches preserved.
+- Schedule changes updated.
+- Completed matches not reactivated.
+- Temporarily missing matches preserved.
+- Unrelated teams excluded.
+- Invalid updates did not mutate original data.
 
-- Update the scheduled start.
-- Recalculate future monitoring eligibility.
-- Preserve existing monitoring state.
+### 22 October – Permanent Discovery
 
-If iBIS assigns a new MatchID, the relationship between the old and new match requires further investigation.
+The full Discovery chain was tested against real iBIS data.
 
-### Cancelled or postponed match
+Results:
 
-Preserve the match entry.
+- 31 relevant matches discovered.
+- 31 matches persisted in GitHub.
+- Both acceptance matches verified in the registry.
+- A repeated execution detected zero changes.
+- No unnecessary Git commit was required.
 
-Update its source-derived status when verified.
+The updated Daily workflow was also tested manually with SGF Ranking and Floorball Discovery together.
 
-Do not activate normal Live monitoring for a confirmed cancelled match.
+The first scheduled execution of the updated Daily workflow remained pending operational confirmation at the end of this development session.
 
-Postponed matches should remain eligible for future scheduling updates.
+## 8. Match lifecycle
 
-Exact iBIS status mappings require verification.
-
-### Match temporarily missing from the API
-
-Do not immediately delete the registry entry.
-
-Preserve existing information and flag the discrepancy for investigation.
-
-### Completed match
-
-A match already completed by Event Platform must not be returned to `scheduled` by a later Discovery execution.
-
-Its history remains in the registry.
-
-### Discovery failure
-
-If API acquisition or processing fails:
-
-- Preserve the existing registry.
-- Do not remove previously discovered matches.
-- Report the failure.
-- Allow a subsequent execution to retry.
-
-The registry must not be partially replaced with incomplete discovery results.
-
-## 7. Match lifecycle
-
-### Monitoring statuses
-
-The proposed persistent monitoring statuses are:
+The persistent lifecycle uses:
 
 - `scheduled`
 - `completed`
 
-The following states are primarily calculated at runtime:
-
-- `eligible`
-- `monitoring`
-
-This avoids unnecessary state writes and GitHub commits during ordinary polling.
+Eligibility and active monitoring are primarily calculated at runtime rather than persisted on every polling cycle.
 
 ### Scheduled
 
-The match has been discovered and stored.
-
-It is not yet eligible for Live monitoring.
+A match exists in the registry but is not yet eligible for Live Monitoring.
 
 ### Eligible
 
-The match becomes eligible 15 minutes before its scheduled start.
+Eligibility begins 15 minutes before scheduled match start.
 
-Eligibility is calculated using the current time and scheduled match start.
+The selection logic also handles delayed matches and excludes cancelled, postponed and completed matches according to the implemented rules.
 
 ### Monitoring
 
-An eligible match is selected by the Live process.
+The Live runner selects an eligible match and retrieves observations through `ibis_floorball`.
 
-The existing connector retrieves match data and the Event Platform core performs change detection.
+The first valid pre-match observation establishes a baseline without notification.
 
-Monitoring continues while the match has not been safely completed.
+Subsequent changes can generate notifications.
 
 ### Completed
 
-A match may be marked completed only after:
+When `has_final_result` becomes true, the runner is designed to:
 
-1. The final match snapshot has been processed.
-2. The final-result notification has been handled.
-3. The final snapshot has been successfully persisted.
+1. Process the final snapshot.
+2. Generate the final-result notification.
+3. Persist the final Watch snapshot.
+4. Mark the registry entry `completed`.
+5. Exclude the match from subsequent monitoring.
 
-The completion marker must not be committed before the required monitoring state is safely stored.
+The final snapshot and completion marker are committed together.
 
-A failure must leave the match eligible for retry.
+The automatic completion sequence has passed technical tests but remains unverified during a real automatically selected match.
 
-### Avoiding unnecessary persistent states
+## 9. Automatic Watch selection
 
-The registry should not be updated on every five-minute polling cycle merely to record that monitoring is active.
+Implementation:
 
-Only meaningful lifecycle changes should require persistence.
+`floorball_match_selection.py`
 
-## 8. Match activation
+The selection logic supports:
 
-Monitoring eligibility begins 15 minutes before the scheduled start.
+- Fifteen-minute pre-match activation.
+- Multiple eligible matches.
+- Delayed matches.
+- Cancelled and postponed match exclusion.
+- Completed match exclusion.
+- Swedish summer and winter time.
 
-Example:
+Simulated-time verification passed for both acceptance matches.
 
-Scheduled start: 19:45
+### Runtime Watch generation
 
-Eligibility begins: 19:30
+`floorball_live.py` prepares the runtime configuration.
 
-The first Live execution at or after 19:30 selects the match.
+`floorball_watch_merge.py`:
 
-### Pre-match baseline
+- Preserves GolfBox and Tournytt Watches.
+- Excludes Daily Watches.
+- Excludes obsolete manually configured floorball Watches.
+- Adds automatically selected floorball Watches.
+- Prevents duplicate Watch IDs.
+- Preserves the original input data.
 
-A baseline must exist before the first meaningful match event.
+The original manually configured floorball Watches remain in `config.yml` temporarily.
 
-The existing Floorball baseline principles must be preserved.
+They are excluded during automatic Live execution.
 
-If the match has not started and no goals or registered events exist, a baseline may be established without sending a notification.
+Their removal is planned after real-world acceptance.
 
-### Late activation
+## 10. Baseline handling
 
-If the first successful observation occurs after the match has started, the system must not silently discard registered match events.
+A pre-match baseline prevents existing source events from being interpreted as new notifications.
 
-The exact late-activation behavior must be defined and tested before automatic Live monitoring is enabled.
+For floorball, the first observation normally establishes a baseline without notification.
 
-### Delayed matches
+### Late first observation
 
-A match must not be permanently skipped merely because its scheduled start time has passed.
+If the first observation already contains match activity, the current automatic Live runner raises an error instead of silently discarding earlier events.
 
-A suitable eligibility window or source-status rule must be defined.
+This protects against unnoticed data loss.
 
-## 9. Match completion
+However, it also means a late start can interrupt monitoring.
 
-The existing iBIS connector returns:
+A safe recovery mechanism remains future work.
 
-`has_final_result`
+## 11. Notifications
 
-When this becomes true:
+The existing floorball notification formatter is reused.
 
-1. The final snapshot is processed.
-2. The final-result notification is generated.
-3. The final snapshot is persisted successfully.
-4. The registry is updated to `completed`.
-5. Future Live executions exclude the match.
+Supported information includes:
 
-If execution or persistence fails, the match remains eligible for retry.
-
-The interaction between notification delivery, snapshot persistence and registry completion must be designed carefully to avoid missed or duplicate notifications.
-
-## 10. Multiple matches
-
-Each discovered match uses an independent runtime Watch.
-
-Example:
-
-- `floorball-match-1750707`
-- `floorball-match-1703577`
-
-The Live process must support multiple eligible matches during one execution.
-
-The existing `ibis_floorball` connector is called separately for each match.
-
-The generic Event Platform core must remain independent of floorball-specific scheduling logic.
-
-Runtime Watch generation should occur outside the generic connector interface.
-
-The exact mechanism for supplying runtime Watches to the execution engine remains an implementation design question.
-
-## 11. State persistence and concurrency
-
-### Agreed design direction
-
-Event Platform will continue using GitHub-based JSON persistence for the initial automated Floorball implementation.
-
-The design uses:
-
-- `match_registry.json` for match discovery, scheduling and monitoring lifecycle.
-- `state.json` for normalized monitoring snapshots.
-- A shared GitHub Actions concurrency group for the workflows that update these files.
-- Safe merging of changed entries before committing.
-- Conflict detection and controlled retries.
-
-The goal is to preserve independent changes made by Daily Discovery, Live Monitoring and existing Daily monitoring.
-
-These mechanisms have not yet been implemented or verified.
-
-### 11.1 Data ownership
-
-Each process owns a defined subset of persistent information.
-
-| Process | Owned information |
-|---|---|
-| Daily Discovery | Match identity, scheduling, teams, competitions and source status |
-| Live Monitoring | Monitoring lifecycle and completion status |
-| Event Platform core | Normalized snapshots and change detection state |
-
-Daily Discovery may update source-derived fields in `match_registry.json`.
-
-Live Monitoring may update monitoring lifecycle fields in `match_registry.json` and the relevant Watch entries in `state.json`.
-
-Existing Daily monitoring continues updating its own Watch entries in `state.json`.
-
-A process must not overwrite fields owned by another process using stale information.
-
-In particular, Discovery must never reset a completed match to `scheduled`.
-
-### 11.2 Shared concurrency group
-
-Daily Discovery and Live Monitoring will use the same GitHub Actions concurrency group.
-
-Proposed configuration:
-
-    concurrency:
-      group: event-platform-state
-      cancel-in-progress: false
-
-The concurrency group should be applied consistently to workflows that may modify the shared persistent files.
-
-The existing SGF Ranking Daily workflow must also be considered because it modifies `state.json`.
-
-A shared concurrency group prevents overlapping execution of workflows using that group within the same repository.
-
-However, GitHub Actions concurrency does not guarantee that every queued execution will run. Pending runs may be replaced by newer pending runs.
-
-Therefore, concurrency is a protection against simultaneous writes, not a guarantee of processing every scheduled run.
-
-The design must tolerate skipped or delayed polling executions.
-
-### 11.3 Safe registry updates
-
-The registry update mechanism must not replace the latest repository file with an entire stale copy.
-
-Proposed sequence:
-
-1. Determine the changes produced by the current execution.
-2. Retrieve the latest committed registry.
-3. Reapply only the changes owned by the current process.
-4. Preserve unrelated match entries.
-5. Preserve fields owned by other processes.
-6. Validate the resulting registry.
-7. Commit and push the merged result.
-8. If the push fails because the repository changed, retrieve the latest version and repeat the merge.
-
-A retry must reapply the intended changes to the newest registry rather than restoring an old complete file.
-
-### 11.4 Same-match conflicts
-
-Merging changes by MatchID is not sufficient when two processes update different fields of the same match.
-
-Example:
-
-- Discovery changes `scheduled_start`.
-- Live changes `monitoring_status` to `completed`.
-
-Both updates must survive.
-
-The merge mechanism must therefore respect field ownership, not merely replace entire match entries.
-
-The `completed` monitoring status must be preserved when applying Discovery updates.
-
-A stale Live update must not silently overwrite a newer schedule change.
-
-### 11.5 State persistence
-
-The same preservation principle applies to `state.json`.
-
-Only the Watch entries modified by the current execution should be merged into the latest committed state.
-
-Unrelated Watch entries must be preserved.
-
-This protects interactions between:
-
-- SGF Ranking Daily monitoring.
-- GolfBox or Tournytt Live monitoring.
-- Floorball Live monitoring.
-
-A merge must not overwrite a newer snapshot for the same Watch with an older snapshot.
-
-If the system cannot safely determine which snapshot is newer, it should report a conflict rather than silently overwrite data.
-
-### 11.6 Match completion and snapshot persistence
-
-A match must not be marked `completed` unless its final monitoring snapshot has been successfully persisted.
-
-The proposed persistence operation should coordinate changes to:
-
-- The relevant Watch entry in `state.json`.
-- The relevant match entry in `match_registry.json`.
-
-Where possible, both file updates should be included in the same Git commit.
-
-This reduces the risk of storing a completed registry status without the corresponding final snapshot.
-
-Notification delivery cannot be made atomic with a Git commit.
-
-The implementation must therefore explicitly define retry behavior when notification delivery succeeds but persistence subsequently fails.
-
-Exactly-once notification delivery is not guaranteed by the current architecture.
-
-### 11.7 Failure handling
-
-If a registry commit fails:
-
-- Preserve the intended changes.
-- Retrieve the latest repository version.
-- Reapply the changes safely.
-- Retry within a defined limit.
-- Report failure if the changes cannot be persisted.
-
-If the final match snapshot cannot be persisted:
-
-- Do not mark the match completed.
-- Preserve the ability to retry.
-- Do not silently discard monitoring changes.
-
-If a notification has already been delivered but persistence fails, duplicate notification risk must be handled explicitly.
-
-### 11.8 Existing production workflow compatibility
-
-The current Live workflow restores an entire saved `state.json` after synchronizing with `main`.
-
-This behavior must be replaced before unattended multi-match monitoring is enabled.
-
-The existing Daily workflow also commits state directly and must be included in the concurrency and conflict-handling design.
-
-Changes to production workflows should be introduced incrementally and regression-tested.
-
-The verified v1.3.0 monitoring behavior must remain available until the replacement persistence mechanism is proven safe.
-
-## 12. Scheduling
-
-### Daily Discovery
-
-Frequency: once per day.
-
-The discovery schedule is separate from existing SGF Ranking monitoring.
-
-A dedicated GitHub Actions workflow is preferred.
-
-### Live Monitoring
-
-Frequency: every five minutes.
-
-cron-job.org continues triggering the Live workflow.
-
-When no match is eligible:
-
-- No match connector is called.
-- No notification is sent.
-- No monitoring state changes are required.
-- The execution exits quickly.
-
-The Live workflow should avoid unnecessary Playwright and Chromium installation when only HTTP-based Floorball monitoring is required.
-
-Any optimization must preserve support for existing GolfBox and Tournytt monitoring.
-
-### Schedule changes
-
-Daily Discovery is the primary mechanism for identifying schedule changes.
-
-A separate mechanism may be needed to detect late changes on match days.
-
-The exact approach remains open.
-
-## 13. Notification behavior
-
-Existing Floorball notification formatting remains unchanged for the initial implementation.
-
-Supported notifications include:
-
+- Match identification.
+- Score changes.
 - Goals.
 - Empty-net goals.
-- Assists associated with goals.
+- Assists.
 - Penalties.
-- Period starts and ends.
-- Other registered match events.
+- Period events.
+- Match status.
 - Final results.
 
-Lukas-specific highlighting remains based on PlayerID 585280.
+Player-specific highlighting uses PlayerID `585280`.
 
-The automation must not introduce duplicate initial notifications or suppress events that occurred before the first successful Live execution.
+Regular goals use MatchEventTypeID 1.
 
-The existing notification formatter should be reused.
+Empty-net goals use MatchEventTypeID 12.
 
-## 14. Failure handling
+New match events are identified by comparing event IDs against the previous snapshot.
 
-### Discovery failure
+Multiple new events may be included in one notification.
 
-Preserve the existing registry and retry later.
+### Notification delivery limitation
 
-### Live acquisition failure
+The current Live runner sends notifications before committing corresponding state changes.
 
-If an individual match cannot be retrieved:
+If ntfy delivery succeeds but Git persistence fails, the same event may be notified again.
 
-- Preserve its previous state.
-- Do not mark the match completed.
-- Retry during a subsequent Live execution.
-- Avoid preventing other eligible matches from being monitored.
+Exactly-once notification delivery is not guaranteed.
 
-### State persistence failure
+This limitation is documented and accepted for the current implementation, subject to operational experience.
 
-Do not treat the match as completed.
+## 12. Git persistence and concurrency
 
-Preserve the ability to retry.
+Persistent files:
 
-### Notification delivery failure
+- `state.json`
+- `match_registry.json`
 
-Notification delivery and state persistence must be coordinated.
+The automatic Live runner uses Git-based persistence with controlled retries.
 
-The design must explicitly address the possibility of a notification being delivered before a later persistence failure.
+### Registry protection
 
-Exactly-once notification delivery is not guaranteed by the current implementation.
+Registry updates respect Discovery and Live field ownership.
 
-## 15. Validation plan
+Unrelated matches are preserved.
 
-### Phase A – Discovery
+### State protection
 
-**Status: Completed – 21 October 2026**
+Only changed Watch entries are merged into the latest repository state.
+
+Unrelated Watch entries are preserved.
+
+Optimistic concurrency checking detects when another execution has changed the same Watch since the observation was collected.
+
+A conflicting stale update is rejected rather than silently overwriting newer state.
+
+### Completed match persistence
+
+The final Watch snapshot and registry completion status are included in the same Git commit.
+
+The underlying atomic persistence module has passed automated tests.
+
+### Shared concurrency group
+
+Daily and Live workflows use:
+
+```yaml
+concurrency:
+  group: event-platform-state
+  cancel-in-progress: false
+```
+
+This prevents overlapping execution among participating workflows.
+
+It does not guarantee execution of every queued run; newer pending runs can replace earlier pending runs.
+
+The system must therefore tolerate delayed or skipped polling cycles.
+
+### Dedicated working directory
+
+The Git persistence implementation uses:
+
+`git reset --hard`
+
+It must run only in a dedicated disposable Git working directory.
+
+GitHub Actions provides such a working directory for the production workflows.
+
+## 13. Scheduling and operations
+
+### Daily
+
+Workflow:
+
+`.github/workflows/daily.yml`
+
+External scheduler:
+
+cron-job.org
+
+Normal schedule:
+
+08:00 Europe/Stockholm.
+
+Daily combines SGF Ranking monitoring with Floorball Discovery.
+
+### Live
+
+Workflow:
+
+`.github/workflows/live.yml`
+
+Entry point:
+
+`event_platform_live.py`
+
+External scheduler:
+
+cron-job.org
+
+Polling interval:
+
+Five minutes.
+
+The scheduler remains active between matches.
+
+The runtime selection logic determines whether a floorball match is eligible.
+
+This replaces manual activation and MatchID selection.
+
+### Runtime optimization
+
+The original Live workflow installed the full Playwright operating-system dependency set during each run.
+
+This caused a measured execution time of 4 minutes 20 seconds.
+
+GolfBox requires Playwright and Chromium, so browser support was retained.
+
+The workflow was optimized to install Chromium without repeatedly installing the full system dependency set.
+
+Measured results:
+
+- Optimized manual run: approximately 37 seconds.
+- Automatic scheduled run: approximately 30 seconds.
+
+Both completed successfully.
+
+## 14. Validation results
+
+### Automated tests
+
+As of 22 October 2026:
+
+**105 Floorball regression tests passed.**
+
+The existing golf regression tests also passed.
+
+The consolidated test workflow is:
+
+`.github/workflows/test-regression.yml`
+
+Coverage includes:
+
+- Discovery.
+- Registry updates.
+- Match selection.
+- Watch merging.
+- Notification formatting.
+- State handling.
+- Git persistence.
+- Atomic completion.
+- Live integration.
+
+### Production workflow verification
+
+The following were verified:
+
+- Manual Daily integration.
+- Permanent Discovery registry storage.
+- Repeated Discovery without unnecessary updates.
+- Manual automatic Live execution.
+- Automatic Live execution triggered by cron-job.org.
+- Preservation of GolfBox and Tournytt monitoring.
+- No eligible floorball matches selected prematurely.
+- Successful execution without unnecessary persistence.
+- Optimized runtime.
+
+### Real-world automatic monitoring
+
+Not yet verified as of 22 October 2026:
+
+- Automatic pre-match activation during an actual match.
+- Automatic baseline creation in the production Live runner.
+- Event notifications during automatically selected matches.
+- Automatic final-result persistence.
+- Automatic registry completion.
+- Exclusion of a completed real match.
+
+These are the remaining acceptance criteria.
+
+## 15. Historical floorball validation
+
+### 15 October 2026
+
+MatchID: `1750693`
+
+Huddinge IBS – Tyresö Trollbäcken IBK
 
 Verified:
 
-- Successful iBIS authentication.
-- Retrieval of both competition match lists.
-- Filtering by TeamID.
-- Identification of the expected upcoming matches.
-- Execution through GitHub Actions.
-- No production state changes or notifications.
+- iBIS acquisition.
+- Goal notifications.
+- Penalty notifications.
+- Period events.
+- Final-result notification.
+- ntfy delivery.
 
-### Phase B – Registry logic
+The match also revealed the distinct iBIS event type for empty-net goals.
 
-**Status: Completed for in-memory behavior – 21 October 2026**
+### 17 October 2026
+
+MatchID: `1703572`
+
+IFK Haninge (B) – Tyresö Trollbäcken IBK (A)
 
 Verified:
 
-- New matches are added.
-- Existing matches are preserved.
-- Changed start times are updated.
-- Completed matches are not reactivated.
-- Temporarily missing matches are preserved.
-- Discovery failures do not mutate the existing registry.
-- Only relevant team matches are included in the tested input.
+- Five-minute Live monitoring.
+- Notifications.
+- Final result of 5–4.
+- Final state persistence.
+- Preservation of unrelated Watch state.
 
-The registry has also been verified with real iBIS discovery results.
+Both matches used the earlier manually configured monitoring approach.
 
-Persistent storage and concurrency remain unverified.
+These validations establish confidence in the connector and notification formatter but do not constitute acceptance of the new automatic match-selection process.
 
-### Phase C – Monitoring selection
+## 16. Real-world acceptance plan
 
-**Status: Not started**
+### 23 October 2026 – JAS
 
-Verify:
+MatchID: `1750707`
 
-- Eligibility begins 15 minutes before scheduled start.
-- Unrelated matches are excluded.
-- Completed matches are excluded.
-- Multiple eligible matches can be selected.
-- Delayed matches are not permanently skipped.
-- Late activation does not silently discard registered events.
+Expected activation: 19:30.
 
-Use simulated times and mocked data where practical.
+### 25 October 2026 – Herrar
 
-### Phase D – State persistence
+MatchID: `1703577`
 
-**Status: Design agreed – Implementation and verification pending**
-
-Verify:
-
-1. Discovery can add new matches without removing existing entries.
-2. Discovery can update a scheduled start without changing monitoring status.
-3. Live can mark a match completed without overwriting its scheduling information.
-4. A schedule update and completion update for the same match are both preserved.
-5. Changes to different matches are merged without loss.
-6. Changes to unrelated `state.json` Watch entries are preserved.
-7. A stale snapshot cannot silently overwrite a newer snapshot for the same Watch.
-8. Git push conflicts trigger a controlled refresh and retry.
-9. A failed persistence operation does not mark a match completed.
-10. Shared concurrency controls prevent overlapping execution.
-11. Delayed or skipped queued executions do not permanently lose matches.
-12. Final snapshot and completed registry status are persisted consistently.
-
-The initial tests should use temporary files and simulated concurrent updates.
-
-No production GitHub writes should occur during the isolated tests.
-
-### Phase E – Real-world acceptance
-
-Friday 23 October 2026:
-
-JAS – MatchID 1750707.
-
-Sunday 25 October 2026:
-
-Herrar – MatchID 1703577.
+Expected activation: 15:30.
 
 Acceptance criteria:
 
-- Match discovered automatically.
-- Monitoring begins without manual MatchID configuration.
-- Existing Floorball notifications work.
-- Final result is received.
-- Final state is saved.
-- Completed match is no longer monitored.
-- No existing Golf monitoring is disrupted.
+1. Match selected automatically.
+2. Pre-match baseline established.
+3. Match events detected.
+4. Notifications delivered correctly.
+5. Final-result notification delivered.
+6. Final state persisted.
+7. Match marked `completed`.
+8. Completed match excluded from subsequent selection.
+9. No duplicate monitoring.
+10. Existing golf monitoring unaffected.
 
-Full automatic monitoring must only be enabled after the required safety tests have passed.
+Player highlighting is verified only if a qualifying player event occurs.
 
-Otherwise, use the verified manual monitoring approach.
+## 17. Known limitations and future improvements
 
-## 16. Implementation principles
+### Operational reliability
 
-- Design before implementation.
-- One change at a time.
-- Verify each change before proceeding.
-- Do not modify working production connectors unnecessarily.
-- Preserve existing state.
-- Do not introduce Floorball-specific logic into the generic Event Platform core.
-- Do not enable automatic Live monitoring before state persistence and failure handling are verified.
-- Keep the existing v1.3.0 implementation available as a fallback.
-- Document only verified capabilities as implemented.
+- Late first-observation recovery.
+- Notification delivery and persistence coordination.
+- Broader concurrent execution validation.
+- Diagnostics for Git conflicts.
+- Recovery after failed or skipped runs.
 
-## 17. Open questions before automatic Live implementation
+### Match data
 
-The following details still require resolution:
+- Corrected and deleted source events.
+- Replaced MatchIDs.
+- Late match-day schedule changes.
+- Additional source-status interpretation.
+- Verification of empty-net goal formatting during a real event.
 
-1. Final registry schema and source-status mapping.
-2. Safe registry persistence implementation and retry limits.
-3. Runtime Watch injection into the generic execution engine.
-4. First observation after match start.
-5. Handling postponed and cancelled matches.
-6. Notification delivery followed by persistence failure.
-7. Coordination between Daily Discovery and Live state updates.
-8. Schedule changes occurring after daily discovery.
-9. Timezone interpretation of iBIS match start values.
-10. GitHub Actions execution cost and startup time under continuous five-minute scheduling.
-11. Handling replaced or skipped pending runs under GitHub Actions concurrency.
-12. Safe detection of conflicting updates to the same Watch.
+### Notifications
 
-These questions must be resolved before unattended automatic Live monitoring is enabled.
+- Configurable notification preferences.
+- Improved match-start wording.
+- Additional event presentation.
+- Real-world player-specific highlighting.
 
-## 18. Recommended next step
+### Maintenance
 
-Implement and verify isolated safe registry merge logic.
+- Remove redundant historical test-workflows.
+- Preserve Python regression tests.
+- Review unused implementation modules.
+- Remove obsolete manual floorball Watches after acceptance.
+- Maintain architecture, decisions, backlog and project context.
 
-Begin with simulated updates:
+## 18. Design decisions and deviations
 
-1. Discovery changes a match's scheduled start.
-2. Live marks the same or another match completed.
-3. Both updates are applied to the latest registry.
-4. Neither change is lost.
-5. Completed matches are not reactivated.
+The implemented solution follows the agreed separation of Discovery and Live.
 
-Then extend testing to independent Watch entries in `state.json` and conflict handling.
+The following design decisions were refined during implementation.
 
-Only after successful isolated verification should persistent GitHub commits be introduced.
+### Reuse the existing Daily schedule
 
-Do not modify production `state.json`, `config.yml` or Live monitoring during this initial persistence test.
+The original design preferred a separate Discovery workflow.
 
-The objective remains safe, incremental automation without compromising the verified v1.3.0 release.
+The implemented solution instead executes Discovery after SGF Ranking in the existing Daily workflow.
+
+This avoids introducing another external scheduler.
+
+The Python implementations remain separate.
+
+### Continuous Live scheduling
+
+The earlier manual approach enabled Live monitoring only around specific events.
+
+The new Live schedule remains active continuously.
+
+Automatic match selection determines when floorball monitoring is required.
+
+### Dedicated Live runner
+
+Rather than adding floorball-specific scheduling logic to the generic watcher, the implementation uses `event_platform_live.py`.
+
+The existing connector interface remains unchanged.
+
+### Git persistence retained
+
+GitHub-based JSON persistence was retained rather than introducing a database.
+
+Conflict detection, merge rules and coordinated commits address the principal identified risks.
+
+Exactly-once notification delivery remains outside the guarantees of this architecture.
+
+### Regression consolidation
+
+Numerous standalone test-workflows were created during development.
+
+The permanent consolidated regression workflow now provides the primary test entry point.
+
+Historical test-workflow cleanup is planned after real-world acceptance.
+
+## 19. Current conclusion
+
+The automatic Floorball implementation has reached operational deployment.
+
+Discovery, persistent registry storage, dynamic Watch selection and automatic GitHub Actions execution have been technically verified.
+
+The system has also passed 105 Floorball regression tests while preserving existing golf regression behavior.
+
+The implementation is not yet fully accepted for real-world automatic match monitoring.
+
+The next milestone is successful monitoring and completion of the matches on 23 and 25 October 2026.
+
+Until those validations are complete, avoid nonessential changes to the working production workflows and connectors.
+
+## Related documentation
+
+- `docs/ARCHITECTURE.md`
+- `docs/decisions.md`
+- `docs/backlog.md`
+- `docs/design-floorball.md`
+- `docs/design-v1.2.md`
+- `docs/ways-of-working.md`
+- `README.md`
+- `PROJECT_CONTEXT.md`
+
+GitHub remains the authoritative source of truth.
