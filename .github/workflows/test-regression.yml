@@ -190,3 +190,12 @@ jobs:
 
           print("ALL REGRESSION TESTS PASSED")
           PY
+
+          
+      - name: Run Floorball regression tests
+        run: |
+          python -m unittest discover \
+            -s tests \
+            -p "test_floorball_*.py" \
+            -v
+
