@@ -75,8 +75,10 @@ def snapshot_for(fields: dict) -> str:
     )
 
 
-def main():
-    config = load_config()
+def main(config=None):
+    if config is None:
+        config = load_config()
+
     state = load_state()
 
     topic = config["ntfy"]["topic"]
@@ -100,9 +102,9 @@ def main():
         watch_id = watch["id"]
         watch_name = watch["name"]
         connector_name = watch["connector"]
+
         if selected_watch_id and watch_id != selected_watch_id:
             continue
-        
 
         fetch_snapshot = get_fetcher(connector_name)
 
