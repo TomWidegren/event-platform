@@ -1,0 +1,102 @@
+
+name: Test Floorball Live Selection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Test automatic Live match selection
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          from floorball_match_selection import select_active_matches
+
+          stockholm = ZoneInfo("Europe/Stockholm")
+
+          with Path("match_registry.json").open(
+              "r", encoding="utf-8"
+          ) as file:
+              registry = json.load(file)
+
+          now = datetime.now(stockholm)
+
+          print("=== FLOORBALL LIVE SELECTION DRY-RUN ===")
+          print("Current Swedish time:", now.isoformat())
+          print("Registered matches:", len(registry["matches"]))
+
+          selected = select_active_matches(
+              registry,
+              now=now,
+          )
+
+          print("Currently eligible matches:", len(selected))
+
+          for watch in selected:
+              print(
+                  "ELIGIBLE:",
+                  watch["id"],
+                  "|",
+                  watch["name"],
+              )
+
+          # Verify Friday's and Sunday's activation windows
+          # independently of the current time.
+          test_cases = [
+              ("2026-10-23T19:30:00", 1750707),
+              ("2026-10-25T15:30:00", 1703577),
+          ]
+
+          for timestamp, match_id in test_cases:
+              simulated_time = datetime.fromisoformat(
+                  timestamp
+              ).replace(tzinfo=stockholm)
+
+              watches = select_active_matches(
+                  registry,
+                  now=simulated_time,
+              )
+
+              expected_watch_id = f"floorball-match-{match_id}"
+
+              assert any(
+                  watch["id"] == expected_watch_id
+                  for watch in watches
+              ), (
+                  f"Expected match {match_id} not selected "
+                  f"at {timestamp}"
+              )
+
+              print(
+                  "SIMULATED ACTIVATION PASS:",
+                  expected_watch_id,
+                  "at",
+                  timestamp,
+              )
+
+          print()
+          print("No match API calls performed")
+          print("No notifications sent")
+          print("No state or registry changes")
+          print("ALL LIVE SELECTION DRY-RUN CHECKS PASSED")
+          PY
