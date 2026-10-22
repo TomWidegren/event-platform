@@ -1,3 +1,4 @@
+
 name: Event Platform - Daily
 
 on:
@@ -5,6 +6,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: event-platform-state
+  cancel-in-progress: false
 
 jobs:
   run:
@@ -37,15 +42,79 @@ jobs:
         env:
           RUN_MODE: daily
 
-
       - name: Commit state if changed
         run: |
           if git diff --quiet -- state.json; then
             echo "No state change"
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add state.json
           git commit -m "Update golf state"
           git push
+
+      - name: Run Floorball Discovery
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          import yaml
+
+          from floorball_discovery import discover_matches
+          from floorball_discovery_changes import (
+              calculate_discovery_changes,
+          )
+          from floorball_git_persistence import (
+              persist_registry_changes,
+          )
+
+          with Path("config.yml").open(
+              "r", encoding="utf-8"
+          ) as file:
+              config = yaml.safe_load(file)
+
+          with Path("match_registry.json").open(
+              "r", encoding="utf-8"
+          ) as file:
+              registry = json.load(file)
+
+          print("Starting Floorball Daily Discovery")
+
+          updated = discover_matches(
+              config,
+              registry,
+          )
+
+          changes = calculate_discovery_changes(
+              registry,
+              updated,
+          )
+
+          print(
+              "Discovered registry entries:",
+              len(updated["matches"]),
+          )
+          print(
+              "Matches requiring changes:",
+              len(changes),
+          )
+
+          if not changes:
+              print("No registry changes required")
+          else:
+              persisted = persist_registry_changes(
+                  repo_path=Path.cwd(),
+                  changes=changes,
+                  owner="discovery",
+              )
+
+              print("Registry persisted:", persisted)
+
+          print("Floorball Daily Discovery completed")
+          PY
