@@ -1,627 +1,496 @@
 
 # Event Platform – Project Context
 
-This file is the starting point for every new Event Platform development session.
+**Last updated:** 22 October 2026
 
-Its purpose is to allow a human or AI assistant to restore sufficient project context without relying on previous conversation history.
+**Last development checkpoint:** 22 October 2026
 
-**The repository is the source of truth. ChatGPT conversations are working environments, not the project's long-term memory.**
+**Project:** Event Platform
 
-## Project
+**Last documented published release:** v1.2.0
 
-Name: Event Platform
+**Current development:** Automatic Floorball Monitoring
 
-Current production release: **v1.2.0**
+**Deployment status:** Deployed and scheduled; real-world automatic match acceptance pending.
 
-Event Platform monitors changing data from external platforms, detects relevant changes, stores state and sends notifications.
+## 1. Purpose
 
-Golf was the first use case, but the platform core remains independent of golf-specific logic.
+Event Platform monitors changing data from external platforms, detects relevant changes, stores persistent state and sends notifications.
 
-Floorball monitoring has subsequently been implemented and successfully validated during two real-world matches.
+Golf was the first use case.
 
-The Floorball capability is being prepared for its first production release, proposed as v1.3.0.
+The architecture is designed to support additional event types through reusable connectors without introducing source-specific acquisition logic into the platform core.
 
-Last development checkpoint: 19 October 2026.
+The GitHub repository is the authoritative source of truth.
 
-## Current production capabilities
+ChatGPT conversations and Project files must not be assumed to reflect the latest GitHub contents.
 
-Event Platform supports two monitoring modes:
+## 2. Current capabilities
 
-- Daily
-- Live
+### Published release
 
-Connectors included in the current published production release:
+The last documented published release is v1.2.0.
+
+It established the Unified Connector Interface architecture.
+
+Published connectors:
 
 - `sgf_ranking`
 - `golfbox_leaderboard`
 - `tournytt_api`
 
-Additional implemented connector, pending release:
+All connectors expose:
 
-- `ibis_floorball`
+`fetch_snapshot(watch)`
 
-Current notification provider:
+### Implemented after v1.2.0
 
-- ntfy
+- Swedish Floorball / iBIS connector
+- Floorball notification formatting
+- Automatic Floorball Discovery
+- Persistent match registry
+- Automatic match selection
+- Runtime Watch generation
+- Multiple Live Watches
+- Git persistence with conflict protection
+- Automatic match-completion logic
+- Consolidated regression testing
 
-Current execution:
+These capabilities have been implemented and technically verified.
 
-- cron-job.org triggers execution.
-- GitHub Actions runs the platform.
-- `watcher.py` is the core execution engine.
-- `state.json` persists the latest known state.
+The automatic Floorball implementation has not yet completed real-world acceptance or been included in a confirmed new published release.
 
-## Current workflows
+## 3. Production execution
+
+### Scheduling
+
+cron-job.org triggers GitHub Actions.
+
+The platform does not own its scheduler.
 
 ### Daily
 
-Workflow: `.github/workflows/daily.yml`
+Workflow:
 
-Used for SGF Ranking.
+`.github/workflows/daily.yml`
 
-Normally remains enabled continuously.
+Normal schedule:
 
-GitHub Actions versions updated on 19 October 2026:
+08:00 Europe/Stockholm.
 
-- `actions/checkout@v5`
-- `actions/setup-python@v6`
+Responsibilities:
 
-The next scheduled Daily execution is 20 October 2026 at 08:00.
+1. SGF Ranking monitoring.
+2. Automatic Floorball Discovery.
 
-**Status: Updated – Production verification pending.**
+The existing Daily schedule is reused.
 
-The next execution should verify:
+Daily Discovery was successfully tested manually on 22 October.
 
-- Successful GitHub Actions execution.
-- Python environment setup.
-- Playwright and Chromium installation.
-- SGF Ranking acquisition.
-- State persistence behavior.
-- Absence of Node.js 20 deprecation warnings.
+The next scheduled execution should be checked for operational confirmation.
 
 ### Live
 
-Workflow: `.github/workflows/live.yml`
+Workflow:
 
-Used for active GolfBox, Tournytt and floorball monitoring.
+`.github/workflows/live.yml`
 
-Polling interval: 5 minutes.
+Production entry point:
 
-The Live schedule is normally disabled between events.
+`event_platform_live.py`
 
-Last verified live monitoring configuration:
+Polling interval:
 
-- `WATCH_ID: floorball-match-1703572`.
-- Automatic execution through cron-job.org and GitHub Actions verified during the match on 17 October 2026.
-- Monitoring completed successfully.
+5 minutes.
 
-On 19 October 2026, the user confirmed that the Live schedule in cron-job.org had been disabled.
+The existing cron-job.org Live job is enabled.
 
-GitHub Actions versions updated on 19 October 2026:
+Live Monitoring now runs continuously and selects eligible Floorball matches automatically.
 
-- `actions/checkout@v5`
-- `actions/setup-python@v6`
+The previous hard-coded `WATCH_ID` has been removed from the production workflow.
 
-**Status: Updated – Production workflow verification pending.**
+GolfBox and Tournytt remain configured Live Watches.
 
-The Live workflow has not been executed after the Actions version updates.
+### Workflow concurrency
 
-Do not reactivate Live monitoring solely for regression testing against a completed match.
+Participating Daily and Live workflows use:
 
-### Floorball baseline
+`event-platform-state`
 
-Workflow: `.github/workflows/floorball-baseline.yml`
+With:
 
-Used to establish a permanent pre-match baseline without generating notifications.
+`cancel-in-progress: false`
 
-The workflow verifies that the match has not started and preserves existing state entries.
+This reduces overlapping executions that could update shared repository state.
 
-Successfully used for both floorball validation matches.
+Git persistence also includes conflict protection and retries.
 
-### Floorball testing
+## 4. Automatic Floorball Monitoring
 
-Workflow: `.github/workflows/test-floorball.yml`
+### Configured teams
 
-Used for technical verification of the floorball implementation.
+Season: 2026/27.
 
-Updated on 19 October 2026 to:
+| Team | TeamID | CompetitionID |
+|---|---|---|
+| Tyresö Trollbäcken IBK – JAS | 20872 | 45004 |
+| Tyresö Trollbäcken IBK – Herrar | 4194 | 44356 |
 
-- `actions/checkout@v5`
-- `actions/setup-python@v6`
+Highlighted player:
 
-The updated workflow was successfully executed on 19 October 2026.
+Lukas Widegren – PlayerID `585280`.
 
-Verified:
+The platform monitors the configured teams regardless of whether Lukas participates in a particular match.
 
-- iBIS connector acquisition and normalization.
-- Six floorball notification formatting tests.
-- Floorball baseline creation using temporary state.
-- No real ntfy notification from the mocked baseline test.
-- Successful execution with the updated Actions versions.
-- Node.js 20 deprecation warning no longer present.
+### Discovery
 
-### Platform regression testing
+Main components:
 
-Workflow: `.github/workflows/test-regression.yml`
+- `floorball_discovery.py`
+- `floorball_discovery_changes.py`
+- `floorball_registry.py`
+- `floorball_registry_merge.py`
+- `floorball_git_persistence.py`
 
-Introduced on 19 October 2026.
+Discovery retrieves competition match lists from iBIS and identifies relevant matches.
 
-Purpose:
+Persistent registry:
 
-Verify existing golf monitoring logic without sending real notifications or modifying production state.
+`match_registry.json`
 
-The workflow uses:
+Verified on 22 October:
 
-- Mocked connector snapshots.
-- Mocked ntfy notification delivery.
-- Temporary state files.
-- GitHub Actions with read-only repository permissions.
+- 31 relevant matches discovered.
+- Registry persisted in GitHub.
+- Both upcoming acceptance matches present.
+- Repeated execution detected zero changes.
+- Manual Daily workflow integration successful.
 
-Verified for:
+Discovery owns scheduling information.
 
-- SGF Ranking.
-- GolfBox.
-- Tournytt.
+Live owns monitoring lifecycle and completion.
 
-Tests cover:
+### Live match selection
 
-- Connector registration.
-- Notification formatting.
-- Daily baseline behavior.
-- Live first-observation behavior.
-- No additional notification for unchanged data.
-- Change detection.
-- State persistence.
+Main components:
 
-Updated on 19 October 2026 to:
+- `floorball_match_selection.py`
+- `floorball_watch_merge.py`
+- `floorball_live.py`
+- `event_platform_live.py`
 
-- `actions/checkout@v5`
-- `actions/setup-python@v6`
+Eligible matches are selected from the persistent registry.
 
-The updated regression workflow passed successfully.
+Monitoring begins 15 minutes before scheduled match start.
 
-The Node.js 20 deprecation warning was no longer present.
+Automatic Watch IDs use:
 
-These tests do not independently verify current external golf data acquisition.
+`floorball-match-{match_id}`
 
-## Verified real-world behavior
+Manually configured Floorball Watches are excluded from automatic Live execution.
 
-### SGF Ranking
+Existing GolfBox and Tournytt Watches are preserved.
 
-Verified:
+### Match completion
 
-- Player lookup.
-- Baseline creation.
-- Daily monitoring.
-- Real ranking changes after a competition.
+The Live process is designed to:
 
-### GolfBox Leaderboard
+1. Detect the final result.
+2. Send the final-result notification.
+3. Persist the final snapshot.
+4. Mark the match `completed`.
+5. Exclude completed matches from subsequent monitoring.
 
-Verified with:
+Final snapshot and completion status are committed together in Git.
 
-- Haninge Golfklubb.
-- Strängnäs Golfklubb.
-- NSGK (Hylinge).
-- GolfBox Tournament (`golfbox.dk`).
+This behavior has passed automated tests.
 
-Verified lifecycle:
+Real-world automatic completion remains unverified.
 
-- Empty leaderboard.
-- First live result.
-- Hole-by-hole scoring.
-- Position changes caused by other players.
-- Completion of round 1.
-- Transition to round 2.
-- Hole-by-hole scoring in round 2.
-- Completed two-round tournament.
+## 5. Next real-world acceptance tests
 
-The GolfBox connector has been validated across multiple deployments without site-specific parsing changes.
-
-### Tournytt API
-
-Verified:
-
-- SSE API communication.
-- Player lookup.
-- Baseline creation.
-- Change detection.
-- State persistence.
-- GitHub state updates.
-- Notifications.
-
-Observed behavior:
-
-- Player entries are published before play starts.
-- Baseline is therefore created before the first score.
-- Notification formatting should be improved to better present Tournytt-specific fields.
-
-### Floorball / iBIS
-
-First implementation completed on 14 October 2026.
-
-Implemented:
-
-- `connectors/ibis_floorball.py`.
-- Temporary authentication through the iBIS startkit endpoint.
-- HTTP/JSON match data acquisition.
-- Normalized match snapshots.
-- Match status, score and event monitoring.
-- Detection of new events using MatchEventID.
-- Floorball-specific notification formatting.
-- Player-specific highlighting.
-- Optional `WATCH_ID` execution filtering.
-- Permanent pre-match baseline.
-- Automated connector and formatting tests.
-
-#### First real-world validation – 15 October 2026
-
-**Status: Completed successfully**
+### Friday 23 October 2026
 
 Match:
 
-Huddinge IBS – Tyresö Trollbäcken IBK
+Tyresö Trollbäcken IBK – FBI Tullinge
 
-Competition: Juniorallsvenskan D HJ18
+MatchID: `1750707`
 
-Match ID: 1750693
+Scheduled start: 19:45.
 
-Followed team ID: 20872
+Expected automatic activation: 19:30.
 
-Highlighted player: Lukas Widegren, PlayerID 585280.
-
-The live monitoring operated successfully during the match.
-
-Verified notifications:
-
-- Goals.
-- Penalties.
-- Period starts.
-- Period ends.
-- Final result.
-- Other registered match events.
-
-An additional iBIS event type was identified:
-
-- MatchEventTypeID 1 – Regular goal.
-- MatchEventTypeID 12 – Empty-net goal.
-
-The notification formatter was updated to handle both event types as goals.
-
-Empty-net goals are explicitly identified with the suffix `(tom bur)`.
-
-The updated implementation was verified through inspection of `notification_formatters.py`.
-
-Player-specific highlighting was not verified during the match because Lukas did not score, record an assist or receive a penalty.
-
-#### Second real-world validation – 17 October 2026
-
-**Status: Completed successfully**
+### Sunday 25 October 2026
 
 Match:
 
-IFK Haninge (B) – Tyresö Trollbäcken IBK (A)
+Tyresö Trollbäcken IBK (A) – Älta IF A
 
-Competition: Herrar Division 3 Södra
+MatchID: `1703577`
 
-Match ID: 1703572
+Scheduled start: 15:45.
 
-Start: 17 October 2026, 13:30
+Expected automatic activation: 15:30.
 
-Venue: Lyckeby Sporthall
+All times are Europe/Stockholm.
 
-Followed team ID: 4194
+### Acceptance criteria
 
-Highlighted player: Lukas Widegren, PlayerID 585280.
+For each match, verify:
 
-Preparation completed on 16 October:
+- Automatic Watch selection.
+- Pre-match baseline creation.
+- Match-event detection.
+- Notification delivery.
+- Final-result notification.
+- Final snapshot persistence.
+- Registry status `completed`.
+- Completed match excluded from later runs.
+- No unexpected duplicate monitoring.
+- Existing golf monitoring unaffected.
 
-- New Watch added to `config.yml`.
-- Existing Golf and Floorball Watches preserved.
-- Separate stable Watch ID: `floorball-match-1703572`.
-- Permanent pre-match baseline established.
-- Five existing state entries preserved.
-- No notification generated during baseline creation.
-- `live.yml` updated to target the new Watch.
-- Manual Live execution completed successfully.
-- Unchanged match data produced no notification.
-- Automatic execution through cron-job.org and GitHub Actions verified.
-- Five-minute polling interval confirmed.
+Player-specific highlighting can only be verified if a qualifying player event occurs.
 
-Real-world results confirmed by the user:
+## 6. Verified results
 
-- Automatic live monitoring and ntfy notifications operated at five-minute intervals.
-- Notification content and presentation were satisfactory.
-- A separate final-result notification was received.
-- The final-result notification correctly reported 5–4.
+### Golf
 
-Verified through inspection of the persisted `state.json`:
+SGF Ranking, GolfBox and Tournytt have previously been verified during real-world monitoring.
 
-- Correct Watch ID: `floorball-match-1703572`.
-- Correct Match ID: 1703572.
-- Final result: IFK Haninge (B) 5 – Tyresö Trollbäcken IBK (A) 4.
-- `has_final_result` was `true`.
-- `match_status` was `4`.
-- The final snapshot contained 30 registered match events.
-- All 30 event IDs were unique.
-- All five previously existing Watch state entries were preserved.
+GolfBox has been validated across multiple deployments and multi-round tournaments.
 
-The second real-world validation was successful.
+### Floorball – Manual monitoring
 
-#### Remaining verification limitations
+Two successful real-world validations:
 
-- Player-specific highlighting has been technically tested but has not been observed during a real match involving Lukas.
-- Updated empty-net goal formatting has not yet been verified during a suitable real event.
-- A complete comparison of individual notifications with the official match-event history has not been performed.
-- The absence of duplicate notifications has not been independently verified through notification history.
-- Handling of corrected or deleted match events requires further evaluation.
+**15 October 2026**
 
-These limitations do not prevent preparation of the initial Floorball release but must not be described as verified capabilities.
+Huddinge IBS – Tyresö Trollbäcken IBK.
 
-## Important current limitations
+MatchID: `1750693`.
 
-### General platform
+Verified goals, penalties, period events, final results and ntfy delivery.
 
-- GolfBox competitions may require both competition ID and leaderboard ID.
-- Some GolfBox event-specific information may still need further configuration generalization.
-- Ranking notifications do not clearly show previous → new values.
-- Tournytt notification formatting could be improved.
+**17 October 2026**
 
-### State persistence
+IFK Haninge (B) – Tyresö Trollbäcken IBK (A).
 
-`state.json` is persisted through GitHub commits.
+MatchID: `1703572`.
 
-The current Live workflow can overwrite concurrent state changes because it restores a complete saved state file after synchronizing with `main`.
+Verified five-minute polling, notifications, final result 5–4 and final state persistence.
 
-This risk should be addressed before introducing broader concurrent monitoring.
+These validations used the earlier manually selected Watch approach.
 
-The core also sends notifications before saving updated state. A notification or execution failure can therefore result in a change being detected again during a later execution.
+### Automated regression tests
 
-No corresponding production incident has been confirmed.
+Permanent workflow:
 
-### Floorball
+`.github/workflows/test-regression.yml`
 
-- Automatic discovery of upcoming matches is not implemented.
-- Live monitoring currently requires manual Watch configuration.
-- The Live workflow uses a specific `WATCH_ID`.
-- Multiple simultaneous Live Watches are not yet operationally supported through the current workflow configuration.
-- Handling of corrected or deleted match events requires further evaluation.
-- Notification preferences are not configurable.
-- The complete iBIS event-type model has not been documented.
-- Player-specific highlighting remains unverified during a relevant real-world player event.
-- Updated empty-net goal formatting remains to be verified in real-world operation.
-- GitHub Actions production runtime compatibility requires verification following the October 2026 updates.
+Verified on 22 October:
 
-## Documentation
+**105 Floorball tests passed.**
 
-Before making architectural or implementation decisions, read:
+Existing golf regression tests also passed.
 
-1. `README.md`
-2. `docs/ARCHITECTURE.md`
-3. `docs/decisions.md`
-4. `docs/ways-of-working.md`
-5. `docs/backlog.md`
+Coverage includes:
 
-Relevant design documentation:
+- Discovery
+- Registry handling
+- Match selection
+- Watch merging
+- Notification formatting
+- Git persistence
+- Atomic completion
+- Live integration
 
-- `docs/design-v1.2.md`
+### Automatic Live execution
+
+Verified on 22 October:
+
+- Successful manual execution.
+- Successful automatic execution through cron-job.org.
+- GolfBox and Tournytt processed.
+- No Floorball match selected prematurely.
+- No unnecessary state persistence.
+- GitHub Actions execution completed successfully.
+
+The Live workflow was optimized after identifying excessive Playwright system-dependency installation time.
+
+Measured execution times:
+
+- Before optimization: 4 minutes 20 seconds.
+- Optimized manual execution: approximately 37 seconds.
+- Subsequent automatic execution: approximately 30 seconds.
+
+The automatic Live schedule was re-enabled and verified.
+
+## 7. Important limitations
+
+### Notification delivery
+
+Notifications are sent before Git persistence.
+
+If notification delivery succeeds but persistence fails, the same event may be notified again.
+
+Exactly-once delivery is not guaranteed.
+
+### Late first observation
+
+If the first Floorball observation already contains match activity, the current Live runner raises an error rather than silently discarding events.
+
+Recovery remains future work.
+
+### Git persistence
+
+The Live implementation merges changed Watch entries against the latest repository state.
+
+It includes optimistic concurrency protection.
+
+Broader real-world concurrent execution remains an operational validation area.
+
+### Match events
+
+Corrected and deleted iBIS events require further evaluation.
+
+### Player highlighting
+
+Player-specific highlighting has passed technical tests but has not yet been observed during a qualifying real-world player event.
+
+### Release status
+
+The automatic Floorball implementation is deployed but not yet fully accepted.
+
+Do not assume a new published release has been created.
+
+Confirm release status from GitHub releases or tags before publishing or documenting a new version.
+
+## 8. Current operational safeguards
+
+Automatic Live Monitoring is active ahead of the matches on 23 and 25 October.
+
+Until acceptance is complete:
+
+- Avoid nonessential production code changes.
+- Avoid modifying Live scheduling.
+- Avoid deleting monitoring state.
+- Avoid removing potentially useful workflows.
+- Preserve GitHub Actions logs for failed executions.
+- Investigate operational problems using actual evidence.
+
+Documentation changes may continue without altering production behavior.
+
+## 9. Repository cleanup
+
+The development process created numerous standalone GitHub Actions test-workflows.
+
+The consolidated regression workflow now covers the permanent automated test suite.
+
+After real-world acceptance:
+
+1. Inventory historical workflows.
+2. Verify that none are externally scheduled.
+3. Remove redundant standalone test-workflows.
+4. Preserve Python regression tests.
+5. Review unused implementation modules.
+6. Remove obsolete manually configured Floorball Watches.
+7. Preserve historical state and completed-match records.
+8. Run consolidated regression tests.
+
+Do not perform destructive cleanup during active match validation.
+
+## 10. Documentation status
+
+Updated on 22 October 2026:
+
+- `docs/ARCHITECTURE.md`
+- `docs/decisions.md`
+- `docs/backlog.md`
+- `docs/design-floorball-automation.md`
+- `docs/ways-of-working.md`
+- `README.md`
+- `PROJECT_CONTEXT.md`
+
+Historical documents retained:
+
 - `docs/design-floorball.md`
+- `docs/design-v1.2.md`
 
-`PROJECT_CONTEXT.md` is always the first document to read.
+Legacy roadmap information is superseded by `docs/backlog.md`.
 
-The repository documentation is authoritative.
+## 11. Development process
 
-Do not rely on previous AI conversation history when repository documentation is available.
+Follow:
 
-## Starting a development session
+`docs/ways-of-working.md`
 
-At the beginning of every session:
+Key principles:
 
-1. Read this file.
-2. Read the project documentation listed above.
-3. Identify the current production release and ongoing development.
-4. Ask or confirm the goal for the session.
-5. Read only the source files relevant to that goal.
-6. Do not propose code changes before relevant current files have been inspected.
+- One agreed goal.
+- Inspect existing files.
+- Deliver coherent implementation increments.
+- Provide complete copyable files for substantial changes.
+- Avoid unnecessary approval rounds.
+- Prefer consolidated regression testing.
+- Verify according to risk.
+- Protect working Live Monitoring.
+- Document verified facts separately from plans.
 
-## During a development session
+Do not assume ChatGPT has direct access to the latest GitHub repository.
 
-Follow `docs/ways-of-working.md`.
+Request current files when necessary.
 
-In particular:
+## 12. Starting the next session
 
-- One goal.
-- One step.
-- One verification.
-- Then the next step.
-
-Prefer evidence over assumptions.
-
-Do not repeat completed work.
-
-Do not silently change direction.
-
-For substantial file changes, provide the entire replacement file in one continuous copyable block.
-
-## Ending a development session
-
-Before ending:
-
-1. Summarize completed work.
-2. Record verified results.
-3. Identify unresolved issues.
-4. Update relevant documentation.
-5. Update this file when project status materially changes.
-6. Confirm that documentation changes have been committed.
-7. Identify the recommended next goal.
-
-The next session must be able to continue without access to previous ChatGPT conversations.
-
-## Current development direction
-
-### Completed release – v1.2.0
-
-Event Platform v1.2.0 – Unified Connector Interface has been implemented, verified and published.
-
-Key capabilities:
-
-- Unified connector interface: `fetch_snapshot(watch)`.
-- Connector-owned data acquisition.
-- Structured Watches with stable IDs.
-- Connector-specific configuration under `source`.
-- Connector-defined normalized snapshots.
-- Separate notification formatting layer.
-- Generic Event Platform core.
-
-The v1.2.0 release cycle is complete.
-
-### Floorball development – Implementation and validation completed
-
-The first floorball connector has been implemented and technically verified.
-
-Two real-world match validations were successfully completed:
-
-- 15 October 2026 – Huddinge IBS vs Tyresö Trollbäcken IBK.
-- 17 October 2026 – IFK Haninge (B) vs Tyresö Trollbäcken IBK (A).
-
-The implementation has not yet been included in a published production release.
-
-The verified functionality is considered sufficient to prepare the first Floorball release.
-
-### Planned release – v1.3.0
-
-**Status: Preparation in progress – Not yet published**
-
-Proposed scope:
-
-- Include the implemented `ibis_floorball` connector.
-- Include floorball-specific notification formatting.
-- Include the permanent pre-match baseline workflow.
-- Include automated Floorball tests.
-- Include the new platform regression test workflow.
-- Preserve the existing v1.2 architecture and production connectors.
-
-Release preparation completed on 19 October 2026:
-
-- Two real-world Floorball validations documented.
-- Floorball automated tests passed.
-- Golf regression tests passed using mocked data.
-- Both test workflows updated to `checkout@v5` and `setup-python@v6`.
-- Both test workflows passed after the updates.
-- Node.js 20 warnings removed from the test workflows.
-- Daily and Live production workflows updated to the same Actions versions.
-- Live schedule disabled in cron-job.org after the completed match.
-
-Remaining release verification:
-
-1. Verify the scheduled Daily execution on 20 October 2026 at 08:00.
-2. Verify Live workflow compatibility after the GitHub Actions version update.
-3. Confirm Playwright and Chromium compatibility in production workflows.
-4. Review remaining warnings and known limitations.
-5. Confirm final release scope.
-6. Publish v1.3.0 only after explicit approval.
-
-No new release has been created.
-
-### Next development phase – Automatic floorball match discovery
-
-**Status: Agreed direction – Design not started**
-
-After the first Floorball release, begin a separate design phase for automatic identification and monitoring of matches.
-
-Initial goal:
-
-Automatically identify upcoming matches for the teams and competitions in which Lukas Widegren participates.
-
-Monitoring should continue for the selected teams regardless of whether Lukas participates in an individual match.
-
-Desired capabilities:
-
-- Configure selected teams and competitions.
-- Discover upcoming matches automatically.
-- Support multiple teams and competitions.
-- Avoid manual MatchID configuration for every match.
-- Avoid manually changing `WATCH_ID` between matches.
-- Handle postponed and cancelled matches.
-- Preserve stable Watch identities and existing state.
-- Reuse the Event Platform core wherever possible.
-
-Before implementation, resolve the design questions concerning:
-
-- Match discovery.
-- Watch granularity.
-- Multiple simultaneous Live Watches.
-- Safe concurrent state persistence.
-- Match activation and completion.
-- Team and competition identification.
-
-The iBIS competition match-list endpoint has already been identified as a potential discovery mechanism.
-
-Architectural changes must be designed, reviewed and agreed before implementation.
-
-### Recommended next goal
-
-Complete the remaining release verification for v1.3.0.
-
-Next session:
-
-1. Review the scheduled Daily execution from 20 October 2026 at 08:00.
-2. Confirm that the workflow completed successfully with the updated Actions versions.
-3. Verify Playwright and Chromium installation and operation.
-4. Determine a safe Live workflow verification approach.
-5. Review release readiness and obtain explicit approval before publication.
-
-After v1.3.0, begin the design phase for automatic floorball match discovery.
-
-No new release should be created until the relevant capability has been verified and deliberately approved for release.
-
-## Context rule
-
-If an AI assistant does not have direct access to the repository, provide this file at the start of the session.
-
-The assistant should then request only the additional documentation or source files needed for the agreed goal.
-
-Do not reconstruct project state from conversational memory when current repository files can be provided.
-
-## ChatGPT conversation lifecycle
-
-A new ChatGPT conversation should normally be started when beginning development of a new software version.
-
-Additional conversations may be started within the same version when necessary.
-
-A conversation change does not imply a software release.
-
-Before changing conversations, ensure that the repository documentation reflects the latest verified development state.
-
-Detailed procedures are defined in `docs/ways-of-working.md`.
-
-## Simple session commands
-
-The user should not need to remember the development-session procedure.
-
-### Start
-
-If the user says:
+The user should only need to say:
 
 "Nu fortsätter vi med Event Platform."
 
 The assistant should:
 
-1. Request `PROJECT_CONTEXT.md` if it is not already available.
-2. Restore project context from repository documentation.
-3. Request only additional files needed for the session.
-4. Confirm the session goal before making changes.
+1. Read this file.
+2. Read the project documentation.
+3. Identify the current production and development status.
+4. Review the latest operational verification.
+5. Request only relevant source files if necessary.
+6. Continue without repeating completed work.
 
-### End
+### Recommended next goal
 
-If the user says:
+**Complete real-world acceptance of automatic Floorball Monitoring.**
 
-"Vi avslutar för idag."
+Start by reviewing the automatic JAS match monitoring on 23 October.
 
-The assistant should:
+Verify:
 
-1. Summarize completed and verified work.
-2. Identify unresolved issues and recommended next goal.
-3. Determine which documentation needs updating.
-4. Provide required documentation changes before ending.
-5. Verify that `PROJECT_CONTEXT.md` is current.
-6. Confirm that documentation updates have been committed.
+- Match activation.
+- Baseline.
+- Notifications.
+- Final-result persistence.
+- Registry completion.
+
+Then review the men's match on 25 October.
+
+After acceptance, proceed with repository cleanup and release planning.
+
+## 13. Ending a session
+
+Before ending:
+
+1. Summarize completed work.
+2. Distinguish verified and unverified functionality.
+3. Update relevant repository documentation.
+4. Confirm documentation commits.
+5. Record outstanding issues.
+6. Identify the next goal.
+
+The repository must contain sufficient context to resume development without relying on earlier conversations.
+
+## Context rule
+
+GitHub is authoritative.
+
+Conversation memory is not a substitute for current repository documentation.
+
+When the latest repository state is unavailable, request the necessary files rather than assuming previous attachments are synchronized.
