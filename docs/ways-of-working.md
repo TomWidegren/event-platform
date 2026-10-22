@@ -1,10 +1,13 @@
+
 # Event Platform – Ways of Working
 
 This document defines how development sessions for Event Platform should be conducted.
 
-The purpose is to keep development predictable, understandable and easy to resume across sessions and ChatGPT conversations.
+The purpose is to keep development predictable, efficient, understandable and easy to resume across sessions and ChatGPT conversations.
 
-The repository is the source of truth. ChatGPT conversations are working environments, not the project's long-term memory.
+The GitHub repository is the authoritative source of truth.
+
+ChatGPT conversations are working environments, not the project's long-term memory.
 
 ## 1. Start every session by restoring context
 
@@ -16,12 +19,14 @@ Before proposing changes:
 4. Read `docs/decisions.md`.
 5. Read `docs/ways-of-working.md`.
 6. Read `docs/backlog.md`.
-7. Identify the current production release and ongoing development.
+7. Identify the current published release and ongoing development.
 8. Read only the source files relevant to the session's goal.
 
 Do not rely on conversational memory when repository documentation is available.
 
-The repository is the source of truth.
+Do not assume that Project files or ChatGPT attachments are automatically synchronized with GitHub.
+
+When current repository contents are needed and direct GitHub access is unavailable, request the relevant files.
 
 ## 2. Define one goal for the session
 
@@ -35,52 +40,102 @@ Avoid expanding the session into unrelated architecture or feature work unless a
 
 New ideas should normally be added to the backlog rather than implemented immediately.
 
-## 3. Work one step at a time
+A session may contain multiple related implementation tasks when they serve the same agreed goal.
+
+## 3. Work in coherent, verifiable increments
 
 Development should follow this cycle:
 
-1. Make one understandable change.
-2. Run or test it.
-3. Observe the result.
-4. Draw a conclusion.
-5. Only then make the next change.
+1. Agree on the goal.
+2. Inspect relevant existing files.
+3. Define a coherent implementation increment.
+4. Implement the related changes.
+5. Run appropriate verification.
+6. Evaluate the result.
+7. Continue to the next increment.
 
-Avoid changing multiple independent things before verification.
+Avoid changing multiple unrelated things before verification.
+
+However, do not artificially divide a single coherent change into numerous small manual steps.
+
+Related Python modules, workflow changes and tests may be delivered together when they form one understandable implementation.
+
+The guiding principle is:
+
+**One goal, one coherent change, one appropriate verification, then the next change.**
 
 ## 4. Prefer evidence over assumptions
 
 When an external source behaves unexpectedly:
 
-- Inspect the real page.
+- Inspect the real page or API.
 - Inspect logs.
 - Inspect state.
 - Use temporary debug output when necessary.
+- Compare observed behavior with documented expectations.
 
 Do not guess HTML structure, selectors, API behavior or data formats when they can be observed.
 
 The SGF Ranking, GolfBox and iBIS implementations demonstrated the value of this approach.
 
-## 5. Prefer complete files for substantial code changes
+Clearly distinguish:
 
-When a file requires significant modification, provide the complete intended file rather than a sequence of small edits.
+- Implemented functionality.
+- Automated-test verification.
+- Production workflow verification.
+- Real-world acceptance.
+- Planned or unverified functionality.
 
-Small, unambiguous changes may be described as individual line changes.
+A successful automated test does not automatically establish real-world acceptance.
 
-This reduces ambiguity about:
+## 5. Provide complete, directly copyable files
 
-- What should remain.
-- What should be removed.
-- Indentation.
-- Old debug code.
-- Obsolete imports.
+For substantial code or documentation changes, provide the complete intended replacement file.
 
-When providing a complete replacement file, the entire file must be provided in one continuous copyable block.
+Do not require the user to combine several code fragments, insert code at different locations or manually reconstruct the final result.
 
-Do not use nested code blocks or formatting that accidentally splits the file into multiple sections.
+A complete replacement should:
 
-The user should be able to replace the existing file with one copy-and-paste operation.
+- Include all necessary imports.
+- Preserve required existing functionality.
+- Remove obsolete code only when justified.
+- Use correct indentation.
+- Be directly copyable into GitHub.
+- Be presented in one continuous code block.
 
-## 6. Do not repeat completed steps
+Do not place nested Markdown code fences inside an outer code block.
+
+For multiple related files, provide each complete file separately and identify its repository path.
+
+Small, unambiguous changes may still be described as individual edits when that is genuinely simpler.
+
+When the user explicitly requests complete files, always provide complete files.
+
+## 6. Deliver instead of repeatedly requesting approval
+
+Once the user has agreed on a goal and implementation direction, proceed with the agreed work.
+
+Do not repeatedly describe the next step and wait for responses such as:
+
+- OK
+- Kör
+- Fortsätt
+
+If the next agreed step is to write code, the next assistant response should contain the code or the completed deliverable.
+
+Avoid messages that merely promise a future implementation.
+
+Request approval only when:
+
+- An architectural decision is required.
+- A meaningful scope change is proposed.
+- Essential information is missing.
+- An action could affect working production functionality.
+- A destructive or irreversible change requires confirmation.
+
+Routine implementation within the agreed scope does not require repeated approval.
+
+## 7. Do not repeat completed work
 
 Before asking for a change, establish what has already been completed.
 
@@ -88,109 +143,210 @@ Do not instruct the user to recreate files, imports, configuration or infrastruc
 
 If uncertain, inspect the current file before proposing a change.
 
-## 7. Do not change direction silently
+A successful verification should be recorded and reused as evidence rather than unnecessarily repeated.
+
+Repeat regression tests when relevant code changes, not simply because the conversation continues.
+
+## 8. Use risk-based verification
+
+Verification effort should reflect the risk of the change.
+
+### Low-risk changes
+
+Examples:
+
+- Documentation updates.
+- Comments.
+- Nonfunctional cleanup.
+
+Normally require content review rather than full production regression testing.
+
+### Moderate-risk changes
+
+Examples:
+
+- Connector improvements.
+- Notification formatting.
+- Configuration processing.
+
+Require relevant automated tests and regression checks.
+
+### High-risk changes
+
+Examples:
+
+- State persistence.
+- Git concurrency.
+- Notification delivery.
+- Live scheduling.
+- Automatic match completion.
+
+Require focused automated tests, appropriate regression testing and controlled operational verification.
+
+Do not create a new GitHub Actions workflow for every individual test.
+
+Prefer the existing consolidated regression workflow.
+
+## 9. Maintain consolidated regression testing
+
+The permanent regression workflow is:
+
+`.github/workflows/test-regression.yml`
+
+It covers existing golf monitoring and the Floorball automated test suite.
+
+As of 22 October 2026, 105 Floorball tests and the existing golf regression tests passed.
+
+New automated tests should normally be added to the existing test suite.
+
+Before adding a test, confirm that the regression workflow will discover it.
+
+Historical standalone test-workflows may be removed after verifying that they are no longer required.
+
+Preserve useful Python test cases even when removing redundant GitHub Actions workflows.
+
+## 10. Do not change architectural direction silently
 
 If new information suggests that the agreed plan should change:
 
-1. Explain what new information was discovered.
+1. Explain the new evidence.
 2. Explain why it affects the current plan.
-3. Propose the change of direction.
-4. Agree on the new direction before implementing it.
+3. Propose the change.
+4. Agree on the new direction before implementation.
 
-Do not introduce a new architecture or development strategy in the middle of an existing step without making the change explicit.
+Do not introduce a new architecture or development strategy without making the change explicit.
 
-## 8. Design before implementation
+Prefer the smallest change consistent with the agreed architecture.
+
+Avoid introducing infrastructure merely to address hypothetical future requirements.
+
+## 11. Design before architectural implementation
 
 For architectural refactorings:
 
-1. Complete the design phase first.
-2. Record the proposed design in a design draft.
+1. Complete the design phase.
+2. Record the proposed design.
 3. Review and agree on the design.
-4. Only then begin implementation.
+4. Begin implementation.
+5. Verify the implementation against the agreed design.
 
-Avoid partially implementing an architectural idea while the design is still evolving.
+Ordinary bug fixes and incremental improvements do not require a separate formal design phase.
 
-If implementation has started before the design is stable, restore the project to a consistent working state before continuing.
+Do not continue debating an already agreed design unless new evidence reveals a material issue.
 
-This rule applies to architectural refactorings only.
-
-Ordinary bug fixes and small incremental improvements should continue to follow the normal one-step development process.
-
-## 9. Separate debugging from production design
+## 12. Separate debugging from production design
 
 Temporary debug code is allowed when investigating an unknown source.
 
-Once the behavior is understood:
+Once behavior is understood:
 
-- Remove debug code.
+- Remove temporary debugging code.
 - Restore a clean production implementation.
-- Verify the production implementation.
+- Verify relevant functionality.
 
-Do not leave a debug implementation in place accidentally.
+Do not leave temporary test mechanisms in production accidentally.
 
-## 10. Protect working live systems
+Do not retain unnecessary standalone test-workflows indefinitely.
 
-During an active event:
+## 13. Protect working live systems
+
+During an active event or important operational acceptance test:
 
 - Prioritize stability.
 - Avoid refactoring.
-- Avoid cosmetic changes.
+- Avoid cosmetic production changes.
+- Avoid deleting active state.
 - Fix only issues that materially affect monitoring.
+- Preserve useful diagnostics.
 
-Use the live event as an acceptance test.
+Use the event as an acceptance test.
 
-Refactoring and generalization should normally happen after the event.
+Refactoring, cleanup and generalization should normally happen afterwards.
 
-## 11. Record new knowledge
+Documentation may be updated during active monitoring when it does not affect execution.
 
-At the end of a meaningful development session, ask:
+## 14. Separate technical verification from operational acceptance
+
+Use explicit verification categories.
+
+### Implemented
+
+The functionality exists in the repository.
+
+### Automated-test verified
+
+The functionality passed controlled tests.
+
+### Workflow verified
+
+The relevant GitHub Actions workflow executed successfully.
+
+### Operationally verified
+
+The functionality was observed working with real external data.
+
+### Accepted
+
+The agreed acceptance criteria have been met.
+
+Do not describe a feature as fully accepted merely because its code exists or automated tests passed.
+
+Record known limitations and unverified scenarios.
+
+## 15. Record new knowledge
+
+At the end of a meaningful development session, determine:
 
 - Did the architecture change?
 - Was a new design decision made?
 - Did we learn something important about a connector?
 - Did we identify future work?
 - Did our development process change?
+- Did the production or release status change?
 
-Update the appropriate document when necessary:
+Update the relevant documents:
 
-- `ARCHITECTURE.md` – how the system works now.
-- `decisions.md` – important decisions and why.
-- `ways-of-working.md` – how development should be conducted.
-- `backlog.md` – future work.
-- Relevant design documents – implementation findings and unresolved design questions.
-- `PROJECT_CONTEXT.md` – current development status and next steps.
+- `docs/ARCHITECTURE.md` – current architecture.
+- `docs/decisions.md` – architectural and operational decisions.
+- `docs/ways-of-working.md` – development process.
+- `docs/backlog.md` – outstanding work.
+- Relevant design documents – detailed findings.
+- `README.md` – project overview.
+- `PROJECT_CONTEXT.md` – current status and handover.
 
-Documentation should reflect verified facts, not assumptions or intended behavior.
+Documentation must reflect verified facts rather than assumptions.
 
-## 12. Keep documentation current rather than historical
+## 16. Keep documentation current
 
-`ARCHITECTURE.md` describes the current system.
+`docs/ARCHITECTURE.md` describes the current system.
 
 Do not preserve obsolete architecture there merely for historical completeness.
 
-Important historical reasoning belongs in `decisions.md`.
+Historical reasoning belongs in `docs/decisions.md`.
+
+Design documents may retain original assumptions when clearly distinguished from the implemented solution.
 
 Git history and releases provide detailed implementation history.
 
-## 13. Manage ChatGPT conversation lifecycle
+Avoid duplicating large amounts of technical detail across documents.
 
-ChatGPT conversations have finite context and may eventually reach their maximum length.
+## 17. Manage ChatGPT conversation lifecycle
 
-Development must not depend on the availability of an earlier conversation.
+ChatGPT conversations have finite context.
+
+Development must not depend on an earlier conversation remaining available.
 
 ### When to start a new conversation
 
 As a general rule:
 
-- Start a new conversation when beginning development of a new version.
-- A version may span multiple conversations when development is extensive.
-- Start a new conversation earlier when the current one becomes long or difficult to navigate.
-- Prefer switching between development phases or after a completed session checkpoint.
-- Do not interrupt an active test or unfinished implementation solely to change conversations.
+- Start a new conversation when beginning a new version.
+- A version may span multiple conversations.
+- Start a new conversation when the current one becomes long or difficult to navigate.
+- Prefer switching after a completed checkpoint.
+- Do not interrupt an active test solely to change conversations.
 
 A new conversation does not imply a new software release.
-
-A software release is created only when the relevant capability has been implemented and verified.
 
 ### Starting a new conversation
 
@@ -200,73 +356,79 @@ The user should only need to say:
 
 The assistant should then:
 
-1. Request the current `PROJECT_CONTEXT.md` if it is not available.
-2. Read the referenced project documentation.
-3. Identify the current production release and development status.
-4. Confirm the intended goal for the session.
-5. Request only additional source files needed for that goal.
-6. Continue from the documented project state without recreating completed work.
+1. Request current project context if unavailable.
+2. Read the referenced repository documentation.
+3. Identify current release and development status.
+4. Confirm the session goal.
+5. Request only source files relevant to that goal.
+6. Continue without recreating completed work.
 
-Do not assume that the assistant can access previous conversations or the latest GitHub repository contents.
-
-If direct repository access is unavailable, request the necessary files from the user.
+Do not assume direct access to the latest GitHub repository.
 
 ### Continuity between conversations
 
 `PROJECT_CONTEXT.md` is the primary handover document.
 
-It should contain sufficient information to identify:
+It should contain:
 
-- Current production release.
-- Ongoing development.
+- Current published release.
+- Deployed functionality.
 - Latest verified results.
 - Important unresolved issues.
 - Relevant documentation.
-- Recommended next development goal.
+- Recommended next goal.
 
-Detailed technical information belongs in the appropriate architecture, design or backlog documents rather than being duplicated unnecessarily.
+Detailed architecture and backlog information belong in their respective documents.
 
-## 14. End every session with a checkpoint
+## 18. End every session with a checkpoint
 
-The user can initiate session closure by saying:
+The user can initiate closure by saying:
 
 "Vi avslutar för idag."
 
 The assistant should:
 
-1. Summarize what was completed.
-2. Identify what was actually verified.
-3. Identify unresolved issues and risks.
-4. Determine which project documents require updates.
-5. Provide the required documentation changes, one file at a time.
-6. Ask the user to confirm that changes have been committed.
-7. Verify that `PROJECT_CONTEXT.md` reflects the current project status.
-8. Identify the recommended next development goal.
+1. Summarize completed work.
+2. Identify verified functionality.
+3. Identify unresolved risks.
+4. Determine required documentation updates.
+5. Provide complete documentation changes.
+6. Confirm that the user committed the changes.
+7. Verify that `PROJECT_CONTEXT.md` reflects the current status.
+8. Identify the next recommended development goal.
 
-A session should not be considered fully documented until the relevant repository changes have been committed or explicitly identified as pending.
+A session is not fully documented until required repository updates have been committed or explicitly recorded as pending.
 
-The next session should be able to restart from repository documentation without requiring previous conversation history.
+The next session should be able to restart from repository documentation without relying on conversation history.
 
-## 15. Release deliberately
+## 19. Release deliberately
 
 Create a release when a meaningful, verified capability has been completed.
 
-A release should describe what is actually working, not what is merely planned.
+A release should describe what is actually working.
 
 Use semantic versioning:
 
-- Patch – fixes without meaningful capability changes.
+- Patch – compatible fixes.
 - Minor – new backward-compatible capability.
-- Major – significant incompatible architectural change.
+- Major – incompatible architectural changes.
 
 A new ChatGPT conversation does not require a new release.
 
-## Core working principle
+Do not infer the published release version solely from deployed code.
 
-One goal.
+Confirm release status from repository releases or tags.
 
-One step.
+## Core working principles
 
-One verification.
+**One agreed goal.**
 
-Then the next step.
+**One coherent implementation increment.**
+
+**One appropriate verification.**
+
+**Then the next increment.**
+
+Deliver actual work rather than repeatedly promising future work.
+
+Prefer complete files, evidence-based decisions and a clean handover.
