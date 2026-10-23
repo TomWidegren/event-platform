@@ -988,7 +988,7 @@
     }
   },
   "floorball-match-1750707": {
-    "snapshot": "{\"away_goals\": 2, \"away_match_team_id\": 3397389, \"away_team\": \"FBI Tullinge\", \"away_team_id\": 21360, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9846114, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9846115, \"home_goals\": 0, \"match_team_id\": 3397388, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 586955, \"player_name\": \"Elias Englund\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9846116, \"home_goals\": 0, \"match_team_id\": 3397389, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 502012, \"player_name\": \"Elias Köhlin\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 1, \"event_id\": 9846172, \"home_goals\": 0, \"match_team_id\": 3397389, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 525509, \"player_name\": \"Amadeus Ejdersand\", \"second\": 55, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 537136, \"assist_name\": \"Måns Ritzl\", \"away_goals\": 2, \"event_id\": 9846267, \"home_goals\": 0, \"match_team_id\": 3397389, \"minute\": 3, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 525509, \"player_name\": \"Amadeus Ejdersand\", \"second\": 26, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3397388, \"home_team\": \"Tyresö Trollbäcken IBK\", \"home_team_id\": 20872, \"match_datetime\": \"2026-10-23T19:45:00\", \"match_id\": 1750707, \"match_status\": 2}",
+    "snapshot": "{\"away_goals\": 2, \"away_match_team_id\": 3397389, \"away_team\": \"FBI Tullinge\", \"away_team_id\": 21360, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9846114, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9846115, \"home_goals\": 0, \"match_team_id\": 3397388, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 586955, \"player_name\": \"Elias Englund\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9846116, \"home_goals\": 0, \"match_team_id\": 3397389, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 502012, \"player_name\": \"Elias Köhlin\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 1, \"event_id\": 9846172, \"home_goals\": 0, \"match_team_id\": 3397389, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 525509, \"player_name\": \"Amadeus Ejdersand\", \"second\": 55, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 537136, \"assist_name\": \"Måns Ritzl\", \"away_goals\": 2, \"event_id\": 9846267, \"home_goals\": 0, \"match_team_id\": 3397389, \"minute\": 3, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 525509, \"player_name\": \"Amadeus Ejdersand\", \"second\": 26, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 585435, \"assist_name\": \"Leo Bergström\", \"away_goals\": 2, \"event_id\": 9846614, \"home_goals\": 1, \"match_team_id\": 3397388, \"minute\": 10, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585422, \"player_name\": \"Charlie Hedmark\", \"second\": 21, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3397388, \"home_team\": \"Tyresö Trollbäcken IBK\", \"home_team_id\": 20872, \"match_datetime\": \"2026-10-23T19:45:00\", \"match_id\": 1750707, \"match_status\": 2}",
     "fields": {
       "match_id": 1750707,
       "competition": "Juniorallsvenskan D HJ18",
@@ -1001,7 +1001,7 @@
       "match_datetime": "2026-10-23T19:45:00",
       "match_status": 2,
       "has_final_result": false,
-      "home_goals": 0,
+      "home_goals": 1,
       "away_goals": 2,
       "events": [
         {
@@ -1082,6 +1082,22 @@
           "player_name": "Amadeus Ejdersand",
           "assist_id": 537136,
           "assist_name": "Måns Ritzl",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9846614,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3397388,
+          "period": 1,
+          "minute": 10,
+          "second": 21,
+          "home_goals": 1,
+          "away_goals": 2,
+          "player_id": 585422,
+          "player_name": "Charlie Hedmark",
+          "assist_id": 585435,
+          "assist_name": "Leo Bergström",
           "penalty_name": ""
         }
       ]
