@@ -986,5 +986,24 @@
         }
       ]
     }
+  },
+  "floorball-match-1750707": {
+    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3397389, \"away_team\": \"FBI Tullinge\", \"away_team_id\": 21360, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3397388, \"home_team\": \"Tyresö Trollbäcken IBK\", \"home_team_id\": 20872, \"match_datetime\": \"2026-10-23T19:45:00\", \"match_id\": 1750707, \"match_status\": 1}",
+    "fields": {
+      "match_id": 1750707,
+      "competition": "Juniorallsvenskan D HJ18",
+      "home_team": "Tyresö Trollbäcken IBK",
+      "away_team": "FBI Tullinge",
+      "home_team_id": 20872,
+      "away_team_id": 21360,
+      "home_match_team_id": 3397388,
+      "away_match_team_id": 3397389,
+      "match_datetime": "2026-10-23T19:45:00",
+      "match_status": 1,
+      "has_final_result": false,
+      "home_goals": null,
+      "away_goals": null,
+      "events": []
+    }
   }
 }
