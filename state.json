@@ -1456,7 +1456,7 @@
     }
   },
   "floorball-match-1703577": {
-    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3303129, \"away_team\": \"Älta IF A\", \"away_team_id\": 131, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869728, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869729, \"home_goals\": 0, \"match_team_id\": 3303128, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 538965, \"player_name\": \"Ludvig Andersson\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869730, \"home_goals\": 0, \"match_team_id\": 3303129, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 126564, \"player_name\": \"Jahn Nesse\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 511707, \"assist_name\": \"Vilmer Strandberg Edgardh\", \"away_goals\": 0, \"event_id\": 9869889, \"home_goals\": 1, \"match_team_id\": 3303128, \"minute\": 6, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 217400, \"player_name\": \"David Jorhem\", \"second\": 43, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3303128, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-10-25T15:45:00\", \"match_id\": 1703577, \"match_status\": 2}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3303129, \"away_team\": \"Älta IF A\", \"away_team_id\": 131, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869728, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869729, \"home_goals\": 0, \"match_team_id\": 3303128, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 538965, \"player_name\": \"Ludvig Andersson\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869730, \"home_goals\": 0, \"match_team_id\": 3303129, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 126564, \"player_name\": \"Jahn Nesse\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 511707, \"assist_name\": \"Vilmer Strandberg Edgardh\", \"away_goals\": 0, \"event_id\": 9869889, \"home_goals\": 1, \"match_team_id\": 3303128, \"minute\": 6, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 217400, \"player_name\": \"David Jorhem\", \"second\": 43, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 462112, \"assist_name\": \"Hampus Nyberg\", \"away_goals\": 0, \"event_id\": 9870010, \"home_goals\": 2, \"match_team_id\": 3303128, \"minute\": 12, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 511707, \"player_name\": \"Vilmer Strandberg Edgardh\", \"second\": 38, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 511697, \"assist_name\": \"Rasmus Björck\", \"away_goals\": 0, \"event_id\": 9870077, \"home_goals\": 3, \"match_team_id\": 3303128, \"minute\": 14, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585278, \"player_name\": \"Vilgot Norling\", \"second\": 2, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 3, \"home_match_team_id\": 3303128, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-10-25T15:45:00\", \"match_id\": 1703577, \"match_status\": 2}",
     "fields": {
       "match_id": 1703577,
       "competition": "Herrar Division 3 Södra",
@@ -1469,7 +1469,7 @@
       "match_datetime": "2026-10-25T15:45:00",
       "match_status": 2,
       "has_final_result": false,
-      "home_goals": 1,
+      "home_goals": 3,
       "away_goals": 0,
       "events": [
         {
@@ -1534,6 +1534,38 @@
           "player_name": "David Jorhem",
           "assist_id": 511707,
           "assist_name": "Vilmer Strandberg Edgardh",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9870010,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3303128,
+          "period": 1,
+          "minute": 12,
+          "second": 38,
+          "home_goals": 2,
+          "away_goals": 0,
+          "player_id": 511707,
+          "player_name": "Vilmer Strandberg Edgardh",
+          "assist_id": 462112,
+          "assist_name": "Hampus Nyberg",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9870077,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3303128,
+          "period": 1,
+          "minute": 14,
+          "second": 2,
+          "home_goals": 3,
+          "away_goals": 0,
+          "player_id": 585278,
+          "player_name": "Vilgot Norling",
+          "assist_id": 511697,
+          "assist_name": "Rasmus Björck",
           "penalty_name": ""
         }
       ]
