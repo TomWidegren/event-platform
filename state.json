@@ -1456,7 +1456,7 @@
     }
   },
   "floorball-match-1703577": {
-    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3303129, \"away_team\": \"Älta IF A\", \"away_team_id\": 131, \"competition\": \"Herrar Division 3 Södra\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3303128, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-10-25T15:45:00\", \"match_id\": 1703577, \"match_status\": 1}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3303129, \"away_team\": \"Älta IF A\", \"away_team_id\": 131, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869728, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869729, \"home_goals\": 0, \"match_team_id\": 3303128, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 538965, \"player_name\": \"Ludvig Andersson\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9869730, \"home_goals\": 0, \"match_team_id\": 3303129, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 126564, \"player_name\": \"Jahn Nesse\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3303128, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-10-25T15:45:00\", \"match_id\": 1703577, \"match_status\": 2}",
     "fields": {
       "match_id": 1703577,
       "competition": "Herrar Division 3 Södra",
@@ -1467,11 +1467,60 @@
       "home_match_team_id": 3303128,
       "away_match_team_id": 3303129,
       "match_datetime": "2026-10-25T15:45:00",
-      "match_status": 1,
+      "match_status": 2,
       "has_final_result": false,
-      "home_goals": null,
-      "away_goals": null,
-      "events": []
+      "home_goals": 0,
+      "away_goals": 0,
+      "events": [
+        {
+          "event_id": 9869728,
+          "type": "Periodstart",
+          "type_id": 8,
+          "match_team_id": 0,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 0,
+          "player_name": "",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9869729,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3303128,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 538965,
+          "player_name": "Ludvig Andersson",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9869730,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3303129,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 126564,
+          "player_name": "Jahn Nesse",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        }
+      ]
     }
   }
 }
