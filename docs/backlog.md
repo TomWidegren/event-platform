@@ -14,7 +14,7 @@ GitHub is the authoritative source of truth.
 **Current deployed implementation:** Automatic Floorball Discovery
 and Live Monitoring, pending full real-world acceptance.
 
-**Last updated:** 22 October 2026
+**Last updated:** 26 October 2026
 
 ---
 
@@ -22,13 +22,12 @@ and Live Monitoring, pending full real-world acceptance.
 
 ### P0 – Verify automatic Floorball Monitoring in real matches
 
-**Status: Pending real-world validation**
+**Status: Partially verified in real-world operation; notification incident open**
 
 The automatic monitoring implementation is deployed and
 scheduled through cron-job.org.
 
-The first full operational acceptance test is the JAS match
-on 23 October 2026.
+The first two automatic match monitoring trials took place on 23 and 25 October 2026. The remaining acceptance criteria must be verified from logs and persisted data.
 
 #### JAS match – 23 October 2026
 
@@ -46,13 +45,14 @@ Verification:
 
 - [ ] Automatic Watch selection at 19:30.
 - [ ] Pre-match baseline established.
-- [ ] Match events detected.
-- [ ] Goal notifications delivered.
+- [x] Match monitoring and notifications observed by the user.
+- [x] Lukas-specific assist notification with star (⭐) verified in real operation.
+- [ ] Complete match-event and goal notification history independently verified.
 - [ ] Penalty and period notifications delivered when applicable.
 - [ ] No unexpected duplicate notifications.
-- [ ] Final-result notification delivered.
-- [ ] Final snapshot persisted in `state.json`.
-- [ ] Match marked `completed` in `match_registry.json`.
+- [ ] Final-result notification independently confirmed.
+- [ ] Final snapshot independently confirmed in `state.json`.
+- [ ] Match `completed` status independently confirmed in `match_registry.json`.
 - [ ] Completed match excluded from subsequent monitoring.
 
 #### Men's match – 25 October 2026
@@ -71,17 +71,55 @@ Verification:
 
 - [ ] Automatic Watch selection at 15:30.
 - [ ] Pre-match baseline established.
-- [ ] Match events detected.
-- [ ] Notifications delivered correctly.
-- [ ] Final-result notification delivered.
-- [ ] Final snapshot persisted.
-- [ ] Match marked `completed`.
+- [x] Match monitoring and event notifications observed by the user.
+- [ ] Full event-notification delivery verified (last events were missing).
+- [ ] Final-result notification delivered (not received by user).
+- [x] Final snapshot persisted: 11–5, `has_final_result: true`, `match_status: 4`.
+- [x] Match marked `completed` in `match_registry.json`.
 - [ ] Completed match excluded from future monitoring.
 
 Player-specific highlighting should be verified if Lukas
 generates a qualifying event.
 
 Absence of such an event is not a test failure.
+
+### P0 – Investigate missing late-match notifications (25 October)
+
+**Status: Open incident – root cause not established**
+
+MatchID: `1703577` (Tyresö Trollbäcken IBK (A) – Älta IF A).
+
+Observed by the user:
+
+- Notifications were received during the match.
+- The last received notification referred to 10–4 and included a Ribbestad penalty and an opponent goal.
+- No subsequent Event Platform notifications were received, including no separate final-result notification.
+- cron-job.org was checked on 26 October and remained enabled; this does not establish whether each scheduled run succeeded.
+
+Verified from repository data supplied on 26 October:
+
+- `state.json` contains the final score 11–5.
+- `has_final_result` is `true` and `match_status` is `4`.
+- The final snapshot includes later events: 11–4, 11–5, third-period end and goalkeeper exits.
+- `match_registry.json` records `monitoring_status: completed`.
+
+These facts establish final-state persistence and completion, **not** successful delivery of the final notification. The cause of missing notifications remains unknown.
+
+Next investigation (no code changes until evidence is reviewed):
+
+- [ ] Review GitHub Actions Live runs and timestamps around the end of the match.
+- [ ] Inspect run output and errors for the final observation and notification delivery.
+- [ ] Inspect Git history of the Watch entry and registry completion to reconstruct update timing.
+- [ ] Compare `notification_formatters.py` and `event_platform_live.py` behavior for final results and multiple new events.
+- [ ] Inspect `floorball_match_selection.py` for any upper monitoring time bound or eligibility behavior after scheduled start.
+- [ ] Review available ntfy delivery evidence; distinguish publication from device reception.
+- [ ] Record root cause, remediation and regression coverage before closing the incident.
+
+### Real-world player highlighting – 23 October
+
+**Status: Verified by user observation**
+
+During the JAS match (MatchID `1750707`), a notification for Lukas Widegren's assist included the expected star (⭐). This closes the previous real-world verification gap for assist highlighting; goal and penalty highlighting remain separately unobserved unless confirmed later.
 
 ### P0 – Confirm automatic Daily Discovery operation
 
@@ -433,7 +471,7 @@ Future work:
 
 ### Player-specific highlighting
 
-**Status: Technically verified; real-world verification pending**
+**Status: Assist highlighting verified in real-world operation (23 October); other player event types not independently verified**
 
 The formatter highlights relevant player events.
 
@@ -443,7 +481,7 @@ Supported event types include:
 - Assists
 - Penalties
 
-Verify during a match where Lukas generates a qualifying event.
+Assist highlighting with ⭐ was observed during the JAS match on 23 October 2026. Verify goal and penalty highlighting when qualifying events occur.
 
 ### Empty-net goal formatting
 
@@ -654,17 +692,17 @@ configuration entries are removed.
 
 ### Documentation maintenance
 
-**Status: In progress – 22 October 2026**
+**Status: Core documentation updated on 22 October; incident handover update in progress on 26 October**
 
 Documents to review and update:
 
 - [x] `docs/ARCHITECTURE.md`
 - [x] `docs/decisions.md`
 - [x] `docs/backlog.md`
-- [ ] `docs/design-floorball-automation.md`
-- [ ] `docs/ways-of-working.md`
-- [ ] `README.md`
-- [ ] `PROJECT_CONTEXT.md`
+- [x] `docs/design-floorball-automation.md`
+- [x] `docs/ways-of-working.md`
+- [x] `README.md`
+- [x] `PROJECT_CONTEXT.md` (22 October checkpoint; 26 October update pending)
 
 Historical design documents should remain available.
 
