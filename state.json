@@ -1970,5 +1970,24 @@
         }
       ]
     }
+  },
+  "floorball-match-1703581": {
+    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3303137, \"away_team\": \"Tyresö Trollbäcken IBK (A)\", \"away_team_id\": 4194, \"competition\": \"Herrar Division 3 Södra\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3303136, \"home_team\": \"Ingarö IF (A)\", \"home_team_id\": 20987, \"match_datetime\": \"2026-10-28T20:00:00\", \"match_id\": 1703581, \"match_status\": 1}",
+    "fields": {
+      "match_id": 1703581,
+      "competition": "Herrar Division 3 Södra",
+      "home_team": "Ingarö IF (A)",
+      "away_team": "Tyresö Trollbäcken IBK (A)",
+      "home_team_id": 20987,
+      "away_team_id": 4194,
+      "home_match_team_id": 3303136,
+      "away_match_team_id": 3303137,
+      "match_datetime": "2026-10-28T20:00:00",
+      "match_status": 1,
+      "has_final_result": false,
+      "home_goals": null,
+      "away_goals": null,
+      "events": []
+    }
   }
 }
