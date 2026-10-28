@@ -25,7 +25,7 @@
       "source_status": 1,
       "cancelled": false,
       "postponed": false,
-      "monitoring_status": "scheduled"
+      "monitoring_status": "completed"
     },
     "1703587": {
       "match_id": 1703587,
