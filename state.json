@@ -2278,5 +2278,24 @@
         }
       ]
     }
+  },
+  "floorball-match-1750712": {
+    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3397399, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3397398, \"home_team\": \"Onyx IBS\", \"home_team_id\": 8905, \"match_datetime\": \"2026-10-30T19:30:00\", \"match_id\": 1750712, \"match_status\": 1}",
+    "fields": {
+      "match_id": 1750712,
+      "competition": "Juniorallsvenskan D HJ18",
+      "home_team": "Onyx IBS",
+      "away_team": "Tyresö Trollbäcken IBK",
+      "home_team_id": 8905,
+      "away_team_id": 20872,
+      "home_match_team_id": 3397398,
+      "away_match_team_id": 3397399,
+      "match_datetime": "2026-10-30T19:30:00",
+      "match_status": 1,
+      "has_final_result": false,
+      "home_goals": null,
+      "away_goals": null,
+      "events": []
+    }
   }
 }
