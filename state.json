@@ -2280,7 +2280,7 @@
     }
   },
   "floorball-match-1750712": {
-    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397399, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9876053, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9876054, \"home_goals\": 0, \"match_team_id\": 3397398, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 545127, \"player_name\": \"Noah Åteg\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9876055, \"home_goals\": 0, \"match_team_id\": 3397399, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3397398, \"home_team\": \"Onyx IBS\", \"home_team_id\": 8905, \"match_datetime\": \"2026-10-30T19:30:00\", \"match_id\": 1750712, \"match_status\": 2}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397399, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9876053, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9876054, \"home_goals\": 0, \"match_team_id\": 3397398, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 545127, \"player_name\": \"Noah Åteg\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9876055, \"home_goals\": 0, \"match_team_id\": 3397399, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 538490, \"assist_name\": \"Valter Jansson\", \"away_goals\": 0, \"event_id\": 9876158, \"home_goals\": 1, \"match_team_id\": 3397398, \"minute\": 4, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 554487, \"player_name\": \"Neo Lövgren Sandberg\", \"second\": 42, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3397398, \"home_team\": \"Onyx IBS\", \"home_team_id\": 8905, \"match_datetime\": \"2026-10-30T19:30:00\", \"match_id\": 1750712, \"match_status\": 2}",
     "fields": {
       "match_id": 1750712,
       "competition": "Juniorallsvenskan D HJ18",
@@ -2293,7 +2293,7 @@
       "match_datetime": "2026-10-30T19:30:00",
       "match_status": 2,
       "has_final_result": false,
-      "home_goals": 0,
+      "home_goals": 1,
       "away_goals": 0,
       "events": [
         {
@@ -2342,6 +2342,22 @@
           "player_name": "Hugo Strandberg Edgardh",
           "assist_id": 0,
           "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9876158,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3397398,
+          "period": 1,
+          "minute": 4,
+          "second": 42,
+          "home_goals": 1,
+          "away_goals": 0,
+          "player_id": 554487,
+          "player_name": "Neo Lövgren Sandberg",
+          "assist_id": 538490,
+          "assist_name": "Valter Jansson",
           "penalty_name": ""
         }
       ]
