@@ -1,9 +1,9 @@
 
 # Event Platform – Project Context
 
-**Last updated:** 26 October 2026
+**Last updated:** 6 November 2026
 
-**Last development checkpoint:** 26 October 2026
+**Last development checkpoint:** 6 November 2026
 
 **Project:** Event Platform
 
@@ -11,7 +11,7 @@
 
 **Current development:** Automatic Floorball Monitoring
 
-**Deployment status:** Deployed and operational. Real-world monitoring verified during two automatic matches. Final notification delivery incident remains open.
+**Deployment status:** Automatic Live Monitoring operational. Daily Floorball Discovery experiencing recurring iBIS HTTP 503 failures. Real-world acceptance and reliability verification ongoing.
 
 ## 1. Purpose
 
@@ -58,9 +58,9 @@ All connectors expose:
 
 These capabilities have been implemented and technically verified.
 
-Automatic Floorball Monitoring has also been observed working during real matches on 23 and 25 October 2026.
+Automatic Floorball Monitoring has also been observed working during real matches.
 
-A notification delivery incident remains unresolved.
+The current implementation is deployed but has not yet completed all operational acceptance criteria.
 
 No new published release has been confirmed.
 
@@ -71,6 +71,11 @@ No new published release has been confirmed.
 cron-job.org triggers GitHub Actions.
 
 The platform does not own its scheduler.
+
+Two production schedules are used:
+
+- Event Platform – Daily
+- Event Platform – Live
 
 ### Daily
 
@@ -91,7 +96,15 @@ The existing Daily schedule is reused.
 
 Daily Discovery was successfully tested manually on 22 October.
 
-Independent verification of subsequent scheduled Daily executions remains to be documented.
+On 5 and 6 November, the Daily workflow failed during Floorball Discovery.
+
+The golf monitoring portion completed successfully in the inspected runs.
+
+The overall workflow was marked failed because Discovery encountered an iBIS HTTP 503 error.
+
+A manual retry on 6 November reproduced the error.
+
+**Current status: Discovery operational incident open.**
 
 ### Live
 
@@ -107,13 +120,17 @@ Polling interval:
 
 5 minutes.
 
-The existing cron-job.org Live job remains enabled, as confirmed by the user on 26 October.
+The existing cron-job.org Live schedule is enabled.
 
 Live Monitoring runs continuously and selects eligible Floorball matches automatically.
 
 The previous hard-coded `WATCH_ID` has been removed from the production workflow.
 
 GolfBox and Tournytt remain configured Live Watches.
+
+Recent Live workflow executions were reported successful on 6 November.
+
+Successful execution without an eligible Floorball match does not independently verify iBIS availability.
 
 ### Workflow concurrency
 
@@ -174,6 +191,16 @@ Discovery owns scheduling information.
 
 Live owns monitoring lifecycle and completion.
 
+### Current Discovery limitation
+
+The recurring iBIS HTTP 503 error prevents successful Discovery execution.
+
+Existing registered matches remain available for Live selection.
+
+However, new matches and schedule changes cannot be reliably discovered while the issue persists.
+
+The cause of the HTTP 503 response remains unknown.
+
 ### Live match selection
 
 Main components:
@@ -209,11 +236,11 @@ Final snapshot and completion status are committed together in Git.
 
 Automatic completion and final-state persistence were confirmed for the match on 25 October.
 
-However, the corresponding final-result notification was not received by the user.
+The corresponding final-result notification was not received by the user.
 
 ## 5. Real-world automatic monitoring validation
 
-### Friday 23 October 2026 – JAS
+### 23 October 2026 – JAS
 
 Match:
 
@@ -221,31 +248,29 @@ Tyresö Trollbäcken IBK – FBI Tullinge
 
 MatchID: `1750707`
 
-Scheduled start: 19:45.
-
-Expected automatic activation: 19:30.
-
 **Status: Successful automatic monitoring reported by user.**
 
-Verified through user observation:
+Verified:
 
-- Automatic match monitoring worked during the match.
+- Automatic match monitoring worked.
 - Event notifications were received.
 - Lukas Widegren recorded an assist.
-- The assist notification correctly highlighted Lukas with a star (⭐).
+- The assist notification correctly highlighted Lukas with ⭐.
 
-This is the first real-world verification of player-specific assist highlighting.
+This was the first real-world verification of player-specific assist highlighting.
 
-Previously, player-specific highlighting had only passed technical tests.
+The registry inspected on 6 November confirms:
+
+`monitoring_status: completed`
 
 Not yet independently verified:
 
 - Exact activation time.
 - Complete event-notification history.
-- Final snapshot and registry completion.
+- Final snapshot details.
 - Absence of duplicate notifications.
 
-### Sunday 25 October 2026 – Herrar
+### 25 October 2026 – Herrar
 
 Match:
 
@@ -253,104 +278,214 @@ Tyresö Trollbäcken IBK (A) – Älta IF A
 
 MatchID: `1703577`
 
-Scheduled start: 15:45.
-
-Expected automatic activation: 15:30.
-
 **Status: Monitoring and persistence successful; notification incident open.**
 
 Verified through user observation:
 
-- Automatic match monitoring worked.
-- Event notifications were received during the match.
+- Automatic monitoring worked.
+- Event notifications were received.
 - The last received notification referred to score 10–4, a Ribbestad penalty and an opponent goal.
 - No further Event Platform notifications were received.
-- The final-result notification was not received.
+- No final-result notification was received.
 
-Verified through the supplied `state.json`:
+Verified through `state.json`:
 
 - Final score: 11–5.
 - `match_status: 4`.
 - `has_final_result: true`.
-- Final snapshot contains the registered match events.
-- Events after the last received notification include the goals making the score 11–4 and 11–5, followed by period end and goalkeeper exits.
+- Final snapshot contains the remaining match events.
 
 Verified through `match_registry.json`:
 
-- MatchID `1703577` has `monitoring_status: completed`.
+`monitoring_status: completed`
 
-This confirms that the final observation and completion status were persisted.
+The final observation and completion status were persisted successfully.
 
-It does not establish whether the missing notifications were generated, published to ntfy or received by the notification service.
+The cause of the missing notifications remains unknown.
 
-The cause remains unknown.
+### 28 October 2026 – Herrar
 
-### Next registered match
-
-The registry also contains:
-
-MatchID: `1703581`
+Match:
 
 Ingarö IF (A) – Tyresö Trollbäcken IBK (A)
 
-Scheduled start: 28 October 2026 at 20:00.
+MatchID: `1703581`
 
-Monitoring status at the time of inspection:
+The user reported successful automatic monitoring.
 
-`scheduled`
+The registry inspected on 6 November confirms:
 
-The match is registered for future automatic selection.
+`monitoring_status: completed`
 
-## 6. Open production incident
+Complete notification history and final snapshot have not been independently inspected.
 
-### Missing late-match notifications – 25 October 2026
+### 30 October 2026 – JAS
+
+Match:
+
+Onyx IBS – Tyresö Trollbäcken IBK
+
+MatchID: `1750712`
+
+The registry inspected on 6 November confirms:
+
+`monitoring_status: completed`
+
+Complete notification history and final snapshot have not been independently verified.
+
+### 6 November 2026 – JAS
+
+Match:
+
+Tyresö Trollbäcken IBK – IFK Gnesta/FBC Nyköping
+
+MatchID: `1750719`
+
+Scheduled start:
+
+19:45 Europe/Stockholm.
+
+Expected automatic activation:
+
+19:30.
+
+Verified in `match_registry.json` on 6 November:
+
+- Correct MatchID.
+- Correct scheduled start.
+- `monitoring_status: scheduled`.
+- `cancelled: false`.
+- `postponed: false`.
+
+The match is already registered despite the current Discovery failures.
+
+Live Monitoring should select the match automatically, provided the schedule has not changed and the required iBIS acquisition remains available.
+
+**Real-world monitoring for this match remains pending verification.**
+
+## 6. Open production incidents
+
+### Incident 1 – Recurring iBIS Discovery HTTP 503
+
+**Priority: P0**
+
+**Status: Open – Root cause unknown**
+
+First reported:
+
+6 November 2026.
+
+Observed failures:
+
+- Scheduled Daily executions on 5 and 6 November.
+- Manual Daily execution on 6 November.
+
+Error:
+
+`503 Server Error: Service Unavailable`
+
+Affected operation:
+
+Floorball Discovery authentication through the iBIS `startkit` endpoint.
+
+Verified:
+
+- GitHub Actions started.
+- Python dependencies installed.
+- Daily golf monitoring completed.
+- Golf state persistence completed.
+- Floorball Discovery failed during iBIS authentication.
+- The overall Daily workflow was marked failed.
+- Manual retry reproduced the same failure.
+
+Recent Live workflow executions were successful.
+
+However, this does not prove that the iBIS connector works during an active match.
+
+Investigation:
+
+1. Check iBIS startkit availability.
+2. Compare Discovery and Live authentication behavior.
+3. Inspect API responses and relevant headers.
+4. Determine whether the issue is temporary or caused by API changes.
+5. Evaluate bounded retries and backoff.
+6. Preserve existing registry state during failures.
+7. Improve operational diagnostics if needed.
+8. Add focused regression tests for confirmed defects.
+9. Verify successful scheduled Discovery execution.
+
+Do not change production code before reviewing evidence.
+
+### Incident 2 – Missing late-match notifications
 
 **Priority: P0 investigation**
 
 **Status: Open – Root cause unknown**
 
-Affected Watch:
+Affected match:
 
-`floorball-match-1703577`
+25 October 2026.
 
-Observed symptoms:
+MatchID:
+
+`1703577`
+
+Observed:
 
 - Event notifications worked earlier in the match.
-- No notifications were received after the user's last message referring to 10–4.
-- The remaining two goals and final result were not received as notifications.
-- The final state and registry completion were successfully persisted.
-- cron-job.org remained enabled when checked on 26 October.
+- Notifications stopped after the user's last received message referring to 10–4.
+- Later goals and the final-result notification were not received.
+- Final state and registry completion were persisted.
 
-Important distinction:
+Investigation:
 
-An enabled cron-job does not prove that every GitHub Actions execution succeeded.
-
-The persisted final snapshot proves that final match data was stored, but does not prove successful notification delivery.
-
-### Investigation plan
-
-At the next development session:
-
-1. Review GitHub Actions Live runs around the match ending.
+1. Review GitHub Actions Live runs around match completion.
 2. Identify the execution that persisted the final snapshot.
-3. Inspect logs and any notification delivery errors.
+3. Inspect notification-related logs and errors.
 4. Review Git history for the affected Watch.
-5. Compare notification formatting and Live execution behavior.
-6. Inspect `floorball_match_selection.py` for any upper monitoring time boundary.
-7. Verify how monitoring behaves after scheduled match start.
+5. Inspect `notification_formatters.py`.
+6. Inspect `event_platform_live.py`.
+7. Inspect `floorball_match_selection.py` for any upper time boundary.
 8. Review available ntfy delivery evidence.
-9. Establish the root cause before changing production code.
-10. Add focused regression coverage if a defect is identified.
+9. Establish root cause before modifying production code.
+10. Add regression coverage for any confirmed defect.
 
-Do not assume the problem was caused by time-window selection, notification formatting or ntfy without evidence.
+Do not assume that notification delivery, formatting or match-selection timing caused the issue without evidence.
 
-### Operational safeguard
+## 7. Scheduling authentication maintenance
 
-Keep the working automatic monitoring configuration unchanged until the incident is investigated.
+### GitHub token renewal – 29 October 2026
 
-Avoid unnecessary modifications to Live workflows, connectors and persistent state.
+**Status: Completed and verified**
 
-## 7. Verified technical results
+The GitHub personal access token used by cron-job.org was approaching expiration.
+
+cron-job.org disabled jobs after repeated failed executions.
+
+The token was renewed.
+
+Both production jobs were updated:
+
+- Event Platform – Daily
+- Event Platform – Live
+
+The HTTP Authorization header was corrected to use:
+
+`Bearer <token>`
+
+Both jobs returned successful GitHub API responses.
+
+Both GitHub Actions workflows were reported successful.
+
+No Python or workflow code changes were required.
+
+**New token expiration: 28 November 2026**
+
+Renewal must be completed before this date.
+
+Never store token values in GitHub documentation or ChatGPT.
+
+## 8. Verified technical results
 
 ### Golf
 
@@ -386,7 +521,9 @@ Permanent workflow:
 
 `.github/workflows/test-regression.yml`
 
-Last confirmed run: 22 October 2026.
+Last confirmed run:
+
+22 October 2026.
 
 **105 Floorball tests passed.**
 
@@ -394,16 +531,14 @@ Existing golf regression tests also passed.
 
 Coverage includes:
 
-- Discovery
-- Registry handling
-- Match selection
-- Watch merging
-- Notification formatting
-- Git persistence
-- Atomic completion
-- Live integration
-
-No new regression tests were run during the 26 October reporting session.
+- Discovery.
+- Registry handling.
+- Match selection.
+- Watch merging.
+- Notification formatting.
+- Git persistence.
+- Atomic completion.
+- Live integration.
 
 ### Automatic Live execution
 
@@ -422,7 +557,15 @@ Measured execution times:
 - Optimized manual execution: approximately 37 seconds.
 - Subsequent automatic execution: approximately 30 seconds.
 
-## 8. Important limitations
+## 9. Important limitations
+
+### External API availability
+
+The iBIS startkit endpoint returned repeated HTTP 503 errors during Discovery.
+
+The root cause remains unknown.
+
+The platform currently depends on successful external API acquisition.
 
 ### Notification delivery
 
@@ -430,9 +573,7 @@ Notifications are sent before Git persistence.
 
 Exactly-once delivery is not guaranteed.
 
-The missing late-match notifications on 25 October are an additional operational incident requiring investigation.
-
-Do not treat the known duplicate-notification risk as an explanation for this incident without evidence.
+The missing late-match notifications from 25 October are a separate unresolved incident.
 
 ### Late first observation
 
@@ -456,7 +597,7 @@ Corrected and deleted iBIS events require further evaluation.
 
 Assist highlighting was verified in real-world operation on 23 October.
 
-Goal and penalty highlighting for the configured player have not yet been independently observed in a qualifying real-world event.
+Goal and penalty highlighting have not yet been independently observed during qualifying player events.
 
 ### Release status
 
@@ -466,31 +607,20 @@ The last documented published release remains v1.2.0.
 
 Confirm release status from GitHub releases or tags before publishing a new version.
 
-## 9. Operational and maintenance priorities
+## 10. Operational and maintenance priorities
 
 ### Immediate
 
-- Investigate the missing late-match notifications.
-- Preserve the working automatic monitoring configuration.
-- Observe the next scheduled match on 28 October.
-- Confirm the scheduled Daily Discovery workflow if not already verified.
+1. Protect Live Monitoring for the JAS match on 6 November.
+2. Investigate the recurring iBIS Discovery HTTP 503 failure.
+3. Investigate the missing late-match notifications from 25 October.
+4. Confirm successful scheduled Daily Discovery after recovery.
 
-### GitHub scheduler token
+### Token maintenance
 
-GitHub notified the user on 23 October that the personal access token used by cron-job.org would expire in approximately seven days.
+The renewed GitHub token expires on 28 November 2026.
 
-The agreed plan was to renew it on Monday 26 October, after the weekend matches.
-
-At this checkpoint, renewal has not been confirmed.
-
-Required actions:
-
-1. Regenerate or replace the `Event Platform Scheduler` token in GitHub.
-2. Update the authorization configuration in both cron-job.org jobs.
-3. Verify Daily and Live workflow triggering.
-4. Do not expose the token in ChatGPT or repository files.
-
-No Python or GitHub Actions workflow changes are expected for token renewal.
+Renew it before expiration and verify both cron-job.org workflows.
 
 ### Repository cleanup
 
@@ -507,7 +637,7 @@ After operational acceptance and incident investigation:
 
 Do not perform destructive cleanup during active match validation.
 
-## 10. Documentation status
+## 11. Documentation status
 
 Updated on 22 October 2026:
 
@@ -522,6 +652,13 @@ Updated on 26 October 2026:
 - `docs/backlog.md`
 - `PROJECT_CONTEXT.md`
 
+Documentation update prepared on 6 November 2026:
+
+- `docs/backlog.md`
+- `PROJECT_CONTEXT.md`
+
+The 6 November session has not introduced production code changes.
+
 Historical documents retained:
 
 - `docs/design-floorball.md`
@@ -529,9 +666,7 @@ Historical documents retained:
 
 Legacy roadmap information is superseded by `docs/backlog.md`.
 
-The 26 October reporting session made no production code changes.
-
-## 11. Development process
+## 12. Development process
 
 Follow:
 
@@ -553,7 +688,7 @@ Do not assume ChatGPT has direct access to the latest GitHub repository.
 
 Request current files when necessary.
 
-## 12. Starting the next session
+## 13. Starting the next session
 
 The user should only need to say:
 
@@ -564,23 +699,26 @@ The assistant should:
 1. Read this file.
 2. Read the project documentation.
 3. Identify the current production and development status.
-4. Review the open notification incident.
+4. Review open production incidents.
 5. Request only relevant source files and logs.
 6. Continue without repeating completed work.
 
 ### Recommended next development goal
 
-**Investigate and resolve the missing late-match notifications from 25 October.**
+**Investigate and resolve the recurring iBIS Discovery HTTP 503 failure.**
 
-Start with GitHub Actions logs and Git history.
+Start by reviewing the startkit authentication behavior and comparing it with the Live connector.
 
-Verify the monitoring time-window behavior and notification execution path.
+Do not change production code before establishing the likely cause.
 
-Do not change production code before identifying the cause.
+After that:
 
-Once the incident is understood, continue with real-world acceptance, repository cleanup and release planning.
+1. Investigate missing late-match notifications.
+2. Complete operational acceptance.
+3. Clean up redundant repository files.
+4. Review release readiness.
 
-## 13. Ending a session
+## 14. Ending a session
 
 Before ending:
 
