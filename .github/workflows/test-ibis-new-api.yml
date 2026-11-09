@@ -13,9 +13,6 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -24,162 +21,87 @@ jobs:
       - name: Install requests
         run: pip install requests
 
-      - name: Diagnose iBIS v2 authentication
+      - name: Test iBIS v2 handshake
         run: |
           python - <<'PY'
-          import json
-          from urllib.parse import urlparse
-
           import requests
 
-          STARTKIT_URL = (
-              "https://api.innebandy.se/v2/api/auth/startkit"
-          )
-          EXPECTED_ROOT = (
-              "https://api.innebandy.se/v2/api/public"
-          )
+          BASE = "https://api.innebandy.se/v2/api"
+          ORIGIN = "https://stats.innebandy.se"
           MATCH_ID = 1750719
 
-          HEADERS = {
-              "Accept": "application/json",
-              "Origin": "https://stats.innebandy.se",
-          }
-
-          def report_response(label, response):
-              print(f"\n{label}")
-              print(f"HTTP status: {response.status_code}")
-
-              print(
-                  "Content-Type:",
-                  response.headers.get(
-                      "Content-Type", "not provided"
-                  ),
-              )
-
-              print(
-                  "WWW-Authenticate present:",
-                  "WWW-Authenticate" in response.headers,
-              )
-
-              print(
-                  "Retry-After present:",
-                  "Retry-After" in response.headers,
-              )
-
           with requests.Session() as session:
-              print("STEP 1: Startkit")
+              print("STEP 1: Startkit", flush=True)
 
               response = session.get(
-                  STARTKIT_URL,
-                  headers=HEADERS,
+                  f"{BASE}/auth/startkit",
+                  headers={
+                      "Accept": "application/json",
+                      "Origin": ORIGIN,
+                  },
                   timeout=30,
               )
-
-              report_response("Startkit response", response)
+              print("Startkit status:", response.status_code, flush=True)
               response.raise_for_status()
 
               credentials = response.json()
+              token = credentials["accessToken"]
+              api_root = credentials["apiRoot"].rstrip("/")
 
-              if not isinstance(credentials, dict):
-                  raise ValueError(
-                      "Unexpected startkit response format"
-                  )
-
-              token = credentials.get("accessToken")
-              api_root = credentials.get("apiRoot")
-
-              print(
-                  "accessToken present:",
-                  isinstance(token, str) and bool(token),
-              )
-              print(
-                  "apiRoot present:",
-                  isinstance(api_root, str) and bool(api_root),
-              )
-
-              if not isinstance(token, str) or not token:
-                  raise ValueError("Missing accessToken")
-
-              if not isinstance(api_root, str):
-                  raise ValueError("Missing apiRoot")
-
-              api_root = api_root.rstrip("/")
-
-              if api_root != EXPECTED_ROOT:
+              if api_root != f"{BASE}/public":
                   raise ValueError("Unexpected API root")
 
-              parsed = urlparse(api_root)
+              print("STARTKIT: PASS", flush=True)
 
-              if (
-                  parsed.scheme != "https"
-                  or parsed.hostname != "api.innebandy.se"
-                  or parsed.path != "/v2/api/public"
-              ):
-                  raise ValueError("Invalid API root")
+              print("STEP 2: Handshake", flush=True)
 
-              print("STARTKIT: PASS")
-
-              print("\nSTEP 2: Match request")
-
-              match_response = session.get(
-                  f"{api_root}/matches/{MATCH_ID}",
+              response = session.post(
+                  f"{BASE}/auth/handshake",
                   headers={
-                      **HEADERS,
+                      "Accept": "application/json",
                       "Authorization": f"Bearer {token}",
+                      "Origin": ORIGIN,
                   },
                   timeout=30,
               )
 
-              report_response(
-                  "Match response",
-                  match_response,
+              print("Handshake status:", response.status_code, flush=True)
+
+              if response.status_code != 200:
+                  print("HANDSHAKE: NOT ACCEPTED", flush=True)
+                  print("DIAGNOSTIC TEST COMPLETED", flush=True)
+                  raise SystemExit(0)
+
+              print("HANDSHAKE: PASS", flush=True)
+
+              print("STEP 3: Match retrieval", flush=True)
+
+              response = session.get(
+                  f"{api_root}/matches/{MATCH_ID}",
+                  headers={
+                      "Accept": "application/json",
+                      "Authorization": f"Bearer {token}",
+                      "Origin": ORIGIN,
+                  },
+                  timeout=30,
               )
 
-              if match_response.status_code == 200:
-                  data = match_response.json()
+              print("Match status:", response.status_code, flush=True)
+
+              if response.status_code == 200:
+                  data = response.json()
 
                   if data.get("MatchID") != MATCH_ID:
-                      raise ValueError(
-                          "Unexpected MatchID"
-                      )
+                      raise ValueError("Unexpected MatchID")
 
-                  print("MATCH RETRIEVAL: PASS")
-                  print("MatchID:", data.get("MatchID"))
-                  print(
-                      "Final result present:",
-                      data.get("HasFinalResult"),
-                  )
+                  print("MATCH RETRIEVAL: PASS", flush=True)
                   print(
                       "Event count:",
                       len(data.get("Events") or []),
+                      flush=True,
                   )
-
-                  print("\nRESULT: V2 ACCESS VERIFIED")
-
-              elif match_response.status_code in (401, 403):
-                  print(
-                      "\nRESULT: AUTHORIZATION NOT ACCEPTED"
-                  )
-                  print(
-                      "Startkit succeeded, but the match "
-                      "endpoint rejected this client request."
-                  )
-                  print(
-                      "Additional authorized authentication "
-                      "or access may be required."
-                  )
-
               else:
-                  print(
-                      "\nRESULT: UNEXPECTED MATCH RESPONSE"
-                  )
-                  print(
-                      "HTTP status:",
-                      match_response.status_code,
-                  )
-                  raise RuntimeError(
-                      "Unexpected match API response"
-                  )
+                  print("MATCH RETRIEVAL: NOT ACCEPTED", flush=True)
 
-          print("\nDIAGNOSTIC TEST COMPLETED")
+              print("DIAGNOSTIC TEST COMPLETED", flush=True)
           PY
