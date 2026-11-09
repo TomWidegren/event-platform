@@ -1,0 +1,93 @@
+
+name: Test iBIS New API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Test new iBIS API
+        run: |
+          python - <<'PY'
+          import requests
+          from urllib.parse import urlparse
+
+          STARTKIT_URL = (
+              "https://api.innebandy.se/v2/api/auth/startkit"
+          )
+          EXPECTED_HOST = "api.innebandy.se"
+          MATCH_ID = 1750719
+
+          with requests.Session() as session:
+              response = session.get(
+                  STARTKIT_URL,
+                  headers={
+                      "Accept": "application/json",
+                      "Origin": "https://stats.innebandy.se",
+                  },
+                  timeout=30,
+              )
+              response.raise_for_status()
+
+              credentials = response.json()
+
+              token = credentials["accessToken"]
+              api_root = credentials["apiRoot"].rstrip("/")
+
+              parsed = urlparse(api_root)
+
+              assert parsed.scheme == "https"
+              assert parsed.hostname == EXPECTED_HOST
+              assert parsed.path == "/v2/api/public"
+
+              print("Startkit authentication: PASS")
+
+              response = session.get(
+                  f"{api_root}/matches/{MATCH_ID}",
+                  headers={
+                      "Accept": "application/json",
+                      "Authorization": f"Bearer {token}",
+                      "Origin": "https://stats.innebandy.se",
+                  },
+                  timeout=30,
+              )
+              response.raise_for_status()
+
+              data = response.json()
+
+              assert data.get("MatchID") == MATCH_ID
+
+              print("Match retrieval: PASS")
+              print(f"MatchID: {data.get('MatchID')}")
+              print(f"Home: {data.get('HomeTeam')}")
+              print(f"Away: {data.get('AwayTeam')}")
+              print(
+                  "Score:",
+                  data.get("GoalsHomeTeam"),
+                  "-",
+                  data.get("GoalsAwayTeam"),
+              )
+              print(
+                  "Events:",
+                  len(data.get("Events") or []),
+              )
+
+          print("NEW IBIS API TEST PASSED")
+          PY
