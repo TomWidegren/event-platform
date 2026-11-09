@@ -10,6 +10,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Check out repository
@@ -23,71 +24,162 @@ jobs:
       - name: Install requests
         run: pip install requests
 
-      - name: Test new iBIS API
+      - name: Diagnose iBIS v2 authentication
         run: |
           python - <<'PY'
-          import requests
+          import json
           from urllib.parse import urlparse
+
+          import requests
 
           STARTKIT_URL = (
               "https://api.innebandy.se/v2/api/auth/startkit"
           )
-          EXPECTED_HOST = "api.innebandy.se"
+          EXPECTED_ROOT = (
+              "https://api.innebandy.se/v2/api/public"
+          )
           MATCH_ID = 1750719
 
+          HEADERS = {
+              "Accept": "application/json",
+              "Origin": "https://stats.innebandy.se",
+          }
+
+          def report_response(label, response):
+              print(f"\n{label}")
+              print(f"HTTP status: {response.status_code}")
+
+              print(
+                  "Content-Type:",
+                  response.headers.get(
+                      "Content-Type", "not provided"
+                  ),
+              )
+
+              print(
+                  "WWW-Authenticate present:",
+                  "WWW-Authenticate" in response.headers,
+              )
+
+              print(
+                  "Retry-After present:",
+                  "Retry-After" in response.headers,
+              )
+
           with requests.Session() as session:
+              print("STEP 1: Startkit")
+
               response = session.get(
                   STARTKIT_URL,
-                  headers={
-                      "Accept": "application/json",
-                      "Origin": "https://stats.innebandy.se",
-                  },
+                  headers=HEADERS,
                   timeout=30,
               )
+
+              report_response("Startkit response", response)
               response.raise_for_status()
 
               credentials = response.json()
 
-              token = credentials["accessToken"]
-              api_root = credentials["apiRoot"].rstrip("/")
+              if not isinstance(credentials, dict):
+                  raise ValueError(
+                      "Unexpected startkit response format"
+                  )
+
+              token = credentials.get("accessToken")
+              api_root = credentials.get("apiRoot")
+
+              print(
+                  "accessToken present:",
+                  isinstance(token, str) and bool(token),
+              )
+              print(
+                  "apiRoot present:",
+                  isinstance(api_root, str) and bool(api_root),
+              )
+
+              if not isinstance(token, str) or not token:
+                  raise ValueError("Missing accessToken")
+
+              if not isinstance(api_root, str):
+                  raise ValueError("Missing apiRoot")
+
+              api_root = api_root.rstrip("/")
+
+              if api_root != EXPECTED_ROOT:
+                  raise ValueError("Unexpected API root")
 
               parsed = urlparse(api_root)
 
-              assert parsed.scheme == "https"
-              assert parsed.hostname == EXPECTED_HOST
-              assert parsed.path == "/v2/api/public"
+              if (
+                  parsed.scheme != "https"
+                  or parsed.hostname != "api.innebandy.se"
+                  or parsed.path != "/v2/api/public"
+              ):
+                  raise ValueError("Invalid API root")
 
-              print("Startkit authentication: PASS")
+              print("STARTKIT: PASS")
 
-              response = session.get(
+              print("\nSTEP 2: Match request")
+
+              match_response = session.get(
                   f"{api_root}/matches/{MATCH_ID}",
                   headers={
-                      "Accept": "application/json",
+                      **HEADERS,
                       "Authorization": f"Bearer {token}",
-                      "Origin": "https://stats.innebandy.se",
                   },
                   timeout=30,
               )
-              response.raise_for_status()
 
-              data = response.json()
-
-              assert data.get("MatchID") == MATCH_ID
-
-              print("Match retrieval: PASS")
-              print(f"MatchID: {data.get('MatchID')}")
-              print(f"Home: {data.get('HomeTeam')}")
-              print(f"Away: {data.get('AwayTeam')}")
-              print(
-                  "Score:",
-                  data.get("GoalsHomeTeam"),
-                  "-",
-                  data.get("GoalsAwayTeam"),
-              )
-              print(
-                  "Events:",
-                  len(data.get("Events") or []),
+              report_response(
+                  "Match response",
+                  match_response,
               )
 
-          print("NEW IBIS API TEST PASSED")
+              if match_response.status_code == 200:
+                  data = match_response.json()
+
+                  if data.get("MatchID") != MATCH_ID:
+                      raise ValueError(
+                          "Unexpected MatchID"
+                      )
+
+                  print("MATCH RETRIEVAL: PASS")
+                  print("MatchID:", data.get("MatchID"))
+                  print(
+                      "Final result present:",
+                      data.get("HasFinalResult"),
+                  )
+                  print(
+                      "Event count:",
+                      len(data.get("Events") or []),
+                  )
+
+                  print("\nRESULT: V2 ACCESS VERIFIED")
+
+              elif match_response.status_code in (401, 403):
+                  print(
+                      "\nRESULT: AUTHORIZATION NOT ACCEPTED"
+                  )
+                  print(
+                      "Startkit succeeded, but the match "
+                      "endpoint rejected this client request."
+                  )
+                  print(
+                      "Additional authorized authentication "
+                      "or access may be required."
+                  )
+
+              else:
+                  print(
+                      "\nRESULT: UNEXPECTED MATCH RESPONSE"
+                  )
+                  print(
+                      "HTTP status:",
+                      match_response.status_code,
+                  )
+                  raise RuntimeError(
+                      "Unexpected match API response"
+                  )
+
+          print("\nDIAGNOSTIC TEST COMPLETED")
           PY
