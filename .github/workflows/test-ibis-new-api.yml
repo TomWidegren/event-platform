@@ -21,87 +21,119 @@ jobs:
       - name: Install requests
         run: pip install requests
 
-      - name: Test iBIS v2 handshake
+      - name: Diagnose iBIS v2 session
         run: |
           python - <<'PY'
           import requests
 
           BASE = "https://api.innebandy.se/v2/api"
           ORIGIN = "https://stats.innebandy.se"
-          MATCH_ID = 1750719
+
+          HEADERS = {
+              "Accept": "application/json",
+              "Origin": ORIGIN,
+          }
 
           with requests.Session() as session:
               print("STEP 1: Startkit", flush=True)
 
               response = session.get(
                   f"{BASE}/auth/startkit",
-                  headers={
-                      "Accept": "application/json",
-                      "Origin": ORIGIN,
-                  },
+                  headers=HEADERS,
                   timeout=30,
               )
-              print("Startkit status:", response.status_code, flush=True)
+
+              print(
+                  "Startkit HTTP status:",
+                  response.status_code,
+                  flush=True,
+              )
               response.raise_for_status()
 
               credentials = response.json()
-              token = credentials["accessToken"]
-              api_root = credentials["apiRoot"].rstrip("/")
 
-              if api_root != f"{BASE}/public":
-                  raise ValueError("Unexpected API root")
+              if not isinstance(credentials, dict):
+                  raise ValueError(
+                      "Unexpected startkit response"
+                  )
+
+              token = credentials.get("accessToken")
+              api_root = credentials.get("apiRoot")
+
+              if not isinstance(token, str) or not token:
+                  raise ValueError("Missing accessToken")
+
+              if api_root != f"{BASE}/public/":
+                  raise ValueError("Unexpected apiRoot")
 
               print("STARTKIT: PASS", flush=True)
+
+              print(
+                  "Cookies after startkit:",
+                  len(session.cookies),
+                  flush=True,
+              )
 
               print("STEP 2: Handshake", flush=True)
 
               response = session.post(
                   f"{BASE}/auth/handshake",
                   headers={
-                      "Accept": "application/json",
+                      **HEADERS,
                       "Authorization": f"Bearer {token}",
-                      "Origin": ORIGIN,
                   },
                   timeout=30,
               )
 
-              print("Handshake status:", response.status_code, flush=True)
+              print(
+                  "Handshake HTTP status:",
+                  response.status_code,
+                  flush=True,
+              )
+
+              print(
+                  "Set-Cookie present:",
+                  "Set-Cookie" in response.headers,
+                  flush=True,
+              )
+
+              print(
+                  "Session cookie count:",
+                  len(session.cookies),
+                  flush=True,
+              )
 
               if response.status_code != 200:
-                  print("HANDSHAKE: NOT ACCEPTED", flush=True)
-                  print("DIAGNOSTIC TEST COMPLETED", flush=True)
+                  print(
+                      "HANDSHAKE: NOT ACCEPTED",
+                      flush=True,
+                  )
                   raise SystemExit(0)
 
               print("HANDSHAKE: PASS", flush=True)
 
-              print("STEP 3: Match retrieval", flush=True)
-
-              response = session.get(
-                  f"{api_root}/matches/{MATCH_ID}",
-                  headers={
-                      "Accept": "application/json",
-                      "Authorization": f"Bearer {token}",
-                      "Origin": ORIGIN,
-                  },
-                  timeout=30,
-              )
-
-              print("Match status:", response.status_code, flush=True)
-
-              if response.status_code == 200:
+              try:
                   data = response.json()
-
-                  if data.get("MatchID") != MATCH_ID:
-                      raise ValueError("Unexpected MatchID")
-
-                  print("MATCH RETRIEVAL: PASS", flush=True)
+              except ValueError:
                   print(
-                      "Event count:",
-                      len(data.get("Events") or []),
+                      "Handshake response is not JSON",
                       flush=True,
                   )
               else:
-                  print("MATCH RETRIEVAL: NOT ACCEPTED", flush=True)
+                  if isinstance(data, dict):
+                      print(
+                          "Handshake JSON field names:",
+                          sorted(data.keys()),
+                          flush=True,
+                      )
+                  else:
+                      print(
+                          "Handshake JSON is not an object",
+                          flush=True,
+                      )
 
-              print("DIAGNOSTIC TEST COMPLETED", flush=True)
+              print(
+                  "DIAGNOSTIC TEST COMPLETED",
+                  flush=True,
+              )
           PY
