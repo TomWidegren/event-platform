@@ -21,18 +21,67 @@ jobs:
       - name: Install requests
         run: pip install requests
 
-      - name: Diagnose iBIS v2 session
+      - name: Diagnose iBIS v2 authorization
         run: |
           python - <<'PY'
           import requests
 
           BASE = "https://api.innebandy.se/v2/api"
           ORIGIN = "https://stats.innebandy.se"
+          MATCH_ID = 1750719
 
           HEADERS = {
               "Accept": "application/json",
               "Origin": ORIGIN,
           }
+
+          def report_error(response):
+              print("HTTP status:", response.status_code)
+              print(
+                  "WWW-Authenticate present:",
+                  "WWW-Authenticate" in response.headers,
+              )
+              print(
+                  "Retry-After present:",
+                  "Retry-After" in response.headers,
+              )
+
+              try:
+                  body = response.json()
+              except ValueError:
+                  print("Response format: non-JSON")
+                  return
+
+              if not isinstance(body, dict):
+                  print("Response format: JSON non-object")
+                  return
+
+              # Never print raw response content.
+              # Only report explicitly recognized error fields.
+              for key in (
+                  "status",
+                  "statusCode",
+                  "errorCode",
+                  "code",
+              ):
+                  value = body.get(key)
+
+                  if type(value) is int:
+                      print(f"{key}: {value}")
+
+              print(
+                  "Recognized error fields present:",
+                  [
+                      key
+                      for key in (
+                          "error",
+                          "message",
+                          "detail",
+                          "title",
+                      )
+                      if key in body
+                  ],
+              )
 
           with requests.Session() as session:
               print("STEP 1: Startkit", flush=True)
@@ -43,36 +92,15 @@ jobs:
                   timeout=30,
               )
 
-              print(
-                  "Startkit HTTP status:",
-                  response.status_code,
-                  flush=True,
-              )
+              print("Startkit:", response.status_code)
               response.raise_for_status()
 
               credentials = response.json()
+              token = credentials["accessToken"]
+              api_root = credentials["apiRoot"].rstrip("/")
 
-              if not isinstance(credentials, dict):
-                  raise ValueError(
-                      "Unexpected startkit response"
-                  )
-
-              token = credentials.get("accessToken")
-              api_root = credentials.get("apiRoot")
-
-              if not isinstance(token, str) or not token:
-                  raise ValueError("Missing accessToken")
-
-              if api_root != f"{BASE}/public/":
-                  raise ValueError("Unexpected apiRoot")
-
-              print("STARTKIT: PASS", flush=True)
-
-              print(
-                  "Cookies after startkit:",
-                  len(session.cookies),
-                  flush=True,
-              )
+              if api_root != f"{BASE}/public":
+                  raise ValueError("Unexpected API root")
 
               print("STEP 2: Handshake", flush=True)
 
@@ -85,55 +113,43 @@ jobs:
                   timeout=30,
               )
 
-              print(
-                  "Handshake HTTP status:",
-                  response.status_code,
-                  flush=True,
-              )
+              print("Handshake:", response.status_code)
+              response.raise_for_status()
 
               print(
-                  "Set-Cookie present:",
-                  "Set-Cookie" in response.headers,
-                  flush=True,
+                  "Session established:",
+                  bool(session.cookies),
               )
 
-              print(
-                  "Session cookie count:",
-                  len(session.cookies),
-                  flush=True,
+              print("STEP 3: Match request", flush=True)
+
+              response = session.get(
+                  f"{api_root}/matches/{MATCH_ID}",
+                  headers={
+                      **HEADERS,
+                      "Authorization": f"Bearer {token}",
+                  },
+                  timeout=30,
               )
 
-              if response.status_code != 200:
-                  print(
-                      "HANDSHAKE: NOT ACCEPTED",
-                      flush=True,
-                  )
-                  raise SystemExit(0)
-
-              print("HANDSHAKE: PASS", flush=True)
-
-              try:
+              if response.status_code == 200:
                   data = response.json()
-              except ValueError:
-                  print(
-                      "Handshake response is not JSON",
-                      flush=True,
-                  )
-              else:
-                  if isinstance(data, dict):
-                      print(
-                          "Handshake JSON field names:",
-                          sorted(data.keys()),
-                          flush=True,
-                      )
-                  else:
-                      print(
-                          "Handshake JSON is not an object",
-                          flush=True,
-                      )
 
-              print(
-                  "DIAGNOSTIC TEST COMPLETED",
-                  flush=True,
-              )
+                  if data.get("MatchID") != MATCH_ID:
+                      raise ValueError("Unexpected MatchID")
+
+                  print("MATCH RETRIEVAL: PASS")
+
+              elif response.status_code in (401, 403):
+                  print("MATCH RETRIEVAL: DENIED")
+                  report_error(response)
+
+              else:
+                  print("MATCH RETRIEVAL: UNEXPECTED")
+                  report_error(response)
+                  raise RuntimeError(
+                      "Unexpected match response"
+                  )
+
+              print("DIAGNOSTIC TEST COMPLETED")
           PY
