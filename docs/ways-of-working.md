@@ -307,7 +307,7 @@ At the end of a meaningful development session, determine:
 Update the relevant documents:
 
 - `docs/ARCHITECTURE.md` – current architecture.
-- `docs/decisions.md` – architectural and operational decisions.
+- `docs/decisions.md` – important decisions and rationale.
 - `docs/ways-of-working.md` – development process.
 - `docs/backlog.md` – outstanding work.
 - Relevant design documents – detailed findings.
@@ -336,49 +336,115 @@ ChatGPT conversations have finite context.
 
 Development must not depend on an earlier conversation remaining available.
 
-### When to start a new conversation
+### 17.1 Start independent conversations
 
-As a general rule:
+**New development sessions should normally use a completely new conversation inside the Event Platform project.**
 
-- Start a new conversation when beginning a new version.
-- A version may span multiple conversations.
-- Start a new conversation when the current one becomes long or difficult to navigate.
-- Prefer switching after a completed checkpoint.
-- Do not interrupt an active test solely to change conversations.
+Do not use a branch, continuation or Work handoff from an already long conversation merely to obtain a fresh context window.
 
-A new conversation does not imply a new software release.
+Such continuations may inherit substantial context from the original conversation.
 
-### Starting a new conversation
+A new conversation within the project does not automatically mean that the latest GitHub files are available.
+
+Restore context from current repository documentation.
+
+### 17.2 When to start a new conversation
+
+Prefer starting a new conversation:
+
+- At the beginning of a new development goal.
+- After completing a meaningful development checkpoint.
+- Before beginning a new software version.
+- When moving from design to implementation.
+- When moving from implementation to acceptance testing.
+- When a conversation becomes difficult to navigate.
+- Before the conversation approaches its context limit.
+
+A version may span several conversations.
+
+Do not interrupt an active production test solely to change conversations.
+
+### 17.3 Proactively manage conversation length
+
+The assistant should actively monitor whether the conversation is becoming excessively long.
+
+Do not wait until ChatGPT reports that the maximum conversation length has been reached.
+
+Because the exact remaining context capacity may not be visible, use practical indicators:
+
+- Many substantial code files exchanged.
+- Numerous test and verification cycles.
+- Several completed development phases.
+- Extensive debugging history.
+- Repeated difficulty recovering earlier information.
+
+When these indicators appear, recommend a checkpoint and a new conversation.
+
+Do not start another substantial development task in an already excessively long conversation.
+
+### 17.4 Prepare a handover before switching
+
+Before recommending a new conversation:
+
+1. Complete or safely pause the current implementation.
+2. Record verified results.
+3. Record unresolved issues.
+4. Update `docs/backlog.md` when needed.
+5. Update `PROJECT_CONTEXT.md`.
+6. Confirm relevant documentation commits.
+7. Identify the next development goal.
+
+The handover must not depend on the old conversation remaining accessible.
+
+### 17.5 Starting a new conversation
 
 The user should only need to say:
 
 "Nu fortsätter vi med Event Platform."
 
-The assistant should then:
+The assistant should:
 
-1. Request current project context if unavailable.
-2. Read the referenced repository documentation.
-3. Identify current release and development status.
-4. Confirm the session goal.
-5. Request only source files relevant to that goal.
-6. Continue without recreating completed work.
+1. Read the current `PROJECT_CONTEXT.md`.
+2. Read `docs/ways-of-working.md`.
+3. Read the relevant project documentation.
+4. Identify the current release and operational status.
+5. Confirm the intended development goal.
+6. Request only additional source files needed for that goal.
+7. Continue without recreating completed work.
 
 Do not assume direct access to the latest GitHub repository.
 
-### Continuity between conversations
+### 17.6 Avoid repeated investigations
 
-`PROJECT_CONTEXT.md` is the primary handover document.
+Before proposing tests or further research:
 
-It should contain:
+- Review the documented evidence.
+- Identify which questions remain unanswered.
+- Determine what new information the proposed test can provide.
+- Avoid repeating tests that have already produced conclusive results.
+- Prefer one targeted test over multiple speculative tests.
 
-- Current published release.
-- Deployed functionality.
-- Latest verified results.
-- Important unresolved issues.
-- Relevant documentation.
-- Recommended next goal.
+A test should have a clear purpose and an expected decision based on its possible outcomes.
 
-Detailed architecture and backlog information belong in their respective documents.
+If repeated tests do not change the evidence or narrow the problem, reconsider the investigation approach rather than continuing indefinitely.
+
+### 17.7 Work and branched conversations
+
+Work may be useful for substantial independent tasks.
+
+However, it should not be used as a substitute for a clean development-session handover.
+
+When a Work task or branched conversation inherits a long conversation history, it may not provide the desired fresh context.
+
+For Event Platform:
+
+- Prefer new project conversations for development continuity.
+- Use GitHub documentation for context restoration.
+- Avoid branching from long development conversations.
+- Do not rely on unfinished Work tasks as authoritative evidence.
+- Verify any delivered Work results before incorporating them into the repository.
+
+If a Work task becomes unresponsive, preserve available evidence and avoid starting duplicate tasks that could affect production.
 
 ## 18. End every session with a checkpoint
 
@@ -432,3 +498,7 @@ Confirm release status from repository releases or tags.
 Deliver actual work rather than repeatedly promising future work.
 
 Prefer complete files, evidence-based decisions and a clean handover.
+
+Maintain project continuity through GitHub documentation, not conversation history.
+
+Start new conversations proactively before context becomes a limitation.
