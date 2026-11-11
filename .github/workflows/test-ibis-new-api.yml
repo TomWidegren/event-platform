@@ -169,4 +169,56 @@ jobs:
                   MATCH_ID,
                   flush=True,
               )
+                            competition_id = 45004
+              path = (
+                  "/v2/api/public/competitions/"
+                  f"{competition_id}/matches"
+              )
+              timestamp = str(
+                  int(
+                      server_time
+                      + (
+                          time.monotonic()
+                          - handshake_received
+                      ) * 1000
+                  )
+              )
+              nonce = str(uuid.uuid4())
+              canonical_request = "\n".join(
+                  ("GET", path, timestamp, nonce, body_hash)
+              )
+              signature = hmac.new(
+                  secret.encode("utf-8"),
+                  canonical_request.encode("utf-8"),
+                  hashlib.sha256,
+              ).hexdigest()
+
+              response = session.get(
+                  f"https://api.innebandy.se{path}",
+                  headers={
+                      "X-Signature": signature,
+                      "X-Timestamp": timestamp,
+                      "X-Nonce": nonce,
+                  },
+                  timeout=30,
+                  allow_redirects=False,
+              )
+              require_success(response, "Competition matches")
+
+              matches = response.json()
+              if not isinstance(matches, list):
+                  raise ValueError("Expected a match list")
+
+              if not any(
+                  isinstance(match, dict)
+                  and match.get("MatchID") == MATCH_ID
+                  and match.get("CompetitionID") == competition_id
+                  for match in matches
+              ):
+                  raise ValueError(
+                      "Expected match missing from competition"
+                  )
+
+              print("COMPETITION RETRIEVAL: PASS", flush=True)
+              print("Matches returned:", len(matches), flush=True)
           PY
