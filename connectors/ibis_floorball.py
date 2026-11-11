@@ -1,9 +1,4 @@
-
-import requests
-
-
-STARTKIT_URL = "https://api.innebandy.se/StatsAppApi/api/startkit"
-EXPECTED_API_HOST = "api.innebandy.se"
+from ibis_client import open_ibis_client
 
 
 def fetch_snapshot(watch: dict):
@@ -18,43 +13,11 @@ def fetch_snapshot(watch: dict):
     source = watch["source"]
     match_id = int(source["match_id"])
 
-    with requests.Session() as session:
-        startkit_response = session.get(
-            STARTKIT_URL,
-            headers={
-                "Accept": "application/json",
-                "Origin": "https://stats.innebandy.se",
-            },
-            timeout=30,
-        )
-        startkit_response.raise_for_status()
+    with open_ibis_client() as client:
+        data = client.get_json(f"matches/{match_id}")
 
-        credentials = startkit_response.json()
-        token = credentials["accessToken"]
-        api_root = credentials["apiRoot"].rstrip("/")
-
-        from urllib.parse import urlparse
-
-        parsed_url = urlparse(api_root)
-        if (
-            parsed_url.scheme != "https"
-            or parsed_url.hostname != EXPECTED_API_HOST
-            or parsed_url.path != "/v2/api/public"
-        ):
-            raise ValueError("Unexpected iBIS API root")
-
-        response = session.get(
-            f"{api_root}/matches/{match_id}",
-            headers={
-                "Accept": "application/json",
-                "Authorization": f"Bearer {token}",
-                "Origin": "https://stats.innebandy.se",
-            },
-            timeout=30,
-        )
-        response.raise_for_status()
-
-        data = response.json()
+    if not isinstance(data, dict):
+        raise ValueError("Unexpected iBIS match response format")
 
     if data.get("MatchID") != match_id:
         raise ValueError("iBIS returned an unexpected match ID")
