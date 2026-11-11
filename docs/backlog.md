@@ -556,16 +556,16 @@ No implementation commitment has been made.
 
 GitHub remains the authoritative source of truth.
 
-Pending documentation reconciliation for the November recovery:
+Documentation reconciliation for the November recovery:
 
-- [x] Replacement PROJECT_CONTEXT.md committed by the user.
-- [ ] Update this backlog and confirm commit.
-- [ ] Update docs/ARCHITECTURE.md.
-- [ ] Update docs/decisions.md.
-- [ ] Update README.md.
-- [ ] Update docs/ways-of-working.md.
+- [x] Updated PROJECT_CONTEXT.md and confirmed commit.
+- [x] Updated this backlog and confirmed commit.
+- [x] Updated docs/ARCHITECTURE.md.
+- [x] Updated docs/decisions.md.
+- [x] Updated README.md.
+- [x] Updated docs/ways-of-working.md.
 - [ ] Reconcile relevant design documentation where necessary.
-- [ ] Refresh ChatGPT Project sources from committed versions.
+- [x] Refreshed ChatGPT Project handover sources from committed versions.
 
 Required process additions:
 
