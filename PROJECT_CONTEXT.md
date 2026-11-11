@@ -105,7 +105,8 @@ The signed message contains, separated by newlines:
 - SHA-256 hexadecimal hash of the request body.
 
 The implemented client currently supports GET requests for matches
-and competition match lists. These requests have an empty body.
+and competition match lists. These requests have an empty body
+and no query string.
 
 No personal iBIS login or copied browser credentials are required
 for the verified flow.
@@ -168,6 +169,8 @@ Responsibilities:
 Manual production execution succeeded after recovery.
 
 The next automatic Daily execution remains to be observed.
+The next expected execution after this checkpoint is
+12 November 2026 at 08:00.
 
 The Chromium installation was changed to:
 
@@ -275,37 +278,60 @@ Do not store tokens in repository documentation.
 
 ## 8. Documentation and remaining maintenance
 
-Relevant documents:
+The recovery, scheduling changes and manual match closure have
+been documented in the following repository files.
 
+The user confirmed committing updates to:
+
+- PROJECT_CONTEXT.md
 - README.md
 - docs/ARCHITECTURE.md
 - docs/decisions.md
 - docs/ways-of-working.md
 - docs/backlog.md
+
+This revised handover corrects status wording left over from
+the beginning of the documentation update.
+
+Detailed design documents remain available:
+
 - docs/design-floorball.md
 - docs/design-floorball-automation.md
+- docs/design-v1.2.md
 
-At this checkpoint, documentation reconciliation is still pending
-for the recovery, scheduling changes and manual match closure.
+Historical design assumptions must be distinguished from current
+implementation. Review those documents when relevant to later work.
 
-Older descriptions of the November blocker or disabled schedules
-must not override the verified status recorded here.
-
-Pending process update:
+### Implemented process updates
 
 - Verify Project-source freshness at session start.
-- After committing an updated PROJECT_CONTEXT.md, refresh the
-  corresponding ChatGPT Project source.
+- Request the current GitHub handover when freshness is uncertain.
+- Request required source files incrementally.
+- Provide complete files for substantial changes.
+- Reuse consolidated regression testing.
+- Refresh ChatGPT Project sources after committing handover updates.
 
-After operational recovery and acceptance:
+The Project sources were replaced and their contents inspected
+during this session.
 
-- Review redundant diagnostic and historical test workflows.
-- Preserve useful regression tests.
-- Review obsolete manual Watches and unused modules.
+After subsequent handover edits, refresh the corresponding
+Project source again from the committed GitHub version.
+
+### Cleanup after operational acceptance
+
+The repository contains numerous historical test workflows.
+
+Planned maintenance includes:
+
+- Inventory and consolidate redundant workflows.
+- Review overlapping tests while preserving useful coverage.
+- Reuse the consolidated regression workflow.
+- Review obsolete manual Watches.
+- Review unused modules before deletion.
+- Preserve historical state and completed-match records.
 - Agree on release scope and publish only after explicit approval.
 
-Do not create another workflow for each individual test.
-The consolidated regression workflow discovers test_floorball_*.py.
+Cleanup must not disrupt the upcoming match acceptance.
 
 ## 9. Session handover
 
@@ -323,6 +349,19 @@ At session closure, update relevant documentation and confirm
 which changes have been committed.
 
 Refresh ChatGPT Project sources after committing handover updates.
+
+### Recommended next goal
+
+Confirm automatic Daily execution, then observe the
+14 November match from monitoring activation at 14:45.
+
+The authentication recovery is implemented and verified against
+real data. Active-match acceptance remains outstanding.
+
+No new release has been published during this recovery session.
+
+Prefer a completely new project conversation for the next
+development or acceptance phase, using current GitHub context.
 
 ## Core principle
 
