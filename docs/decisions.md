@@ -1,790 +1,720 @@
-
 # Event Platform – Decisions
 
-This document records important architectural and operational decisions for Event Platform and why they were made.
+This document records architectural and operational decisions
+and their rationale.
 
-It is not a description of the current architecture. See `ARCHITECTURE.md` for that.
+It is not the current architecture description.
+See ARCHITECTURE.md for the implemented architecture.
 
-Decisions should only be changed deliberately. When a decision is superseded, the original decision and its historical context should remain identifiable.
+Superseded decisions remain identifiable.
 
----
+Last updated: 11 November 2026.
 
 ## D001 – Event Platform is the product name
 
-**Decision**
+Decision:
 
 The project is called Event Platform.
 
-**Reason**
+Reason:
 
-Golf was the first use case, but the architecture should support other types of events and data sources in the future.
-
----
+Golf was the first use case, but the platform should support
+other event types and data sources.
 
 ## D002 – Connectors represent platforms where practical
 
-**Decision**
+Decision:
 
-Prefer connectors for underlying platforms or data models rather than individual websites.
+Prefer connectors for underlying platforms or data models
+rather than individual websites.
 
-Examples:
+Examples include golfbox_leaderboard and sgf_ranking rather
+than separate Haninge and Strängnäs connectors.
 
-- `golfbox_leaderboard`
-- `sgf_ranking`
+Before creating a connector, check whether the source uses
+an already supported platform.
 
-rather than:
+Reason:
 
-- `haninge`
-- `strangnas`
+The same underlying technology can serve multiple websites
+and events.
 
-**Reason**
+## D003 – Connectors acquire and normalize data
 
-Haninge Golfklubb and Strängnäs Golfklubb both use GolfBox technology. The same connector concept can therefore be reused.
+Decision:
 
-Before creating a new connector, first determine whether the source uses a platform we already support.
+Connectors own:
 
----
+- External-source access.
+- Entity identification.
+- Data extraction.
+- Snapshot normalization.
 
-## D003 – Connectors only acquire and normalize data
+They do not own:
 
-**Decision**
+- State persistence.
+- Change detection.
+- Notifications.
+- Scheduling.
 
-Connectors are responsible for:
+Reason:
 
-- Accessing an external source
-- Finding the requested entity
-- Extracting relevant data
-- Returning a normalized snapshot
+This separates source acquisition from platform behavior
+and keeps connectors reusable.
 
-Connectors are not responsible for:
+## D004 – The monitoring layer owns state and change detection
 
-- State persistence
-- Change detection
-- Notifications
-- Scheduling
+Decision:
 
-**Reason**
+The monitoring layer owns configuration loading, connector
+selection, snapshot comparison, change detection, notification
+triggering and state updates.
 
-This keeps connectors reusable and separates source-specific logic from platform logic.
+watcher.py provides the generic monitoring implementation.
 
----
+event_platform_live.py coordinates automatic Live execution
+using existing connectors, formatting and monitoring conventions.
 
-## D004 – Core owns state and change detection
+Reason:
 
-**Decision**
+Common monitoring behavior should not be duplicated in connectors.
 
-The Event Platform monitoring layer owns:
+Automatic selection and coordinated persistence should not add
+Floorball acquisition logic to the generic watcher.
 
-- Configuration loading
-- Connector selection
-- Snapshot comparison
-- Change detection
-- Notification triggering
-- State updates
-
-`watcher.py` provides the generic monitoring implementation.
-
-Automatic Live execution is coordinated separately through `event_platform_live.py`, which reuses existing connectors, notification formatting and monitoring conventions.
-
-**Reason**
-
-All connectors should benefit from common monitoring behavior without implementing it themselves.
-
-The separate Live execution layer allows automatic match selection and coordinated Git persistence without introducing floorball-specific acquisition logic into the generic watcher.
-
-**Updated:** 22 October 2026.
-
----
+Updated: 22 October 2026.
 
 ## D005 – Scheduling is external
 
-**Decision**
+Decision:
 
 Event Platform does not own its scheduler.
 
 cron-job.org currently triggers GitHub Actions.
 
-**Reason**
+Reason:
 
-Scheduling and monitoring are separate responsibilities.
+Scheduling can be replaced without redesigning acquisition
+or monitoring.
 
-The scheduler can therefore be replaced later without redesigning connectors or the platform core.
+## D006 – Daily and Live are separate modes
 
----
+Decision:
 
-## D006 – Daily and Live are separate execution modes
+The platform supports daily and live execution.
 
-**Decision**
+Daily handles slower-changing sources and discovery.
+Live handles frequently changing event data.
 
-The platform supports:
+Reason:
 
-- `daily`
-- `live`
-
-Daily is used for relatively slow-changing sources and automatic discovery.
-
-Live is used for frequently changing event data.
-
-**Reason**
-
-Different sources require different polling frequencies and operational behavior.
-
----
+These functions require different frequencies and operational
+behavior.
 
 ## D007 – Live polling interval is five minutes
 
-**Decision**
+Decision:
 
-Live monitoring runs every five minutes.
+Live monitoring polls every five minutes.
 
-The external Live schedule remains enabled continuously, while runtime Watch selection determines which floorball matches are eligible for monitoring.
+The October implementation kept the external schedule enabled
+continuously, with runtime Watch selection determining which
+Floorball matches were eligible.
 
-**Reason**
+Reason:
 
-Five minutes provides useful live updates.
+Five-minute polling provides useful updates.
+Automatic selection avoids per-match scheduler changes.
 
-Automatic Watch selection removes the need to manually enable and disable the scheduler for individual floorball matches.
+Updated: 22 October 2026.
 
-**Updated:** 22 October 2026.
+Status:
 
----
+The five-minute interval remains current.
+The continuous all-day schedule was superseded by D030.
 
-## D008 – Daily monitoring remains enabled
+## D008 – Daily monitoring runs every day
 
-**Decision**
+Decision:
 
-Daily monitoring runs continuously once per day.
+Daily runs once per day.
 
-Current responsibilities include:
+Responsibilities include:
 
-- SGF Ranking
-- Automatic floorball match discovery
+- SGF Ranking.
+- Automatic Floorball Discovery.
 
-**Reason**
+Reason:
 
-Ranking changes relatively infrequently.
+Both functions can reuse the existing Daily schedule without
+continuous polling.
 
-Floorball schedules can also be refreshed daily without continuous polling.
+Updated: 22 October 2026.
 
-Both functions can reuse the existing reliable Daily schedule.
+Operational note:
 
-**Updated:** 22 October 2026.
+Schedules were temporarily disabled during the November incident
+and re-enabled after recovery verification.
 
----
+## D009 – First observations depend on monitoring mode
 
-## D009 – First observation behaves differently for Daily and Live
+Decision:
 
-**Decision**
+Daily first observations establish a baseline without notification.
 
-For Daily:
+A first valid golf Live result can establish a baseline and
+generate a notification.
 
-The first observation establishes a baseline without sending a notification.
+An empty or not-yet-started leaderboard is not a real result.
 
-For golf Live monitoring:
+A first pre-match Floorball observation establishes a baseline
+without notification.
 
-The first valid event result establishes the baseline and may generate a notification.
+The automatic Live runner rejects a first Floorball observation
+that already contains match activity or a final result.
 
-An empty or not-yet-started leaderboard is not considered a real result.
+Reason:
 
-For floorball Live monitoring:
+Sources have different lifecycles.
 
-The first pre-match observation establishes a baseline without notification.
+Floorball requires a known baseline to distinguish new events
+from historical activity.
 
-If the first observation already contains match activity, the current automatic Live runner rejects the late baseline rather than silently discarding events.
+General late-baseline recovery remains future work.
 
-**Reason**
+Updated: 22 October 2026.
 
-Different sources have different event lifecycles.
+Exception:
 
-Floorball monitoring requires a known baseline to distinguish new match events from historical events.
-
-Late-baseline recovery remains future work.
-
-**Updated:** 22 October 2026.
-
----
+D031 records a specific administrative closure after the outage.
+It does not change normal baseline behavior.
 
 ## D010 – Position changes are relevant Live changes
 
-**Decision**
+Decision:
 
-A Live notification may be generated when the watched player's position changes even if the player's own score has not changed.
+A player's position change can trigger a notification even
+when the player's own score has not changed.
 
-**Reason**
+Reason:
 
-Other competitors' results can change the player's leaderboard position.
+Other competitors can change the watched player's position.
 
-This is considered meaningful live information.
-
-A future notification preference may allow users to choose between all changes and player-score-only changes.
-
----
+A future preference may distinguish all changes from
+player-score-only changes.
 
 ## D011 – State is persisted in the repository
 
-**Decision**
+Decision:
 
-`state.json` stores the latest known monitoring snapshots.
+state.json stores the latest monitoring snapshots.
 
-GitHub Actions commits changed state back to the repository.
+GitHub Actions commits changed state.
 
-The automatic Live implementation merges changed Watch entries against the latest repository state rather than blindly replacing the complete state file.
+Automatic Live merges changed Watch entries against the latest
+repository state rather than replacing the complete file blindly.
 
-**Reason**
+Reason:
 
-GitHub Actions runners are stateless.
+Actions runners are stateless.
 
-Persistent state is required to compare independent executions.
+Independent executions require persistent state, preservation
+of unrelated Watches and concurrency protection.
 
-The implementation must preserve unrelated Watches and protect against concurrent updates.
+Updated: 22 October 2026.
 
-**Updated:** 22 October 2026.
+## D012 – Source-specific identifiers belong in configuration
 
----
+Decision:
 
-## D012 – Source-specific parameters belong in configuration
+Reusable connectors must not permanently hard-code event-specific
+identifiers.
 
-**Decision**
+Competition, leaderboard, player, team and other source settings
+belong in configuration or generated runtime Watches.
 
-Reusable connectors should not permanently hard-code event-specific identifiers.
+Reason:
 
-Examples include:
+The next event should normally require configuration rather
+than Python changes.
 
-- Competition ID
-- Leaderboard ID
-- Player
-- Team
-- Other source-specific identifiers
+## D013 – Verify behavior with real events
 
-These belong in configuration or dynamically generated Watch configuration.
+Decision:
 
-**Reason**
+Use real-world validation where practical.
 
-A reusable connector should ideally support the next event without Python changes.
+Automated tests remain necessary but do not establish operational
+acceptance on their own.
 
----
+Reason:
 
-## D013 – Verify behavior with real events where practical
+Real events revealed changing layouts, competition classes,
+round transitions, final-result behavior and Floorball
+event-model details that static tests alone could miss.
 
-**Decision**
+## D014 – Protect working monitoring during events
 
-Prefer real-world validation over artificial state manipulation when practical.
+Decision:
 
-Automated tests remain necessary but do not replace operational verification.
+Avoid nonessential production changes during a working live event.
 
-**Reason**
+Reason:
 
-The Haninge, Strängnäs and floorball validations revealed behavior that would have been difficult to predict from static testing alone.
+Changes introduce risk and can disrupt an important acceptance
+opportunity.
 
-Examples include:
+## D015 – Repository documentation is long-term memory
 
-- Changing leaderboard layouts
-- Multiple competition classes
-- Live position changes
-- Round transitions
-- Final result population
-- Floorball event types and MatchTeamID handling
+Decision:
 
----
+Architecture, decisions, working procedures, backlog and handover
+are stored in the repository.
 
-## D014 – Do not change a working live system during an event without need
+Chat history is not the source of truth.
 
-**Decision**
-
-Once a live event is working correctly, avoid nonessential code changes until the event is complete.
-
-**Reason**
-
-A live event provides valuable real-world validation and unnecessary changes introduce avoidable risk.
-
----
-
-## D015 – Documentation is the project's long-term memory
-
-**Decision**
-
-Important architecture, decisions, ways of working and backlog items are stored in the repository.
-
-Chat history or AI conversational context is not considered the project's source of truth.
-
-**Reason**
+Reason:
 
 Conversation context is finite.
+Repository documentation enables reliable session restoration.
 
-Repository documentation allows future development sessions to reconstruct the necessary project context reliably.
+Operational clarification:
 
----
+ChatGPT Project sources and attachments are not automatically
+synchronized with GitHub.
+
+Their freshness must be established at session start.
+Committed handover updates should also be reflected in the
+corresponding Project sources.
+
+Detailed procedures belong in ways-of-working.md.
 
 ## D016 – Unified Connector Interface
 
-**Decision**
+Decision:
 
-All Event Platform connectors use the same public interface:
+All connectors expose:
 
-`fetch_snapshot(watch)`
+fetch_snapshot(watch)
 
-A Watch has the generic structure:
+A Watch contains:
 
-- `id`
-- `name`
-- `connector`
-- `mode`
-- `source`
+- id
+- name
+- connector
+- mode
+- source
 
-`id` is the stable technical identity of the Watch across executions.
+The ID is its stable persistent identity.
 
-The Watch `id` must remain stable once the Watch has persistent state.
+Human-readable names and source configuration may change without
+creating a new Watch identity.
 
-Human-readable `name` and source-specific configuration may change without changing Watch identity.
+The core understands the generic Watch structure but does not
+interpret source-specific configuration.
 
-The Event Platform core understands the generic Watch structure but does not interpret the contents of `source`.
+Connectors own the complete acquisition lifecycle, including
+HTTP, Playwright, HTML parsing, JSON APIs, SSE or other technology.
 
-The selected connector owns and interprets everything inside `source`, including:
+A connector returns its own normalized snapshot or None.
 
-- The monitored entity
-- Source-specific identifiers
-- Source-specific configuration
+There is no fixed platform-wide snapshot field schema.
 
-Examples may include:
+The monitoring layer owns comparison, state and notification
+triggering.
 
-- Player
-- Team
-- Competition ID
-- Leaderboard ID
-- Other future source-specific parameters
+A separate formatting layer interprets source-specific fields
+and creates notification content.
 
-Each connector owns its complete data-acquisition lifecycle.
+The delivery provider delivers the formatted notification.
 
-Acquisition technologies such as:
+Reason:
 
-- Playwright
-- HTTP
-- HTML parsing
-- JSON APIs
-- Server-Sent Events (SSE)
-- Future source-specific technologies
+These boundaries keep the platform independent of acquisition
+technology, entity type, configuration details and presentation.
 
-are connector implementation details and are not managed by the Event Platform core.
+Stable IDs preserve state continuity as configuration evolves.
 
-A connector returns either:
+Design history: design-v1.2.md.
 
-- A connector-defined normalized snapshot
-- `None` when no relevant observation is available
+## D017 – Discovery is separate from Live monitoring
 
-The snapshot does not use a fixed platform-wide field schema.
+Decision:
 
-Each connector defines a stable normalized snapshot appropriate to its external source and Watch.
+Discovery retrieves matches, maintains identity and scheduling,
+registers matches and updates schedules.
 
-The Event Platform monitoring layer owns:
+Live selects registered matches, retrieves observations, detects
+changes, generates notifications and updates monitoring lifecycle.
 
-- Connector selection
-- State persistence using the Watch `id`
-- Snapshot comparison
-- Change detection
-- Deciding when a notification should be triggered
+Reason:
 
-Notification formatting is handled by a separate formatting layer.
+The functions have different frequencies and responsibilities.
 
-Notification formatters:
+Frequent Live polling should not repeat match discovery.
 
-- Interpret connector-specific snapshot fields
-- Create user-facing notification content
-- Remain separate from connector acquisition logic and monitoring logic
+Date: 22 October 2026.
 
-The notification provider is responsible for delivering the formatted notification.
+## D018 – Match registry is separate from Watch state
 
-**Reason**
+Decision:
 
-This creates stable boundaries between the Event Platform monitoring layer, source-specific connectors and notification presentation.
+match_registry.json stores discovered matches.
 
-The architecture remains independent of:
+state.json stores monitoring snapshots.
 
-- Acquisition technology
-- Monitored entity type
-- Source-specific configuration
-- Connector-specific snapshot fields
-- Connector-specific notification presentation
+Registry entries use stable iBIS MatchIDs.
 
-Stable Watch IDs allow source configuration and human-readable names to evolve without creating new state baselines.
+Reason:
 
-Separating notification formatting allows presentation to evolve without adding source-specific interpretation to connectors or the generic monitoring engine.
+Match existence and scheduling differ from observed monitoring
+state.
 
-New connectors and future non-golf use cases can therefore be introduced without expanding the platform core with source-specific concepts.
+Both must survive independent executions.
 
-The original design was derived from real-world experience with GolfBox, SGF Ranking and Tournytt and is documented in detail in `design-v1.2.md`.
+Date: 22 October 2026.
 
----
+## D019 – Registry fields have explicit ownership
 
-## D017 – Floorball match discovery is separate from Live monitoring
+Decision:
 
-**Decision**
+Discovery owns match identity, scheduling, team, competition
+and source scheduling information.
 
-Automatic floorball match discovery and Live monitoring are separate responsibilities.
-
-Discovery:
-
-- Retrieves upcoming matches.
-- Identifies matches for configured teams.
-- Maintains scheduling information.
-- Registers new matches.
-- Updates existing match schedules.
-
-Live:
-
-- Selects eligible registered matches.
-- Retrieves match observations.
-- Detects changes.
-- Generates notifications.
-- Updates monitoring lifecycle.
-
-**Reason**
-
-Match discovery and match monitoring operate at different frequencies and have different responsibilities.
-
-Separating them prevents unnecessary discovery calls during frequent Live polling and avoids mixing scheduling changes with match-event processing.
-
-**Date:** 22 October 2026.
-
----
-
-## D018 – Match registry is persistent and separate from Watch state
-
-**Decision**
-
-Floorball matches are stored in:
-
-`match_registry.json`
-
-Monitoring snapshots remain stored in:
-
-`state.json`
-
-The registry uses stable iBIS MatchIDs as keys.
-
-**Reason**
-
-The match registry describes which matches exist and when they should be monitored.
-
-Watch state describes what has been observed during monitoring.
-
-These are different concerns and should remain separate.
-
-The registry also allows monitoring to resume across independent GitHub Actions executions.
-
-**Date:** 22 October 2026.
-
----
-
-## D019 – Discovery and Live have explicit registry ownership
-
-**Decision**
-
-Discovery owns match identity, scheduling and source scheduling information.
-
-Live owns monitoring lifecycle and completion status.
-
-Updates are merged according to these ownership boundaries.
+Live owns monitoring lifecycle and completion.
 
 Discovery must not reactivate completed matches.
 
-Live must not modify Discovery-owned scheduling information or create unknown matches implicitly.
+Live must not alter Discovery-owned scheduling or implicitly
+create unknown matches.
 
-**Reason**
+Reason:
 
-Daily Discovery and Live Monitoring may update the same registry at different times.
+Explicit ownership prevents independent processes from overwriting
+each other's information.
 
-Explicit ownership prevents one process from unintentionally overwriting another process's information.
+Date: 22 October 2026.
 
-**Date:** 22 October 2026.
+## D020 – Dynamic Watches replace manual Floorball selection
 
----
+Decision:
 
-## D020 – Automatic Live Watches replace manually selected floorball Watches
+Live generates Floorball Watches from the registry.
 
-**Decision**
+Manual Floorball Watches are excluded from automatic execution.
 
-Live Monitoring dynamically generates floorball Watches from the persistent match registry.
+Configured non-Floorball Live Watches are preserved.
 
-Manually configured floorball Watches are excluded from the automatic Live configuration.
+Generated IDs use:
 
-Existing non-floorball Live Watches, including GolfBox and Tournytt, are preserved.
+floorball-match-{match_id}
 
-Generated Watch IDs use:
+Reason:
 
-`floorball-match-{match_id}`
+This removes per-match configuration changes and prevents
+duplicate manual and automatic monitoring.
 
-**Reason**
+Date: 22 October 2026.
 
-Manual MatchID selection required workflow changes before each match.
+## D021 – Activate before scheduled match start
 
-Dynamic Watch generation allows new matches to be monitored without manually editing `config.yml` or `live.yml`.
+Decision:
 
-It also avoids duplicate monitoring of the same match through manual and automatic Watches.
+Eligible matches enter monitoring 15 minutes before start.
 
-**Date:** 22 October 2026.
+Cancelled, postponed and completed matches are excluded.
 
----
+Multiple simultaneous matches are supported.
 
-## D021 – Floorball monitoring starts before scheduled match time
+Reason:
 
-**Decision**
+A pre-match baseline reduces the risk of confusing historical
+events with new activity.
 
-An eligible floorball match enters its automatic Live monitoring window 15 minutes before its scheduled start.
+The activation behavior was verified using simulated time.
 
-Cancelled, postponed and completed matches are excluded according to the match-selection rules.
+Date: 22 October 2026.
 
-The selection logic supports multiple simultaneous matches.
+Limitation:
 
-**Reason**
+The current selector has no upper limit for overdue matches.
+Expiration and recovery require a separate design.
 
-Starting before the scheduled match time allows the platform to establish a pre-match baseline.
+## D022 – Reuse Daily for Discovery
 
-This reduces the risk of treating historical match events as new notifications.
+Decision:
 
-The exact activation behavior has been verified through simulated-time tests.
+Floorball Discovery runs after golf monitoring in daily.yml.
 
-**Date:** 22 October 2026.
+The existing external Daily schedule is reused.
 
----
+Reason:
 
-## D022 – Reuse the existing Daily schedule for Discovery
+Reusing proven scheduling avoids unnecessary infrastructure
+while preserving separate Python responsibilities.
 
-**Decision**
+Date: 22 October 2026.
 
-Automatic Floorball Discovery executes after the existing Daily golf monitoring within `daily.yml`.
+## D023 – Reuse the Live workflow and scheduler
 
-The existing cron-job.org Daily schedule is reused.
+Decision:
 
-No additional scheduler or external cron-job is introduced.
+live.yml remains the production Live workflow.
 
-**Reason**
+It executes event_platform_live.py.
 
-The existing Daily schedule has demonstrated reliable operation.
+The previous hard-coded WATCH_ID was removed.
 
-Reusing it reduces operational complexity and avoids unnecessary scheduling infrastructure.
+The existing external Live job processes configured golf Watches
+and dynamically selected Floorball matches.
 
-The two functions remain separate Python implementations.
+Reason:
 
-**Date:** 22 October 2026.
+A separate Floorball scheduler is unnecessary.
 
----
+Date: 22 October 2026.
 
-## D023 – Automatic Live uses the existing Live workflow and scheduler
+## D024 – Preserve unrelated state and reject stale updates
 
-**Decision**
+Decision:
 
-The existing `.github/workflows/live.yml` is the production Live workflow.
-
-It executes:
-
-`event_platform_live.py`
-
-The previous hard-coded `WATCH_ID` is removed.
-
-The existing cron-job.org Live job is reused with a five-minute polling interval.
-
-**Reason**
-
-One Live workflow can process both existing golf Watches and dynamically selected floorball Watches.
-
-There is no need to create a separate Live scheduler for floorball.
-
-**Date:** 22 October 2026.
-
----
-
-## D024 – Preserve unrelated state and reject stale same-Watch updates
-
-**Decision**
-
-Automatic Live persistence refreshes the latest Git repository state before committing.
+Automatic Live refreshes repository state before persistence.
 
 Only changed Watch entries are merged.
 
-Unrelated Watch entries must be preserved.
+Optimistic checks compare the original observation state with
+the latest persisted entry.
 
-Optimistic concurrency checking compares the state used for observation with the latest persisted state.
+A stale same-Watch update is rejected.
 
-If another execution has changed the same Watch, the stale update is rejected rather than blindly overwriting newer state.
+Reason:
 
-**Reason**
+Independent executions must not overwrite unrelated or newer
+observations.
 
-GitHub Actions executions operate independently.
+Regression tests cover the protection.
+Broader operational concurrency remains a validation area.
 
-A complete-file overwrite could lose changes made by another execution.
+Date: 22 October 2026.
 
-The merge and conflict-detection approach reduces this risk.
+## D025 – Persist normal completion together with final state
 
-The concurrency protection has passed regression tests, while broader real-world concurrent execution remains an operational validation area.
+Decision:
 
-**Date:** 22 October 2026.
+Normal automatic completion persists the final snapshot in
+state.json and completed status in match_registry.json together
+in one Git commit.
 
----
+Completed matches must not automatically reactivate.
 
-## D025 – Completed floorball matches use coordinated persistence
+Reason:
 
-**Decision**
+Final observation and lifecycle must remain consistent.
 
-When a final floorball result is detected, the final Watch snapshot and registry completion status are persisted together in one Git commit.
+Atomic persistence has passed automated tests.
 
-The final snapshot is stored in `state.json`.
+Date: 22 October 2026.
 
-The match is marked `completed` in `match_registry.json`.
+Exception:
 
-Completed matches must not be automatically reactivated.
+D031 records an explicitly approved administrative closure
+without a final snapshot.
 
-**Reason**
+## D026 – Exactly-once notification delivery is not guaranteed
 
-The final monitoring observation and the monitoring lifecycle must remain consistent.
+Decision:
 
-Atomic Git persistence prevents a successful commit from containing only one of the two related updates.
+Automatic Live sends notifications before committing state.
 
-The underlying functionality has passed automated tests.
+A notification can repeat if delivery succeeds but persistence
+fails.
 
-Automatic completion during a real match remains pending verification.
-
-**Date:** 22 October 2026.
-
----
-
-## D026 – Notification delivery is not guaranteed exactly once
-
-**Decision**
-
-The current automatic Live implementation sends notifications before committing the corresponding state changes to Git.
-
-Exactly-once delivery is not guaranteed.
-
-If notification delivery succeeds but persistence fails, the same event may be notified again during a later execution.
-
-**Reason**
+Reason:
 
 ntfy delivery and Git persistence are independent operations.
 
-Git commits cannot atomically include an external notification delivery.
+This limitation remains documented.
+Stronger coordination can be considered if operational evidence
+justifies it.
 
-This limitation is accepted for the current implementation and must remain documented.
+Date: 22 October 2026.
 
-A more advanced delivery coordination mechanism may be considered if operational experience demonstrates a need.
+## D027 – Coordinate production workflows with concurrency
 
-**Date:** 22 October 2026.
+Decision:
 
----
+Participating workflows use:
 
-## D027 – Coordinate production workflows through GitHub Actions concurrency
+event-platform-state
 
-**Decision**
+cancel-in-progress is false.
 
-Participating Daily and Live workflows use the concurrency group:
+Reason:
 
-`event-platform-state`
+Serializing participating executions reduces overlapping
+repository updates.
 
-With:
+Git conflict checks and retries remain necessary.
 
-`cancel-in-progress: false`
+Date: 22 October 2026.
 
-**Reason**
+## D028 – Retain Playwright and optimize Live installation
 
-The workflows may update persistent files in the same repository.
+Decision:
 
-Serializing participating executions reduces overlapping Git updates.
+GolfBox continues to use Playwright and Chromium.
 
-Git persistence retains its own conflict-detection and retry mechanisms.
+Live installs Chromium without the full operating-system
+dependency installation on every execution.
 
-**Date:** 22 October 2026.
+Reason:
 
----
+The optimized installation reduced observed execution from
+4 minutes 20 seconds to approximately 37 seconds, followed
+by an automatic execution of approximately 30 seconds.
 
-## D028 – Retain Playwright for GolfBox but optimize installation
+Date: 22 October 2026.
 
-**Decision**
+Extension:
 
-The GolfBox connector continues to use Playwright and Chromium.
+D032 applies the same installation command to Daily after
+a verified installation problem.
 
-The Live workflow installs Python dependencies and Chromium without running the full Playwright operating-system dependency installation on every execution.
+## D029 – Share iBIS v2 authentication and signing
 
-**Reason**
+Decision:
 
-GolfBox requires browser automation.
+ibis_client.py owns temporary iBIS sessions, authentication
+and signed read-only requests.
 
-However, repeatedly installing and upgrading system packages caused excessive GitHub Actions runtime.
+Both the match connector and Discovery use this client.
 
-The optimized workflow reduced a measured execution from 4 minutes 20 seconds to approximately 37 seconds.
+The verified flow uses startkit, handshake, the resulting session
+cookie and HMAC-SHA256 request signing.
 
-A subsequent automatically triggered execution completed in approximately 30 seconds.
+Personal iBIS credentials and copied browser tokens are not
+required for the verified flow.
 
-This provides sufficient operational margin for the current five-minute polling interval under observed conditions.
+Existing connector normalization, Discovery filtering and core
+monitoring boundaries are preserved.
 
-**Date:** 22 October 2026.
+The client currently supports match retrieval and competition
+match-list retrieval.
 
----
+It validates the API root, handshake data and resource paths,
+and rejects redirects and unsuccessful responses.
 
-## D029 – Consolidate automated regression testing
+Reason:
 
-**Decision**
+The old startkit endpoint returned HTTP 503.
 
-Use the permanent workflow:
+The public website's v2 flow was established from its JavaScript
+and verified from GitHub Actions.
 
-`.github/workflows/test-regression.yml`
+Sharing acquisition code prevents authentication duplication
+between Discovery and the connector.
 
-for consolidated regression testing.
+Verification:
 
-Retain the Python test files in `tests/`.
+- Real match and competition requests returned HTTP 200.
+- Production connector and Discovery checks passed.
+- Consolidated Floorball regression reached 112 passing tests.
 
-Historical standalone test-workflows may be removed after confirming they are no longer required.
+Active-match acceptance with the new client remains outstanding.
 
-**Reason**
+Date: 11 November 2026.
 
-During development, many individual GitHub Actions test-workflows were created.
+## D030 – Limit Live scheduling to a daily time window
 
-A consolidated regression workflow reduces maintenance and manual administration without sacrificing test coverage.
+Decision:
 
-As of 22 October 2026, 105 Floorball tests and the existing golf regression tests have passed.
+Live runs every five minutes between 06:00 and 23:55 daily.
 
-**Date:** 22 October 2026.
+Timezone: Europe/Stockholm.
 
----
+Cron expression:
 
-## D030 – Real-world acceptance remains separate from technical verification
+*/5 6-23 * * *
 
-**Decision**
+Daily remains scheduled for 08:00.
 
-Successful automated tests and successful GitHub Actions execution do not automatically establish complete real-world acceptance.
+Runtime Floorball selection continues to determine match eligibility
+within the external scheduling window.
 
-Automatic floorball monitoring must also be verified during actual matches.
+Reason:
 
-Required operational validation includes:
+The user approved reducing overnight executions while retaining
+coverage for early golf and evening matches.
 
-- Automatic match activation
-- Pre-match baseline
-- Match-event notifications
-- Final-result notification
-- Final snapshot persistence
-- Registry completion
-- Exclusion of completed matches from future monitoring
+The time window applies to all configured Live Watches.
 
-**Reason**
+Events outside this window would require a deliberate schedule
+adjustment.
 
-External platforms and real events can exhibit behavior that automated tests do not fully reproduce.
+This supersedes only the all-day scheduling part of D007.
+The five-minute interval remains unchanged.
 
-As of 22 October 2026, the automatic Live workflow is deployed and running successfully, but the first full real-world automatic match validation remains pending.
+Verification:
 
-**Date:** 22 October 2026.
+The re-enabled Live job returned HTTP 204 and its corresponding
+GitHub Actions execution succeeded.
 
----
+Automatic Daily execution after reactivation remains to be observed.
 
-## D031 – Protect active monitoring during maintenance and cleanup
+Date: 11 November 2026.
 
-**Decision**
+## D031 – Administratively close missed match 1750719
 
-Nonessential production code changes and deletion of historical workflows should be deferred while an important real-world monitoring validation is approaching or active.
+Decision:
 
-Documentation and low-risk maintenance may continue.
+With explicit user approval, only monitoring_status for
+MatchID 1750719 was changed from scheduled to completed.
 
-**Reason**
+No final snapshot was added.
+No historical notifications were sent.
+Existing state was preserved.
 
-The working automatic Live system is scheduled to monitor real floorball matches on 23 and 25 October 2026.
+Reason:
 
-Avoiding unnecessary changes protects the first production acceptance tests.
+The match was missed during the outage and had no saved Watch
+state.
 
-**Date:** 22 October 2026.
+Without intervention, selection would still choose it and the
+Live runner would reject its late first observation.
+
+The user requested minimal storage and no notifications.
+
+This records closure of monitoring, not successful monitoring
+or verified final-state persistence.
+
+It is a specific exception to normal completion under D025
+and does not implement general outage recovery.
+
+Date: 11 November 2026.
+
+## D032 – Use optimized Chromium installation in Daily
+
+Decision:
+
+Daily installs Chromium using:
+
+python -m playwright install chromium
+
+The --with-deps option was removed.
+
+Reason:
+
+The existing installation stalled while downloading Ubuntu
+font packages before monitoring began.
+
+The replacement follows the previously verified Live installation
+approach.
+
+Verification:
+
+The subsequent production Daily execution completed through
+Floorball Discovery successfully.
+
+This extends D028 to Daily.
+
+Date: 11 November 2026.
