@@ -1,34 +1,18 @@
-
 """
 Read-only floorball match discovery for Event Platform.
 
-Reads configured teams and competitions, retrieves match lists
-from the iBIS API, and calculates an updated match registry.
-
-This module does not:
-- Write configuration or registry files.
-- Modify state.json.
-- Send notifications.
-- Execute Git commands.
-- Activate Live monitoring.
-
-Persistent Git storage and scheduling are separate concerns.
+Returns an updated in-memory registry.
+Does not write files, send notifications, execute Git commands
+or activate Live monitoring.
 """
 
 from datetime import datetime
-from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
-import requests
-
+from ibis_client import open_ibis_client
 from floorball_registry import update_registry
 
 
-STARTKIT_URL = (
-    "https://api.innebandy.se/StatsAppApi/api/startkit"
-)
-
-EXPECTED_API_HOST = "api.innebandy.se"
 STOCKHOLM = ZoneInfo("Europe/Stockholm")
 
 
@@ -37,26 +21,7 @@ def discover_matches(
     registry: dict,
     now: datetime | None = None,
 ) -> dict:
-    """
-    Discover upcoming matches and return an updated registry.
-
-    Args:
-        config:
-            Event Platform configuration containing a
-            floorball_discovery section.
-
-        registry:
-            Existing match registry.
-
-        now:
-            Optional timezone-aware datetime for testing.
-            Defaults to current time in Europe/Stockholm.
-
-    Returns:
-        A new in-memory match registry.
-
-    The function does not persist any changes.
-    """
+    """Discover upcoming matches without modifying the inputs."""
 
     if not isinstance(config, dict):
         raise TypeError("Configuration must be a dictionary")
@@ -95,36 +60,7 @@ def discover_matches(
     today = now.date()
     discovered = []
 
-    with requests.Session() as session:
-        startkit_response = session.get(
-            STARTKIT_URL,
-            headers={
-                "Accept": "application/json",
-                "Origin": "https://stats.innebandy.se",
-            },
-            timeout=30,
-        )
-        startkit_response.raise_for_status()
-
-        credentials = startkit_response.json()
-        token = credentials["accessToken"]
-        api_root = credentials["apiRoot"].rstrip("/")
-
-        parsed = urlparse(api_root)
-
-        if (
-            parsed.scheme != "https"
-            or parsed.hostname != EXPECTED_API_HOST
-            or parsed.path != "/v2/api/public"
-        ):
-            raise ValueError("Unexpected iBIS API root")
-
-        headers = {
-            "Accept": "application/json",
-            "Authorization": f"Bearer {token}",
-            "Origin": "https://stats.innebandy.se",
-        }
-
+    with open_ibis_client() as client:
         # Avoid duplicate competition requests.
         competition_ids = sorted({
             team["competition_id"]
@@ -132,17 +68,9 @@ def discover_matches(
         })
 
         for competition_id in competition_ids:
-            response = session.get(
-                (
-                    f"{api_root}/competitions/"
-                    f"{competition_id}/matches"
-                ),
-                headers=headers,
-                timeout=30,
+            matches = client.get_json(
+                f"competitions/{competition_id}/matches"
             )
-            response.raise_for_status()
-
-            matches = response.json()
 
             if not isinstance(matches, list):
                 raise ValueError(
@@ -195,22 +123,21 @@ def discover_matches(
                 )
 
                 if start.tzinfo is None:
-                    # iBIS timestamps are assumed to represent
+                    # Preserve the existing assumption of
                     # Swedish local time, pending verification.
                     start = start.replace(tzinfo=STOCKHOLM)
                 else:
                     start = start.astimezone(STOCKHOLM)
 
-                # Include upcoming matches and today's matches,
-                # including matches whose scheduled start passed.
+                # Include today's matches even after their
+                # scheduled start time.
                 if start.date() < today:
                     continue
 
                 if match.get("HasFinalResult") is True:
                     continue
 
-                # These fields remain provisional until the
-                # source status model has been verified.
+                # Preserve the existing provisional filtering.
                 if match.get("Cancelled") is True:
                     continue
 
