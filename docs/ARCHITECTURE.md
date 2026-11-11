@@ -1,852 +1,599 @@
+# Event Platform – Backlog
 
-# Event Platform Architecture
+GitHub is the authoritative source of truth.
 
-## Purpose
+Backlog items are not commitments to a particular release
+unless explicitly agreed.
 
-Event Platform monitors external event data, detects relevant changes, stores the latest known state, and sends notifications when something changes.
+**Last updated:** 11 November 2026
+**Last documented published release:** v1.2.0
+**Operational status:** Daily and Live schedules re-enabled
+**Current focus:** Operational acceptance after iBIS v2 recovery
 
-Golf was the first use case, but the platform is designed to remain independent of golf-specific or other domain-specific logic.
+## 1. Immediate priorities
 
-The architecture supports different external platforms through reusable connectors, generic Watches, persistent state, and independent monitoring modes.
+### P0 – Restore iBIS data acquisition
 
-## Current version and status
+**Status: Implemented and verified against real data**
 
-Current published production release: **v1.2.0**
+The old StatsAppApi startkit endpoint returned HTTP 503.
 
-The floorball implementation extends the existing architecture but has not yet been included in a new published release.
+The replacement public-client flow uses:
 
-As of 22 October 2026:
+1. GET /v2/api/auth/startkit
+2. POST /v2/api/auth/handshake
+3. Signed requests to /v2/api/public/
 
-- Daily golf monitoring is operational.
-- Live golf monitoring is operational.
-- Automatic floorball Discovery is operational.
-- Automatic floorball Live Monitoring is deployed and scheduled.
-- Automatic floorball Live Monitoring has passed technical regression tests.
-- Automatic floorball monitoring has not yet been validated during a real match.
+The handshake establishes a session cookie and returns:
 
-The platform supports two execution modes:
+- ss: session signing secret.
+- st: server timestamp.
 
-- Daily monitoring
-- Live monitoring
+Requests include Bearer authorization and:
 
-Implemented connectors:
+- X-Signature.
+- X-Timestamp.
+- X-Nonce.
 
-- `sgf_ranking` – Swedish Golf Federation ranking
-- `golfbox_leaderboard` – GolfBox competition leaderboards
-- `tournytt_api` – Tournytt leaderboard API
-- `ibis_floorball` – Swedish floorball match monitoring
+The signing implementation was established by inspecting the
+public statistics client's JavaScript.
 
-The first three connectors belong to the published v1.2.0 release. The floorball connector is implemented and undergoing production validation.
+The signature uses HMAC-SHA256 with the UTF-8 session secret.
+The canonical request includes method, path and optional query,
+timestamp, UUID nonce and SHA-256 hash of the request body.
 
-## High-level architecture
+Implemented:
 
-Event Platform separates external data acquisition, monitoring logic, notification formatting, persistence, and scheduling.
+- [x] Shared ibis_client.py.
+- [x] Connector integration.
+- [x] Discovery integration.
+- [x] API-root and handshake validation.
+- [x] Read-only resource validation.
+- [x] Redirect rejection.
+- [x] Seven isolated client tests.
+- [x] Existing Discovery tests adapted.
 
-### General monitoring flow
+Verified on 11 November:
 
-Watch configuration
-→ Connector
-→ External data source
-→ Normalized snapshot
-→ Change detection
-→ Notification formatting
-→ ntfy
-→ Subscriber devices
+- [x] Match 1750719 retrieved from GitHub Actions: HTTP 200.
+- [x] Competition 45004 retrieved: HTTP 200, 110 matches.
+- [x] Expected match found in competition response.
+- [x] Production connector retrieved match 1750693 and 24 events.
+- [x] Six notification-formatting tests passed.
+- [x] Baseline test passed without sending a notification.
+- [x] 112 Floorball regression tests passed after integration.
+- [x] Golf regression step passed.
+- [x] Standalone Discovery succeeded against real data.
+- [x] Production Daily completed through Discovery.
+- [x] Manual production Live execution succeeded.
 
-Monitoring state is stored in `state.json`.
+Personal iBIS credentials and copied browser sessions were not
+required for the verified implementation.
 
-GitHub Actions executes the platform.
+Remaining:
 
-cron-job.org triggers the production workflows.
+- [ ] Verify acquisition throughout an active match.
+- [ ] Verify notification delivery during that match.
+- [ ] Verify final-result handling with the new client.
 
-### Daily execution
+The authentication blocker is resolved. Full active-match
+acceptance after recovery remains outstanding.
 
-cron-job.org
-→ GitHub Actions `daily.yml`
-→ `watcher.py` with `RUN_MODE=daily`
-→ Daily connectors
-→ Snapshot comparison
-→ Notification when applicable
-→ Persist `state.json`
-→ Floorball Discovery
-→ iBIS competition data
-→ Update `match_registry.json` when necessary
+### P0 – Restore operational scheduling
 
-Daily execution combines existing golf monitoring with automatic floorball match discovery.
+**Status: Both schedules re-enabled; Live automatic execution verified**
 
-### Live execution
+Daily:
 
-cron-job.org
-→ GitHub Actions `live.yml`
-→ `event_platform_live.py`
-→ Load `config.yml`
-→ Load `match_registry.json`
-→ Select eligible floorball matches
-→ Merge automatic and configured Live Watches
-→ Execute connectors
-→ Compare observations
-→ Generate notifications when applicable
-→ Persist changed Watch state
-→ Update completed floorball matches
+- Schedule: 08:00 Europe/Stockholm.
+- Manual production execution passed.
+- User confirmed external job re-enabled.
+- [ ] Observe the next scheduled automatic Daily execution.
 
-The Live process can monitor multiple Watches in the same execution.
+Live:
 
-## Architecture principles
+- Schedule: Every five minutes, 06:00–23:55.
+- Timezone: Europe/Stockholm.
+- Cron expression: */5 6-23 * * *
+- External dispatch returned HTTP 204.
+- Corresponding GitHub Actions execution succeeded in 30 seconds.
 
-1. The Event Platform core remains independent of golf-specific and floorball-specific acquisition logic.
-2. Connectors own external data acquisition and normalization.
-3. Connectors expose a common `fetch_snapshot(watch)` interface.
-4. Watches have stable technical identities.
-5. Connector-specific configuration belongs in `watch["source"]`.
-6. Notification formatting is separate from data acquisition.
-7. Scheduling remains external to the platform.
-8. Persistent state must preserve unrelated Watches.
-9. Discovery and Live have separate responsibilities.
-10. Changes to monitoring lifecycle must not overwrite scheduling information.
-11. Existing production monitoring must be protected during development.
-12. Automated tests and real-world verification serve different purposes.
+The verified automatic Live execution processed two unchanged
+golf Watches and required no persistence.
 
-## Components
+No Floorball match was eligible during that execution.
 
-### Connectors
+Daily installation issue:
 
-Connector implementations are stored in `connectors/`.
+- --with-deps stalled while downloading Ubuntu font packages.
+- Daily now installs Chromium without --with-deps.
+- The subsequent production Daily execution succeeded.
 
-Each connector exposes:
+Do not treat a successful scheduler dispatch alone as successful
+monitoring. Verify the corresponding GitHub Actions result.
 
-`fetch_snapshot(watch)`
+### P0 – Investigate missing late-match notifications
 
-The connector:
+**Status: Open incident – 25 October 2026**
 
-- Reads source-specific configuration.
-- Acquires data from the external platform.
-- Identifies the requested entity.
-- Normalizes the observation.
-- Returns a snapshot or `None`.
+Match:
 
-Connectors do not own scheduling, Git persistence, or notification delivery.
+Tyresö Trollbäcken IBK (A) – Älta IF A
 
-Acquisition technologies such as Playwright, HTTP, JSON APIs, and SSE remain connector implementation details.
+MatchID: 1703577
+
+Observed:
+
+- Notifications worked earlier in the match.
+- Last received notification referred to 10–4.
+- Final two goals and final-result notification were not received.
+- Final result 11–5 was persisted.
+- has_final_result: true.
+- match_status: 4.
+- Registry monitoring_status: completed.
+
+Root cause remains unknown.
+
+Investigation:
+
+- [ ] Review Live logs around match completion.
+- [ ] Review Git history for the final state update.
+- [ ] Inspect notification generation and delivery.
+- [ ] Inspect match-selection behavior.
+- [ ] Review available ntfy evidence.
+- [ ] Identify the root cause.
+- [ ] Add regression coverage if a defect is confirmed.
+
+This incident is separate from the November authentication failure.
+
+### P1 – Complete automatic Floorball acceptance
+
+**Status: Partially verified**
+
+Next match in the inspected registry:
+
+- MatchID: 1703587.
+- Tyresö Trollbäcken IBK (A) – Hammarbyhöjden IBK.
+- Start: 14 November 2026, 15:00.
+- Monitoring activation: 14:45.
+- Timezone: Europe/Stockholm.
+
+Acceptance checks:
+
+- [ ] Confirm automatic activation.
+- [ ] Confirm pre-match baseline.
+- [ ] Observe successful acquisition during play.
+- [ ] Compare notifications with official match events.
+- [ ] Verify player highlighting when applicable.
+- [ ] Verify final-result notification.
+- [ ] Verify final snapshot and completed registry status.
+- [ ] Check for duplicate notifications.
+
+Avoid nonessential production changes during acceptance.
+
+## 2. Match validation and recovery record
+
+### 15 and 17 October – Manual monitoring
+
+MatchIDs: 1750693 and 1703572.
+
+Previously verified:
+
+- Match acquisition.
+- Goals, assists and penalties.
+- Period events.
+- Final results.
+- Notifications.
+- State persistence.
+
+Empty-net goals use MatchEventTypeID 12.
+
+### 23 October – Automatic JAS monitoring
+
+MatchID: 1750707.
+
+Verified:
+
+- Automatic monitoring worked.
+- Notifications were received.
+- Lukas-specific assist highlighting with a star worked.
+- Registry completion was subsequently confirmed.
+
+Remaining:
+
+- [ ] Independently review complete notification history.
+- [ ] Independently review final snapshot.
+- [ ] Confirm exact activation timing.
+- [ ] Assess duplicate notifications.
+
+### 25 October – Automatic men's monitoring
+
+MatchID: 1703577.
+
+Verified:
+
+- Monitoring and earlier notifications worked.
+- Final state 11–5 persisted.
+- Registry became completed.
+
+Remaining:
+
+- [ ] Resolve missing late-match notifications.
+- [ ] Verify the complete notification lifecycle.
+
+### 28 October
+
+MatchID: 1703581.
+
+User reported successful monitoring.
+Registry completion was confirmed.
+
+- [ ] Independently verify final snapshot and notification history.
+
+### 30 October
+
+MatchID: 1750712.
+
+Registry completion was confirmed.
+
+- [ ] Independently verify complete notification history.
+
+### 6 November – Missed match
+
+MatchID: 1750719.
+
+Monitoring failed during the authentication outage.
+
+On 11 November:
+
+- Registry still recorded scheduled.
+- No floorball-match-1750719 entry existed in state.json.
+- Existing selection rules would still select this overdue match.
+- Live would reject its late first observation.
+
+The user approved minimal administrative closure:
+
+- [x] monitoring_status manually changed to completed.
+- [x] No historical notifications sent.
+- [x] No final snapshot added.
+- [x] Existing state preserved.
+
+This is an explicit exception, not successful match monitoring.
+Do not recreate a baseline or reactivate this match.
+
+## 3. Implemented platform capabilities
+
+### Golf monitoring
+
+Connectors:
+
+- golfbox_leaderboard
+- sgf_ranking
+- tournytt_api
+
+Previously verified:
+
+- Live scoring and position changes.
+- Multi-round competitions and round transitions.
+- Final results.
+- Daily ranking monitoring.
+- State persistence and notifications.
+
+Golf regression passed during the November recovery.
+
+### Automatic Discovery
+
+Implemented:
+
+- Configured teams and competitions.
+- Competition match-list retrieval.
+- Team and date filtering.
+- Registry creation and schedule updates.
+- Preservation of completed and unrelated matches.
+- Git persistence.
+
+Recovery verification returned 31 total registry entries and
+zero changes.
+
+This does not mean 31 new or upcoming matches were discovered.
+The registry includes preserved historical entries.
+
+No real registry write was needed during the recovery verification.
+
+### Automatic Live monitoring
+
+Implemented:
+
+- Dynamic Watch selection.
+- Multiple eligible matches.
+- Activation 15 minutes before start.
+- Stable Watch IDs.
+- Preservation of configured golf Watches.
+- Automatic completion.
+- Coordinated Git persistence.
+
+### Git persistence
+
+Implemented and regression-tested:
+
+- Explicit registry ownership.
+- Preservation of unrelated state.
+- Push retries.
+- Optimistic same-Watch conflict checks.
+- Coordinated final-snapshot and completion commits.
+
+Real-world final-state persistence was confirmed on 25 October.
+
+### Consolidated regression testing
+
+Permanent workflow:
+
+.github/workflows/test-regression.yml
+
+Latest confirmed Floorball result:
+
+112 tests passed on 11 November 2026 after v2 integration.
+
+The separate golf regression step also passed.
+
+New tests should normally join this suite.
+Do not create a workflow for every individual test.
+
+## 4. Reliability improvements
+
+### External API failure isolation
+
+**Status: Not implemented**
+
+Evaluate:
+
+- Bounded retries and backoff.
+- Failure classification.
+- Clearer diagnostics.
+- Preservation of last valid state.
+- Alerts for repeated failures.
+- Isolation of unrelated Watches and connectors.
+
+Retries are not a solution to persistent authorization failures.
+
+Allowing golf to continue independently during Floorball failures
+requires an explicit design decision.
+
+### Late first-observation recovery
+
+**Status: Not implemented**
+
+The runner rejects a first Floorball observation containing
+activity or a final result.
+
+Evaluate:
+
+- Safe recovery baselines.
+- Historical-event handling.
+- Explicit notification behavior.
+- Reconciliation after outages.
+
+The manual closure of match 1750719 is not a general recovery
+implementation.
+
+### Overdue match expiration
+
+**Status: Not implemented**
+
+Selection has no upper time limit after activation.
+
+An overdue match remains eligible until completed, cancelled
+or postponed.
+
+Design recovery and expiration rules before changing selection.
+Do not silently discard delayed matches or historical state.
+
+### Notification delivery and persistence
+
+**Status: Known limitation**
+
+Notifications are sent before Git persistence.
+
+Delivery can succeed while persistence fails, resulting in
+duplicate notifications on a subsequent execution.
+
+Exactly-once delivery is not guaranteed.
+
+Potential improvements:
+
+- Persistent notification identifiers.
+- Delivery coordination.
+- Outbox or equivalent mechanism.
+
+### Corrected and deleted events
+
+**Status: Not implemented**
+
+Evaluate corrected event details, deleted events, corrected
+scores and source revisions.
+
+### Concurrent monitoring
+
+**Status: Partially addressed**
+
+Implemented:
+
+- Shared workflow concurrency group.
+- Git retries.
+- Optimistic same-Watch checks.
+- Preservation of unrelated state.
+
+Remaining:
+
+- [ ] Verify realistic overlapping executions.
+- [ ] Improve diagnostics and recovery behavior.
+
+### iBIS source model
+
+- [ ] Verify interpretation of timestamps without UTC offsets.
+- [ ] Verify provisional cancellation and abandonment fields.
+- [ ] Document the complete relevant event-type model.
+
+## 5. Authentication and scheduling maintenance
+
+### GitHub scheduler token
+
+Renewed and verified on 29 October 2026.
+
+Both cron-job.org jobs use Bearer authorization.
+
+Token expiration: 28 November 2026.
+
+- [ ] Renew before expiration.
+- [ ] Update both jobs.
+- [ ] Verify dispatch and workflow execution.
+- [ ] Consider a more maintainable authentication arrangement.
+
+This token is separate from temporary iBIS authentication.
+
+Never store tokens in repository documentation.
+
+## 6. Notification and golf improvements
+
+### Floorball presentation
+
+Implemented highlighting covers goals, assists and penalties.
+
+Assist highlighting was verified in real operation on 23 October.
+
+- [ ] Observe qualifying highlighted-player goals.
+- [ ] Observe qualifying highlighted-player penalties.
+- [ ] Further verify empty-net goal presentation: (tom bur).
+- [ ] Improve match-start wording.
+- [ ] Evaluate additional event types.
+- [ ] Introduce configurable notification preferences.
 
 ### GolfBox
 
-Implementation:
-
-`connectors/golfbox_leaderboard.py`
-
-Uses Playwright and Chromium to access GolfBox leaderboards.
-
-The connector supports:
-
-- Different player-name formats.
-- Multiple leaderboard classes.
-- Pre-start observations.
-- Hole-by-hole scoring.
-- Position changes.
-- Multi-round competitions.
-- Final tournament results.
-
-Validated against:
-
-- Haninge Golfklubb
-- Strängnäs Golfklubb
-- NSGK / Hylinge
-- GolfBox Tournament (`golfbox.dk`)
-
-The GolfBox connector requires Chromium during GitHub Actions execution.
-
-### Tournytt
-
-Implementation:
-
-`connectors/tournytt_api.py`
-
-Uses structured leaderboard data from the Tournytt SSE API.
-
-Verified capabilities include:
-
-- API communication
-- Player lookup
-- State persistence
-- Change detection
-- Notifications
-
-Tournytt-specific notification formatting remains an improvement opportunity.
+- [ ] Evaluate richer individual-hole notifications using hole
+      scores, strokes, score classes, totals and position.
 
 ### SGF Ranking
 
-Implementation:
-
-`connectors/sgf_ranking.py`
-
-Supports Daily monitoring of Swedish Golf Federation ranking information.
-
-The existing Daily workflow continues to use `watcher.py`.
-
-### iBIS Floorball
-
-Implementation:
-
-`connectors/ibis_floorball.py`
-
-Uses the Swedish Floorball / iBIS API.
-
-The connector:
-
-1. Obtains a temporary access token.
-2. Validates the returned API root.
-3. Retrieves the requested match.
-4. Verifies MatchID.
-5. Normalizes match information.
-6. Normalizes and sorts registered match events.
-7. Returns a structured snapshot.
-
-Snapshots include:
-
-- MatchID and competition
-- Home and away teams
-- TeamIDs and MatchTeamIDs
-- Match date and time
-- Match status
-- Final-result indicator
-- Home and away goals
-- Registered match events
-
-Events can include:
-
-- Event ID and event type
-- Period and match time
-- Current score
-- Player identity
-- Assist identity
-- Penalty description
-
-The connector does not format notifications.
-
-## Watch configuration
-
-`config.yml` contains configured Watches.
-
-A Watch uses:
-
-- `id`
-- `name`
-- `connector`
-- `mode`
-- `source`
-
-Example:
-
-```yaml
-id: "lukas-tournytt"
-name: "Lukas Widegren - Tournytt"
-connector: tournytt_api
-mode: live
-source:
-  player: "Lukas Widegren"
-  competition: 5406076
-```
-
-The Watch ID is its stable technical identity.
-
-The human-readable name may change without changing the identity.
-
-The platform core does not interpret connector-specific `source` values.
-
-### Automatic floorball Watches
-
-Floorball Live Watches are now generated dynamically from `match_registry.json`.
-
-The permanent match identity is the iBIS MatchID.
-
-Generated Watch IDs use:
-
-`floorball-match-{match_id}`
-
-For example:
-
-`floorball-match-1750707`
-
-The existing manually configured floorball Watches are excluded from automatic Live execution.
-
-They are superseded by the dynamically selected Watches.
-
-GolfBox and Tournytt Watches are preserved.
-
-## Automatic floorball Discovery
-
-### Purpose
-
-Discovery identifies upcoming matches for configured teams without requiring manual MatchID configuration.
-
-The implementation supports both currently configured Tyresö Trollbäcken teams.
-
-### Components
-
-- `floorball_discovery.py`
-- `floorball_discovery_changes.py`
-- `floorball_registry.py`
-- `floorball_registry_merge.py`
-- `floorball_git_persistence.py`
-
-### Process
-
-1. Read Discovery configuration.
-2. Retrieve upcoming matches from iBIS.
-3. Identify relevant matches for the configured teams.
-4. Exclude unrelated, cancelled, and completed source matches.
-5. Compare discovered matches against the persistent registry.
-6. Calculate required changes.
-7. Merge changes without overwriting Live-owned fields.
-8. Persist registry changes through Git.
-
-### Scheduling
-
-Discovery executes as part of the existing Daily workflow.
-
-The external Daily schedule remains managed through cron-job.org.
-
-The Daily workflow runs golf monitoring first and Floorball Discovery afterwards.
-
-### Verified behavior
-
-On 22 October 2026:
-
-- Discovery identified 31 matches.
-- The matches were persisted in GitHub.
-- A subsequent execution detected zero changes.
-- Integration with the existing Daily workflow passed.
-- Both upcoming October matches were verified in the registry.
-
-The first automatically scheduled execution of the updated Daily workflow remains subject to operational observation.
-
-## Match registry
-
-Persistent file:
-
-`match_registry.json`
-
-The registry stores discovered matches independently of monitoring snapshots.
-
-Its structure includes:
-
-```json
-{
-  "schema_version": 1,
-  "matches": {}
-}
-```
-
-Match entries are keyed by MatchID.
-
-The registry contains scheduling information, match identities, team information, and monitoring lifecycle information.
-
-### Ownership
-
-Discovery owns:
-
-- Match discovery
-- Match identity and scheduling
-- Team and competition information
-- Source scheduling status
-
-Live owns:
-
-- Monitoring lifecycle
-- Completion status
-
-The ownership model prevents Discovery from reactivating completed matches or overwriting Live-owned lifecycle information.
-
-### Persistence
-
-Registry changes are persisted through Git.
-
-The implementation:
-
-- Refreshes the latest repository state.
-- Merges permitted changes.
-- Preserves unrelated matches.
-- Retries rejected Git pushes.
-- Avoids unnecessary commits when no changes exist.
-
-## Automatic Live match selection
-
-Implementation:
-
-`floorball_match_selection.py`
-
-The selection logic reads the match registry and identifies eligible matches.
-
-The activation window begins 15 minutes before scheduled match start.
-
-The selection logic handles:
-
-- Multiple eligible matches
-- Delayed matches
-- Postponed matches
-- Cancelled matches
-- Completed matches
-- Swedish daylight-saving and winter time
-
-Completed matches are excluded from subsequent automatic selection.
-
-### Verified examples
-
-- JAS match 1750707: activation 23 October 2026 at 19:30.
-- Men's match 1703577: activation 25 October 2026 at 15:30.
-
-Both activation times were verified through simulated-time tests using the real registry.
-
-Actual automatic activation during a live match remains to be verified.
-
-## Live configuration preparation
-
-Components:
-
-- `floorball_live.py`
-- `floorball_watch_merge.py`
-
-`floorball_live.py` loads the registry and prepares the runtime configuration.
-
-`floorball_watch_merge.py` combines configured Live Watches with automatically selected floorball Watches.
-
-The merge process:
-
-- Preserves non-floorball Live Watches.
-- Excludes Daily Watches.
-- Excludes manually configured floorball Watches.
-- Includes automatically selected floorball Watches.
-- Prevents duplicate Watch IDs.
-- Does not modify its inputs.
-
-This enables multiple simultaneous Live Watches without manually changing `live.yml`.
-
-## Monitoring engine
-
-### Generic watcher
-
-`watcher.py` remains the generic monitoring engine.
-
-It supports:
-
-- Configured connectors
-- Daily and Live execution modes
-- Optional `WATCH_ID` filtering
-- Snapshot comparison
-- Notification formatting and delivery
-- State persistence
-
-It can also receive a prepared configuration through:
-
-`main(config=None)`
-
-Existing Daily execution remains backward compatible.
-
-### Automatic Live runner
-
-Implementation:
-
-`event_platform_live.py`
-
-This is the production entry point for automatic Live Monitoring.
-
-It:
-
-1. Loads the configured Watches.
-2. Prepares the automatic Live configuration.
-3. Reads existing Watch state.
-4. Retrieves current observations.
-5. Detects changed snapshots.
-6. Sends notifications when applicable.
-7. Collects changed state entries.
-8. Persists changes through Git.
-9. Marks completed floorball matches.
-
-The runner does not require a hard-coded MatchID.
-
-It retains GolfBox and Tournytt monitoring.
-
-### Late baseline protection
-
-For a newly selected floorball match, the first observation normally establishes a baseline without notification.
-
-If the first observation already contains match activity, the current runner raises an error rather than silently discarding earlier events.
-
-This is a deliberate safety limitation.
-
-Recovery from late first observations remains future work.
-
-## Persistent monitoring state
-
-Persistent file:
-
-`state.json`
-
-Each Watch is stored under its stable Watch ID.
-
-State entries contain:
-
-- Serialized normalized snapshot
-- Normalized snapshot fields
-
-State allows independent executions to detect changes.
-
-### Live Git persistence
-
-The automatic Live runner persists changed Watch entries against the latest Git repository state.
-
-It uses optimistic concurrency checking to detect when the same Watch has changed since the observation was collected.
-
-Unrelated Watch state is preserved.
-
-A detected same-Watch conflict causes the update to be rejected rather than silently overwriting newer state.
-
-### Completed matches
-
-Components include:
-
-- `floorball_atomic_persistence.py`
-- `floorball_registry_merge.py`
-- `event_platform_live.py`
-
-When a final result is observed, the Live process is designed to persist:
-
-- Final snapshot in `state.json`
-- `completed` status in `match_registry.json`
-
-Both changes are included in the same Git commit.
-
-The underlying atomic persistence functionality has passed automated tests.
-
-Its operation during an automatically monitored real match remains unverified.
-
-### Important operational limitation
-
-Git-based persistence is not a transactional notification system.
-
-Notifications are currently sent before the corresponding Git update is committed.
-
-If notification delivery succeeds but Git persistence fails, the same change may be notified again.
-
-Exactly-once notification delivery is not guaranteed.
-
-The implementation also uses `git reset --hard` during persistence and therefore requires a dedicated disposable GitHub Actions working directory.
-
-## Change detection
-
-The monitoring engine compares the current normalized snapshot with the previous snapshot for the Watch.
-
-A changed snapshot can trigger notification and state persistence.
-
-For Daily monitoring, the first observation establishes a baseline without notification.
-
-For existing golf Live monitoring, the first valid observation may generate a notification.
-
-For floorball, the first pre-match observation establishes a baseline without notification.
-
-### Floorball event detection
-
-The iBIS connector returns the currently available match events.
-
-The notification formatter compares current events against previously recorded event IDs.
-
-Previously unseen events are treated as new.
-
-Multiple new events can be included in one notification.
-
-Corrected and deleted source events remain a future improvement.
-
-## Notifications
-
-Notification formatting is implemented in:
-
-`notification_formatters.py`
-
-ntfy is the current notification provider.
-
-Multiple subscriber devices may subscribe to the same ntfy topic.
-
-The formatter is responsible for connector-specific presentation.
-
-### Floorball notifications
-
-Supported information includes:
-
-- Match identification
-- Current score
-- Match-status changes
-- Period start and end
-- Goals
-- Penalties
-- Final result
-
-Regular goals use iBIS MatchEventTypeID 1.
-
-Empty-net goals use MatchEventTypeID 12 and are identified as `(tom bur)`.
-
-For followed-team events, player and assist information can be included.
-
-Events involving the highlighted player can be marked with a star.
-
-Player highlighting covers:
-
-- Goals
-- Assists
-- Penalties
-
-Real-world monitoring has verified goals, penalties, period events, and final results.
-
-Highlighted-player events have passed technical tests but have not yet been observed in a qualifying real-world event.
-
-## Execution and scheduling
-
-### Daily workflow
-
-File:
-
-`.github/workflows/daily.yml`
-
-Triggered externally by cron-job.org.
-
-Normal schedule:
-
-08:00 Europe/Stockholm.
-
-Responsibilities:
-
-- Daily golf monitoring
-- Persist changed golf state
-- Floorball Discovery
-- Persist discovered match changes
-
-### Live workflow
-
-File:
-
-`.github/workflows/live.yml`
-
-Triggered externally by cron-job.org.
-
-Polling interval:
-
-5 minutes.
-
-Production entry point:
-
-`event_platform_live.py`
-
-Live Monitoring now uses automatic match selection.
-
-The previous hard-coded `WATCH_ID` has been removed from the production workflow.
-
-### Concurrency
-
-Daily and Live use the GitHub Actions concurrency group:
-
-`event-platform-state`
-
-With:
-
-`cancel-in-progress: false`
-
-This reduces overlapping executions within the participating workflows.
-
-Git persistence additionally provides conflict detection and retry mechanisms.
-
-### Runtime dependencies
-
-The Live workflow uses:
-
-- Python 3.11
-- Project Python requirements
-- Playwright
-- Chromium
-
-Chromium is required by the GolfBox connector.
-
-The workflow installs Chromium without repeatedly installing the full operating-system dependency set.
-
-This optimization reduced a verified Live workflow execution from 4 minutes 20 seconds to approximately 37 seconds.
-
-A subsequent automatically triggered run completed in approximately 30 seconds.
-
-### Operational verification
-
-On 22 October 2026:
-
-- Automatic Live workflow execution succeeded.
-- GolfBox and Tournytt were processed.
-- No floorball match was eligible before its activation window.
-- No unnecessary state persistence was performed.
-- cron-job.org successfully triggered the updated Live workflow.
-- The complete automatic workflow finished successfully.
-
-Real-world floorball match activation and completion remain pending verification.
-
-## Testing
-
-The permanent regression workflow is:
-
-`.github/workflows/test-regression.yml`
-
-It covers:
-
-- Existing golf connectors and notification behavior
-- Floorball Discovery
-- Match registry handling
-- Registry merge rules
-- Match selection
-- Watch merging
-- Notification formatting
-- Git persistence
-- Atomic completion persistence
-- Live integration
-
-As of 22 October 2026:
-
-**105 Floorball automated tests passed.**
-
-Existing golf regression tests also passed.
-
-The separate historical test-workflows remain in the repository pending cleanup.
-
-The Python test files should be retained as regression coverage.
-
-## Historical floorball validation
-
-### 15 October 2026
-
-The first real-world floorball monitoring validation confirmed:
-
-- Live iBIS data acquisition
-- Goal notifications
-- Penalty notifications
-- Period events
-- Final-result notifications
-- ntfy delivery
-
-### 17 October 2026
-
-A second match was monitored using the earlier manually configured Live approach.
-
-Match events and final results were verified.
-
-Player-specific highlighting remained unverified because the highlighted player did not generate a qualifying event.
-
-### 22 October 2026
-
-Automatic Discovery, persistent match registry, runtime Watch selection, and automatic Live execution were integrated.
-
-The automated monitoring architecture replaced manual MatchID selection in the production Live workflow.
-
-The first full real-world acceptance test of the automatic process is planned for the JAS match on 23 October.
-
-## Operational safeguards
-
-During active events:
-
-- Avoid changing working production connectors.
-- Avoid unnecessary workflow changes.
-- Do not delete active monitoring state.
-- Do not manually create duplicate monitoring Watches.
-- Verify GitHub Actions status after operational changes.
-- Preserve historical state and completed-match records.
-- Distinguish successful technical tests from real-world acceptance.
-
-The existing Live schedule should remain active during the planned production validation unless a verified operational issue requires intervention.
-
-## Lessons learned
-
-### GolfBox
-
-A competition can contain multiple leaderboard classes.
-
-The leaderboard identifier may therefore be required in addition to the competition identifier.
-
-Player names can appear as:
-
-- Lukas Widegren
-- WIDEGREN, Lukas
-
-GolfBox changes presentation across the tournament lifecycle.
-
-The `hole` field may represent a start time, current hole, or final completion marker.
-
-Multi-round data includes round-specific scores, total strokes, and relative-to-par information.
+- [ ] Show previous and new values for ranking position,
+      points and competition count.
 
 ### Tournytt
 
-Tournytt exposes structured leaderboard information through SSE.
+- [ ] Improve presentation of position, score, to-par,
+      played holes and competition class.
 
-Player entries can appear before play begins.
+### Min Golf
 
-Baseline handling therefore differs from GolfBox.
+- [ ] Investigate availability of entry lists, start lists
+      and upcoming competitions before implementation.
 
-### Floorball
+## 7. Release and repository maintenance
 
-iBIS exposes structured match and event data.
+### First Floorball release
 
-MatchTeamID and TeamID serve different purposes.
+**Status: Not published**
 
-Empty-net goals use a distinct event type.
+Last documented published release remains v1.2.0.
 
-Persistent match identity enables monitoring across independent GitHub Actions executions.
+Before a new release:
 
-Separating Discovery-owned and Live-owned fields prevents scheduling updates from accidentally reactivating completed matches.
+- [ ] Complete or explicitly assess operational acceptance.
+- [ ] Assess unresolved incidents.
+- [ ] Agree on release scope.
+- [ ] Run relevant regression tests.
+- [ ] Update documentation.
+- [ ] Obtain explicit approval.
+- [ ] Publish the agreed release.
 
-### GitHub Actions
+Do not infer a release solely from deployed code.
 
-External scheduling through cron-job.org has been more reliable for this deployment than the previously attempted internal scheduling.
+### Workflow consolidation
 
-Installing full Playwright operating-system dependencies on every Live execution caused excessive runtime.
+After operational recovery and acceptance:
 
-Separating Python dependencies and Chromium installation substantially reduced execution time.
+- [ ] Inventory existing workflows.
+- [ ] Confirm scheduler dependencies.
+- [ ] Preserve daily.yml and live.yml.
+- [ ] Preserve test-regression.yml.
+- [ ] Review floorball-baseline.yml.
+- [ ] Review floorball-daily-discovery.yml.
+- [ ] Review test-floorball.yml.
+- [ ] Review test-ibis-new-api.yml after recovery documentation.
+- [ ] Retain useful diagnostics and Python tests.
+- [ ] Remove redundant workflows only after verification.
 
-## Future development
+### Modules and configuration
 
-### Immediate operational validation
+- [ ] Identify production and test imports.
+- [ ] Review unused modules before deletion.
+- [ ] Remove obsolete manual Floorball Watches after acceptance.
+- [ ] Preserve historical state.
+- [ ] Verify Daily and Live after cleanup.
 
-- Verify automatic JAS match activation on 23 October.
-- Verify match notifications during live play.
-- Verify final-result persistence.
-- Verify automatic `completed` status.
-- Verify automatic men's match activation on 25 October.
-- Verify no duplicate match monitoring.
+## 8. Future platform opportunities
 
-### Reliability improvements
+No implementation commitment has been made.
 
-- Improve notification delivery and persistence coordination.
-- Support recovery from late first observations.
-- Handle corrected or deleted match events.
-- Improve observability of Git conflicts.
-- Validate simultaneous updates under real-world conditions.
+### Connector development guidance
 
-### Maintenance
+- [ ] Document source identification and inspection.
+- [ ] Document configuration and normalization.
+- [ ] Document baseline and notification verification.
+- [ ] Document safe scheduling activation.
+- [ ] Create a reusable connector template.
 
-- Consolidate historical GitHub Actions test-workflows.
-- Retain permanent Python regression tests.
-- Remove obsolete manual floorball configuration when operational validation is complete.
-- Review unused implementation modules before deletion.
+### Longer-term capabilities
 
-### Future capabilities
+- Multi-user subscriptions and preferences.
+- Additional teams and competitions.
+- Additional event sources.
+- REST API, web or mobile interface.
+- Alternative notification providers.
+- Improved operational diagnostics.
 
-- Configurable notification preferences
-- Additional teams and competitions
-- Additional external event sources
-- Improved notification providers
-- Operational monitoring and diagnostics
-
-Future improvements should be driven by demonstrated needs rather than unnecessary expansion of the platform core.
-
-## Related documentation
-
-- `README.md` – project overview and usage
-- `PROJECT_CONTEXT.md` – current project status and handover
-- `docs/decisions.md` – architectural decisions
-- `docs/backlog.md` – outstanding work
-- `docs/ways-of-working.md` – development procedures
-- `docs/design-floorball.md` – original floorball implementation
-- `docs/design-floorball-automation.md` – automatic floorball design
-- `docs/design-v1.2.md` – v1.2 design history
+## 9. Documentation and conversation lifecycle
 
 GitHub remains the authoritative source of truth.
+
+Pending documentation reconciliation for the November recovery:
+
+- [x] Replacement PROJECT_CONTEXT.md committed by the user.
+- [ ] Update this backlog and confirm commit.
+- [ ] Update docs/ARCHITECTURE.md.
+- [ ] Update docs/decisions.md.
+- [ ] Update README.md.
+- [ ] Update docs/ways-of-working.md.
+- [ ] Reconcile relevant design documentation where necessary.
+- [ ] Refresh ChatGPT Project sources from committed versions.
+
+Required process additions:
+
+- Verify PROJECT_CONTEXT.md freshness at session start.
+- Request the current GitHub file when freshness is uncertain.
+- Refresh the ChatGPT Project source after committing handover
+  updates.
+
+Continue using independent new project conversations.
+Do not depend on long, branched or unfinished Work conversations.
+
+The previously stalled Work continuation is not authoritative
+technical evidence.
+
+Before changing conversations:
+
+- Record verified results and unresolved issues.
+- Commit the required documentation.
+- Keep the handover concise.
+- Identify the next goal.
+- Refresh the Project sources.
+
+## Next development priority
+
+Verify scheduled Daily execution and complete real-world
+Floorball acceptance after iBIS v2 recovery.
+
+The next registered match is 14 November 2026 at 15:00,
+with monitoring activation at 14:45, Europe/Stockholm.
+
+Protect working monitoring during the match.
