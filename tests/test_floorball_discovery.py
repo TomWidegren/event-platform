@@ -1,4 +1,3 @@
-
 """
 Isolated tests for Event Platform Floorball Discovery.
 
@@ -19,7 +18,6 @@ from floorball_discovery import discover_matches
 
 
 STOCKHOLM = ZoneInfo("Europe/Stockholm")
-
 API_ROOT = "https://api.innebandy.se/v2/api/public"
 
 
@@ -111,6 +109,7 @@ class TestFloorballDiscovery(unittest.TestCase):
             }
 
         session = Mock()
+        session.headers = {}
 
         def fake_get(url, **kwargs):
             if url.endswith("/startkit"):
@@ -130,6 +129,10 @@ class TestFloorballDiscovery(unittest.TestCase):
             )
 
         session.get.side_effect = fake_get
+        session.post.return_value = self.make_response({
+            "ss": "test-secret",
+            "st": 1700000000000,
+        })
 
         context_manager = Mock()
         context_manager.__enter__ = Mock(
@@ -140,7 +143,7 @@ class TestFloorballDiscovery(unittest.TestCase):
         )
 
         with patch(
-            "floorball_discovery.requests.Session",
+            "ibis_client.requests.Session",
             return_value=context_manager,
         ):
             result = discover_matches(
@@ -300,7 +303,7 @@ class TestFloorballDiscovery(unittest.TestCase):
         original = copy.deepcopy(registry)
 
         session = Mock()
-
+        session.headers = {}
         session.get.return_value = self.make_response(
             {},
             status_code=500,
@@ -315,7 +318,7 @@ class TestFloorballDiscovery(unittest.TestCase):
         )
 
         with patch(
-            "floorball_discovery.requests.Session",
+            "ibis_client.requests.Session",
             return_value=context_manager,
         ):
             with self.assertRaises(RuntimeError):
@@ -329,7 +332,7 @@ class TestFloorballDiscovery(unittest.TestCase):
 
     def test_invalid_api_root_rejected(self):
         session = Mock()
-
+        session.headers = {}
         session.get.return_value = self.make_response({
             "accessToken": "test-token",
             "apiRoot": "https://untrusted.example/api",
@@ -344,7 +347,7 @@ class TestFloorballDiscovery(unittest.TestCase):
         )
 
         with patch(
-            "floorball_discovery.requests.Session",
+            "ibis_client.requests.Session",
             return_value=context_manager,
         ):
             with self.assertRaises(ValueError):
