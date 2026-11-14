@@ -2652,7 +2652,7 @@
     }
   },
   "floorball-match-1703587": {
-    "snapshot": "{\"away_goals\": 4, \"away_match_team_id\": 3303149, \"away_team\": \"Hammarbyhöjden IBK\", \"away_team_id\": 351, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945982, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945983, \"home_goals\": 0, \"match_team_id\": 3303148, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945984, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 257659, \"player_name\": \"Stefan Bergström\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 88084, \"assist_name\": \"Villiam Aspegren\", \"away_goals\": 1, \"event_id\": 9946230, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 6, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 223915, \"player_name\": \"Joakim Wiklund\", \"second\": 31, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 442989, \"assist_name\": \"Lukas Johansson\", \"away_goals\": 1, \"event_id\": 9946495, \"home_goals\": 1, \"match_team_id\": 3303148, \"minute\": 13, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585278, \"player_name\": \"Vilgot Norling\", \"second\": 31, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 1, \"event_id\": 9946721, \"home_goals\": 1, \"match_team_id\": 0, \"minute\": 20, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodslut\", \"type_id\": 9}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 1, \"event_id\": 9946910, \"home_goals\": 1, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 37375, \"assist_name\": \"James Ramanius\", \"away_goals\": 2, \"event_id\": 9947105, \"home_goals\": 1, \"match_team_id\": 3303149, \"minute\": 4, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 56198, \"player_name\": \"Anton Lithén\", \"second\": 29, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 2, \"event_id\": 9947289, \"home_goals\": 1, \"match_team_id\": 3303149, \"minute\": 9, \"penalty_name\": \"Förseelse med klubba, 2 min\", \"period\": 2, \"player_id\": 434978, \"player_name\": \"Thomas Bertilsson\", \"second\": 3, \"type\": \"Utvisning\", \"type_id\": 2}, {\"assist_id\": 442989, \"assist_name\": \"Lukas Johansson\", \"away_goals\": 2, \"event_id\": 9947386, \"home_goals\": 2, \"match_team_id\": 3303148, \"minute\": 11, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 585278, \"player_name\": \"Vilgot Norling\", \"second\": 1, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 37375, \"assist_name\": \"James Ramanius\", \"away_goals\": 3, \"event_id\": 9947534, \"home_goals\": 2, \"match_team_id\": 3303149, \"minute\": 14, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 56198, \"player_name\": \"Anton Lithén\", \"second\": 38, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 56198, \"assist_name\": \"Anton Lithén\", \"away_goals\": 4, \"event_id\": 9947645, \"home_goals\": 2, \"match_team_id\": 3303149, \"minute\": 17, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 37375, \"player_name\": \"James Ramanius\", \"second\": 29, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 4, \"event_id\": 9947764, \"home_goals\": 2, \"match_team_id\": 0, \"minute\": 20, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodslut\", \"type_id\": 9}], \"has_final_result\": false, \"home_goals\": 2, \"home_match_team_id\": 3303148, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-11-14T15:00:00\", \"match_id\": 1703587, \"match_status\": 3}",
+    "snapshot": "{\"away_goals\": 5, \"away_match_team_id\": 3303149, \"away_team\": \"Hammarbyhöjden IBK\", \"away_team_id\": 351, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945982, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945983, \"home_goals\": 0, \"match_team_id\": 3303148, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945984, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 257659, \"player_name\": \"Stefan Bergström\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 88084, \"assist_name\": \"Villiam Aspegren\", \"away_goals\": 1, \"event_id\": 9946230, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 6, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 223915, \"player_name\": \"Joakim Wiklund\", \"second\": 31, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 442989, \"assist_name\": \"Lukas Johansson\", \"away_goals\": 1, \"event_id\": 9946495, \"home_goals\": 1, \"match_team_id\": 3303148, \"minute\": 13, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585278, \"player_name\": \"Vilgot Norling\", \"second\": 31, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 1, \"event_id\": 9946721, \"home_goals\": 1, \"match_team_id\": 0, \"minute\": 20, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodslut\", \"type_id\": 9}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 1, \"event_id\": 9946910, \"home_goals\": 1, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 37375, \"assist_name\": \"James Ramanius\", \"away_goals\": 2, \"event_id\": 9947105, \"home_goals\": 1, \"match_team_id\": 3303149, \"minute\": 4, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 56198, \"player_name\": \"Anton Lithén\", \"second\": 29, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 2, \"event_id\": 9947289, \"home_goals\": 1, \"match_team_id\": 3303149, \"minute\": 9, \"penalty_name\": \"Förseelse med klubba, 2 min\", \"period\": 2, \"player_id\": 434978, \"player_name\": \"Thomas Bertilsson\", \"second\": 3, \"type\": \"Utvisning\", \"type_id\": 2}, {\"assist_id\": 442989, \"assist_name\": \"Lukas Johansson\", \"away_goals\": 2, \"event_id\": 9947386, \"home_goals\": 2, \"match_team_id\": 3303148, \"minute\": 11, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 585278, \"player_name\": \"Vilgot Norling\", \"second\": 1, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 37375, \"assist_name\": \"James Ramanius\", \"away_goals\": 3, \"event_id\": 9947534, \"home_goals\": 2, \"match_team_id\": 3303149, \"minute\": 14, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 56198, \"player_name\": \"Anton Lithén\", \"second\": 38, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 56198, \"assist_name\": \"Anton Lithén\", \"away_goals\": 4, \"event_id\": 9947645, \"home_goals\": 2, \"match_team_id\": 3303149, \"minute\": 17, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 37375, \"player_name\": \"James Ramanius\", \"second\": 29, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 4, \"event_id\": 9947764, \"home_goals\": 2, \"match_team_id\": 0, \"minute\": 20, \"penalty_name\": \"\", \"period\": 2, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodslut\", \"type_id\": 9}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 4, \"event_id\": 9947989, \"home_goals\": 2, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 3, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 56198, \"assist_name\": \"Anton Lithén\", \"away_goals\": 5, \"event_id\": 9948145, \"home_goals\": 2, \"match_team_id\": 3303149, \"minute\": 1, \"penalty_name\": \"\", \"period\": 3, \"player_id\": 37375, \"player_name\": \"James Ramanius\", \"second\": 51, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 2, \"home_match_team_id\": 3303148, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-11-14T15:00:00\", \"match_id\": 1703587, \"match_status\": 2}",
     "fields": {
       "match_id": 1703587,
       "competition": "Herrar Division 3 Södra",
@@ -2663,10 +2663,10 @@
       "home_match_team_id": 3303148,
       "away_match_team_id": 3303149,
       "match_datetime": "2026-11-14T15:00:00",
-      "match_status": 3,
+      "match_status": 2,
       "has_final_result": false,
       "home_goals": 2,
-      "away_goals": 4,
+      "away_goals": 5,
       "events": [
         {
           "event_id": 9945982,
@@ -2874,6 +2874,38 @@
           "player_name": "",
           "assist_id": 0,
           "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9947989,
+          "type": "Periodstart",
+          "type_id": 8,
+          "match_team_id": 0,
+          "period": 3,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 2,
+          "away_goals": 4,
+          "player_id": 0,
+          "player_name": "",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9948145,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3303149,
+          "period": 3,
+          "minute": 1,
+          "second": 51,
+          "home_goals": 2,
+          "away_goals": 5,
+          "player_id": 37375,
+          "player_name": "James Ramanius",
+          "assist_id": 56198,
+          "assist_name": "Anton Lithén",
           "penalty_name": ""
         }
       ]
