@@ -2652,7 +2652,7 @@
     }
   },
   "floorball-match-1703587": {
-    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3303149, \"away_team\": \"Hammarbyhöjden IBK\", \"away_team_id\": 351, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945982, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945983, \"home_goals\": 0, \"match_team_id\": 3303148, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945984, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 257659, \"player_name\": \"Stefan Bergström\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3303148, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-11-14T15:00:00\", \"match_id\": 1703587, \"match_status\": 2}",
+    "snapshot": "{\"away_goals\": 1, \"away_match_team_id\": 3303149, \"away_team\": \"Hammarbyhöjden IBK\", \"away_team_id\": 351, \"competition\": \"Herrar Division 3 Södra\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945982, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945983, \"home_goals\": 0, \"match_team_id\": 3303148, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9945984, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 257659, \"player_name\": \"Stefan Bergström\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 88084, \"assist_name\": \"Villiam Aspegren\", \"away_goals\": 1, \"event_id\": 9946230, \"home_goals\": 0, \"match_team_id\": 3303149, \"minute\": 6, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 223915, \"player_name\": \"Joakim Wiklund\", \"second\": 31, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3303148, \"home_team\": \"Tyresö Trollbäcken IBK (A)\", \"home_team_id\": 4194, \"match_datetime\": \"2026-11-14T15:00:00\", \"match_id\": 1703587, \"match_status\": 2}",
     "fields": {
       "match_id": 1703587,
       "competition": "Herrar Division 3 Södra",
@@ -2666,7 +2666,7 @@
       "match_status": 2,
       "has_final_result": false,
       "home_goals": 0,
-      "away_goals": 0,
+      "away_goals": 1,
       "events": [
         {
           "event_id": 9945982,
@@ -2714,6 +2714,22 @@
           "player_name": "Stefan Bergström",
           "assist_id": 0,
           "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9946230,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3303149,
+          "period": 1,
+          "minute": 6,
+          "second": 31,
+          "home_goals": 0,
+          "away_goals": 1,
+          "player_id": 223915,
+          "player_name": "Joakim Wiklund",
+          "assist_id": 88084,
+          "assist_name": "Villiam Aspegren",
           "penalty_name": ""
         }
       ]
