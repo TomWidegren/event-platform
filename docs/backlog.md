@@ -597,3 +597,15 @@ The next registered match is 14 November 2026 at 15:00,
 with monitoring activation at 14:45, Europe/Stockholm.
 
 Protect working monitoring during the match.
+
+### Daily Git identity failure – resolved 19 November 2026
+
+Discovery failed to commit registry changes when unchanged golf
+state caused the Git identity configuration to be skipped.
+
+Moved Git identity configuration into an unconditional step.
+
+Verified: manual production Daily execution persisted one registry
+change successfully on the first attempt.
+
+Next scheduled automatic Daily execution remains to be observed.
