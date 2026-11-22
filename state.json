@@ -3040,7 +3040,7 @@
     }
   },
   "floorball-match-1750735": {
-    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3397445, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3397444, \"home_team\": \"Nykvarns IF Utveckling\", \"home_team_id\": 119225, \"match_datetime\": \"2026-11-22T14:00:00\", \"match_id\": 1750735, \"match_status\": 1}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397445, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996030, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996031, \"home_goals\": 0, \"match_team_id\": 3397444, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 673456, \"player_name\": \"Elias Granberg\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996032, \"home_goals\": 0, \"match_team_id\": 3397445, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}], \"has_final_result\": false, \"home_goals\": 0, \"home_match_team_id\": 3397444, \"home_team\": \"Nykvarns IF Utveckling\", \"home_team_id\": 119225, \"match_datetime\": \"2026-11-22T14:00:00\", \"match_id\": 1750735, \"match_status\": 2}",
     "fields": {
       "match_id": 1750735,
       "competition": "Juniorallsvenskan D HJ18",
@@ -3051,11 +3051,60 @@
       "home_match_team_id": 3397444,
       "away_match_team_id": 3397445,
       "match_datetime": "2026-11-22T14:00:00",
-      "match_status": 1,
+      "match_status": 2,
       "has_final_result": false,
-      "home_goals": null,
-      "away_goals": null,
-      "events": []
+      "home_goals": 0,
+      "away_goals": 0,
+      "events": [
+        {
+          "event_id": 9996030,
+          "type": "Periodstart",
+          "type_id": 8,
+          "match_team_id": 0,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 0,
+          "player_name": "",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9996031,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3397444,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 673456,
+          "player_name": "Elias Granberg",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9996032,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3397445,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 516396,
+          "player_name": "Hugo Strandberg Edgardh",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        }
+      ]
     }
   }
 }
