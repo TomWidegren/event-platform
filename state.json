@@ -3040,7 +3040,7 @@
     }
   },
   "floorball-match-1750735": {
-    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397445, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996030, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996031, \"home_goals\": 0, \"match_team_id\": 3397444, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 673456, \"player_name\": \"Elias Granberg\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996032, \"home_goals\": 0, \"match_team_id\": 3397445, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996247, \"home_goals\": 0, \"match_team_id\": 3397445, \"minute\": 5, \"penalty_name\": \"Förseelse med klubba, 2 min\", \"period\": 1, \"player_id\": 586952, \"player_name\": \"Petter Pilo\", \"second\": 30, \"type\": \"Utvisning\", \"type_id\": 2}, {\"assist_id\": 68415, \"assist_name\": \"Lucas Jansson\", \"away_goals\": 0, \"event_id\": 9996779, \"home_goals\": 1, \"match_team_id\": 3397444, \"minute\": 19, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 140202, \"player_name\": \"Axel Binett\", \"second\": 7, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3397444, \"home_team\": \"Nykvarns IF Utveckling\", \"home_team_id\": 119225, \"match_datetime\": \"2026-11-22T14:00:00\", \"match_id\": 1750735, \"match_status\": 2}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397445, \"away_team\": \"Tyresö Trollbäcken IBK\", \"away_team_id\": 20872, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996030, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996031, \"home_goals\": 0, \"match_team_id\": 3397444, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 673456, \"player_name\": \"Elias Granberg\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996032, \"home_goals\": 0, \"match_team_id\": 3397445, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 516396, \"player_name\": \"Hugo Strandberg Edgardh\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996247, \"home_goals\": 0, \"match_team_id\": 3397445, \"minute\": 5, \"penalty_name\": \"Förseelse med klubba, 2 min\", \"period\": 1, \"player_id\": 586952, \"player_name\": \"Petter Pilo\", \"second\": 30, \"type\": \"Utvisning\", \"type_id\": 2}, {\"assist_id\": 68415, \"assist_name\": \"Lucas Jansson\", \"away_goals\": 0, \"event_id\": 9996779, \"home_goals\": 1, \"match_team_id\": 3397444, \"minute\": 19, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 140202, \"player_name\": \"Axel Binett\", \"second\": 7, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996838, \"home_goals\": 1, \"match_team_id\": 3397444, \"minute\": 19, \"penalty_name\": \"Hårt spel 2 min\", \"period\": 1, \"player_id\": 482477, \"player_name\": \"Lukas Karlsson\", \"second\": 16, \"type\": \"Utvisning\", \"type_id\": 2}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 9996870, \"home_goals\": 1, \"match_team_id\": 0, \"minute\": 20, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodslut\", \"type_id\": 9}], \"has_final_result\": false, \"home_goals\": 1, \"home_match_team_id\": 3397444, \"home_team\": \"Nykvarns IF Utveckling\", \"home_team_id\": 119225, \"match_datetime\": \"2026-11-22T14:00:00\", \"match_id\": 1750735, \"match_status\": 3}",
     "fields": {
       "match_id": 1750735,
       "competition": "Juniorallsvenskan D HJ18",
@@ -3051,7 +3051,7 @@
       "home_match_team_id": 3397444,
       "away_match_team_id": 3397445,
       "match_datetime": "2026-11-22T14:00:00",
-      "match_status": 2,
+      "match_status": 3,
       "has_final_result": false,
       "home_goals": 1,
       "away_goals": 0,
@@ -3134,6 +3134,38 @@
           "player_name": "Axel Binett",
           "assist_id": 68415,
           "assist_name": "Lucas Jansson",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 9996838,
+          "type": "Utvisning",
+          "type_id": 2,
+          "match_team_id": 3397444,
+          "period": 1,
+          "minute": 19,
+          "second": 16,
+          "home_goals": 1,
+          "away_goals": 0,
+          "player_id": 482477,
+          "player_name": "Lukas Karlsson",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": "Hårt spel 2 min"
+        },
+        {
+          "event_id": 9996870,
+          "type": "Periodslut",
+          "type_id": 9,
+          "match_team_id": 0,
+          "period": 1,
+          "minute": 20,
+          "second": 0,
+          "home_goals": 1,
+          "away_goals": 0,
+          "player_id": 0,
+          "player_name": "",
+          "assist_id": 0,
+          "assist_name": "",
           "penalty_name": ""
         }
       ]
