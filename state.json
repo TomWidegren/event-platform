@@ -3396,7 +3396,7 @@
     }
   },
   "floorball-match-1750741": {
-    "snapshot": "{\"away_goals\": null, \"away_match_team_id\": 3397457, \"away_team\": \"Salems IF \", \"away_team_id\": 128729, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [], \"has_final_result\": false, \"home_goals\": null, \"home_match_team_id\": 3397456, \"home_team\": \"Tyresö Trollbäcken IBK\", \"home_team_id\": 20872, \"match_datetime\": \"2026-11-27T19:45:00\", \"match_id\": 1750741, \"match_status\": 1}",
+    "snapshot": "{\"away_goals\": 0, \"away_match_team_id\": 3397457, \"away_team\": \"Salems IF \", \"away_team_id\": 128729, \"competition\": \"Juniorallsvenskan D HJ18\", \"events\": [{\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 10009322, \"home_goals\": 0, \"match_team_id\": 0, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 0, \"player_name\": \"\", \"second\": 0, \"type\": \"Periodstart\", \"type_id\": 8}, {\"assist_id\": 0, \"assist_name\": \"\", \"away_goals\": 0, \"event_id\": 10009323, \"home_goals\": 0, \"match_team_id\": 3397456, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 586955, \"player_name\": \"Elias Englund\", \"second\": 0, \"type\": \"Målvakt - In\", \"type_id\": 10}, {\"assist_id\": 563957, \"assist_name\": \"Teo Stensrud\", \"away_goals\": 0, \"event_id\": 10009350, \"home_goals\": 1, \"match_team_id\": 3397456, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 509568, \"player_name\": \"Melvin Djäken\", \"second\": 11, \"type\": \"Mål\", \"type_id\": 1}, {\"assist_id\": 511707, \"assist_name\": \"Vilmer Strandberg Edgardh\", \"away_goals\": 0, \"event_id\": 10009371, \"home_goals\": 2, \"match_team_id\": 3397456, \"minute\": 0, \"penalty_name\": \"\", \"period\": 1, \"player_id\": 585494, \"player_name\": \"Oskar Eriksson\", \"second\": 21, \"type\": \"Mål\", \"type_id\": 1}], \"has_final_result\": false, \"home_goals\": 2, \"home_match_team_id\": 3397456, \"home_team\": \"Tyresö Trollbäcken IBK\", \"home_team_id\": 20872, \"match_datetime\": \"2026-11-27T19:45:00\", \"match_id\": 1750741, \"match_status\": 2}",
     "fields": {
       "match_id": 1750741,
       "competition": "Juniorallsvenskan D HJ18",
@@ -3407,11 +3407,76 @@
       "home_match_team_id": 3397456,
       "away_match_team_id": 3397457,
       "match_datetime": "2026-11-27T19:45:00",
-      "match_status": 1,
+      "match_status": 2,
       "has_final_result": false,
-      "home_goals": null,
-      "away_goals": null,
-      "events": []
+      "home_goals": 2,
+      "away_goals": 0,
+      "events": [
+        {
+          "event_id": 10009322,
+          "type": "Periodstart",
+          "type_id": 8,
+          "match_team_id": 0,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 0,
+          "player_name": "",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 10009323,
+          "type": "Målvakt - In",
+          "type_id": 10,
+          "match_team_id": 3397456,
+          "period": 1,
+          "minute": 0,
+          "second": 0,
+          "home_goals": 0,
+          "away_goals": 0,
+          "player_id": 586955,
+          "player_name": "Elias Englund",
+          "assist_id": 0,
+          "assist_name": "",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 10009350,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3397456,
+          "period": 1,
+          "minute": 0,
+          "second": 11,
+          "home_goals": 1,
+          "away_goals": 0,
+          "player_id": 509568,
+          "player_name": "Melvin Djäken",
+          "assist_id": 563957,
+          "assist_name": "Teo Stensrud",
+          "penalty_name": ""
+        },
+        {
+          "event_id": 10009371,
+          "type": "Mål",
+          "type_id": 1,
+          "match_team_id": 3397456,
+          "period": 1,
+          "minute": 0,
+          "second": 21,
+          "home_goals": 2,
+          "away_goals": 0,
+          "player_id": 585494,
+          "player_name": "Oskar Eriksson",
+          "assist_id": 511707,
+          "assist_name": "Vilmer Strandberg Edgardh",
+          "penalty_name": ""
+        }
+      ]
     }
   }
 }
